@@ -1,0 +1,190 @@
+@import 'tailwindcss';
+
+@theme {
+	/* ─── Material Design 3 Expressive tokens ─── */
+	--color-primary: var(--md-sys-color-primary);
+	--color-on-primary: var(--md-sys-color-on-primary);
+	--color-primary-container: var(--md-sys-color-primary-container);
+	--color-on-primary-container: var(--md-sys-color-on-primary-container);
+
+	--color-secondary: var(--md-sys-color-secondary);
+	--color-on-secondary: var(--md-sys-color-on-secondary);
+	--color-secondary-container: var(--md-sys-color-secondary-container);
+	--color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+
+	--color-tertiary: var(--md-sys-color-tertiary);
+	--color-on-tertiary: var(--md-sys-color-on-tertiary);
+	--color-tertiary-container: var(--md-sys-color-tertiary-container);
+	--color-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+
+	--color-error: var(--md-sys-color-error);
+	--color-on-error: var(--md-sys-color-on-error);
+	--color-error-container: var(--md-sys-color-error-container);
+	--color-on-error-container: var(--md-sys-color-on-error-container);
+
+	--color-background: var(--md-sys-color-background);
+	--color-on-background: var(--md-sys-color-on-background);
+	--color-surface: var(--md-sys-color-surface);
+	--color-on-surface: var(--md-sys-color-on-surface);
+	--color-surface-variant: var(--md-sys-color-surface-variant);
+	--color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+
+	--color-outline: var(--md-sys-color-outline);
+	--color-outline-variant: var(--md-sys-color-outline-variant);
+
+	--color-surface-container-lowest: var(--md-sys-color-surface-container-lowest);
+	--color-surface-container-low: var(--md-sys-color-surface-container-low);
+	--color-surface-container: var(--md-sys-color-surface-container);
+	--color-surface-container-high: var(--md-sys-color-surface-container-high);
+	--color-surface-container-highest: var(--md-sys-color-surface-container-highest);
+
+	--color-inverse-surface: var(--md-sys-color-inverse-surface);
+	--color-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+	--color-inverse-primary: var(--md-sys-color-inverse-primary);
+
+	/* ─── Semantic Moni tokens ─── */
+	--color-success: #16a34a;
+	--color-on-success: #ffffff;
+	--color-success-container: #dcfce7;
+	--color-on-success-container: #14532d;
+
+	--color-warning: #f59e0b;
+	--color-on-warning: #000000;
+	--color-warning-container: #fef3c7;
+	--color-on-warning-container: #78350f;
+
+	--color-danger: #dc2626;
+	--color-on-danger: #ffffff;
+	--color-danger-container: #fee2e2;
+	--color-on-danger-container: #7f1d1d;
+
+	--color-info: #0284c7;
+	--color-on-info: #ffffff;
+	--color-info-container: #e0f2fe;
+	--color-on-info-container: #0c4a6e;
+
+	/* ─── Typography ─── */
+	--font-sans: var(--moni-font-sans, 'Geist', system-ui, -apple-system, sans-serif);
+	--font-serif: var(--moni-font-title, 'Instrument Serif', Georgia, serif);
+	--font-mono: 'Geist Mono', 'Fira Code', monospace;
+	--font-brand: var(--moni-font-sans, 'Geist', system-ui, sans-serif);
+	--font-title: var(--moni-font-title, 'Instrument Serif', Georgia, serif);
+	--font-icon: var(--moni-font-icon, 'Material Symbols Rounded');
+
+	/* ─── Spacing density ─── */
+	--spacing-density: var(--moni-spacing-density, 1);
+	--spacing-xs: calc(0.25rem * var(--moni-spacing-density, 1));
+	--spacing-sm: calc(0.5rem * var(--moni-spacing-density, 1));
+	--spacing-md: calc(1rem * var(--moni-spacing-density, 1));
+	--spacing-lg: calc(1.5rem * var(--moni-spacing-density, 1));
+	--spacing-xl: calc(2rem * var(--moni-spacing-density, 1));
+	--spacing-2xl: calc(3rem * var(--moni-spacing-density, 1));
+
+	/* ─── Radius scale ─── */
+	--radius-base: var(--moni-radius-base, 12px);
+	--radius-sm: calc(var(--moni-radius-base, 12px) * 0.5);
+	--radius-md: var(--moni-radius-base, 12px);
+	--radius-lg: calc(var(--moni-radius-base, 12px) * 1.5);
+	--radius-xl: calc(var(--moni-radius-base, 12px) * 2);
+	--radius-full: 9999px;
+
+	/* ─── Card radius (overridable per card via --moni-radius-card) ─── */
+	--radius-card: var(--moni-radius-card, var(--radius-md, 0.75rem));
+
+	/* ─── List dividers (overridable per list via --moni-list-divider) ─── */
+	--moni-list-divider: var(--moni-list-divider-fallback, 0);
+
+	/* ─── Progress color (overridable per progress via --moni-progress-color) ─── */
+	--moni-progress-color: var(--color-primary);
+
+	/* ─── Button shape radius (overridable per button via shape-radius) ─── */
+	--moni-button-shape-radius: 1.25rem;
+
+	/* ─── Motion ─── */
+	--ease-emphasized: cubic-bezier(0.2, 0.0, 0, 1.0);
+	--ease-emphasized-decelerate: cubic-bezier(0.05, 0.7, 0.1, 1.0);
+	--ease-emphasized-accelerate: cubic-bezier(0.3, 0.0, 0.8, 0.15);
+	--ease-standard: cubic-bezier(0.2, 0.0, 0, 1.0);
+	--ease-standard-decelerate: cubic-bezier(0.0, 0.0, 0, 1.0);
+	--ease-standard-accelerate: cubic-bezier(0.3, 0.0, 1.0, 1.0);
+
+	--duration-instant: 0ms;
+	--duration-fast: 100ms;
+	--duration-normal: 200ms;
+	--duration-medium: 300ms;
+	--duration-emphasized: 500ms;
+	--duration-long: 800ms;
+
+	/* ─── Elevación / sombras M3 ─── */
+	--shadow-1: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+	--shadow-2: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+	--shadow-3: 0px 1px 3px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
+	--shadow-4: 0px 2px 3px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px 4px rgba(0, 0, 0, 0.15);
+	--shadow-5: 0px 4px 4px 0px rgba(0, 0, 0, 0.3), 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
+
+	/* ─── Grain opacity ─── */
+	--moni-grain-opacity: var(--moni-grain-opacity, 0.03);
+
+	/* ─── Legacy Moni tokens (fallback durante la migración) ─── */
+	--color-brand-bg: var(--md-sys-color-background);
+	--color-brand-surface: var(--md-sys-color-surface);
+	--color-brand-primary: var(--md-sys-color-on-surface);
+	--color-brand-muted: var(--md-sys-color-on-surface-variant);
+	--color-brand-border: var(--md-sys-color-outline-variant);
+	--color-brand-accent: var(--md-sys-color-primary);
+
+	--color-admin-bg: var(--md-sys-color-background);
+	--color-admin-surface: var(--md-sys-color-surface);
+	--color-admin-sidebar: var(--md-sys-color-inverse-surface);
+	--color-admin-sidebar-fg: var(--md-sys-color-inverse-on-surface);
+	--color-admin-sidebar-muted: var(--md-sys-color-inverse-on-surface);
+	--color-admin-accent: var(--md-sys-color-primary);
+	--color-admin-accent-soft: var(--md-sys-color-primary-container);
+	--color-admin-text: var(--md-sys-color-on-surface);
+	--color-admin-success: var(--color-success);
+	--color-admin-warn: var(--color-warning);
+	--color-admin-danger: var(--color-danger);
+	--color-admin-info: var(--color-info);
+}
+
+:root {
+	--primary: var(--md-sys-color-primary);
+	--on-primary: var(--md-sys-color-on-primary);
+	--primary-container: var(--md-sys-color-primary-container);
+	--on-primary-container: var(--md-sys-color-on-primary-container);
+
+	--secondary: var(--md-sys-color-secondary);
+	--on-secondary: var(--md-sys-color-on-secondary);
+	--secondary-container: var(--md-sys-color-secondary-container);
+	--on-secondary-container: var(--md-sys-color-on-secondary-container);
+
+	--tertiary: var(--md-sys-color-tertiary);
+	--on-tertiary: var(--md-sys-color-on-tertiary);
+	--tertiary-container: var(--md-sys-color-tertiary-container);
+	--on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+
+	--error: var(--md-sys-color-error);
+	--on-error: var(--md-sys-color-on-error);
+	--error-container: var(--md-sys-color-error-container);
+	--on-error-container: var(--md-sys-color-on-error-container);
+
+	--background: var(--md-sys-color-background);
+	--on-background: var(--md-sys-color-on-background);
+	--surface: var(--md-sys-color-surface);
+	--on-surface: var(--md-sys-color-on-surface);
+	--surface-variant: var(--md-sys-color-surface-variant);
+	--on-surface-variant: var(--md-sys-color-on-surface-variant);
+
+	--outline: var(--md-sys-color-outline);
+	--outline-variant: var(--md-sys-color-outline-variant);
+
+	--surface-container-lowest: var(--md-sys-color-surface-container-lowest);
+	--surface-container-low: var(--md-sys-color-surface-container-low);
+	--surface-container: var(--md-sys-color-surface-container);
+	--surface-container-high: var(--md-sys-color-surface-container-high);
+	--surface-container-highest: var(--md-sys-color-surface-container-highest);
+
+	--inverse-surface: var(--md-sys-color-inverse-surface);
+	--inverse-on-surface: var(--md-sys-color-inverse-on-surface);
+	--inverse-primary: var(--md-sys-color-inverse-primary);
+}

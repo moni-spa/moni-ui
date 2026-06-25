@@ -1,0 +1,17 @@
+# Dependency directories
+node_modules/
+
+# Build outputs
+dist/
+
+# Local/temp directories
+.svelte-kit/
+.playwright-mcp/
+.vscode/
+.env
+.env.*
+
+# Logs and system files
+*.log
+.DS_Store
+Thumbs.db

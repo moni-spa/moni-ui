@@ -1,0 +1,248 @@
+/* ─── Estilos base de Moni UI ─── */
+
+/* Material Symbols Rounded — icon font used by <moni-icon> and MD3 icons */
+@font-face {
+	font-family: 'Material Symbols Rounded';
+	font-style: normal;
+	font-weight: 100 700;
+	font-display: swap;
+	src: url('../assets/material-symbols-rounded.woff2') format('woff2');
+}
+
+html,
+body {
+	background-color: var(--color-background);
+	color: var(--color-on-background);
+	font-family: var(--font-sans);
+	font-style: normal;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	min-height: 100vh;
+}
+
+/* ─── Global italic + user-select reset ─── */
+* {
+	font-style: normal;
+}
+
+i,
+em,
+cite,
+dfn,
+b,
+strong,
+span,
+a,
+code,
+kbd,
+samp,
+var,
+mark,
+time,
+del,
+ins,
+sub,
+sup,
+label,
+legend,
+small,
+address,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+[part~='icon'],
+[part~='label'],
+[part~='message'],
+[part~='content'],
+[part~='title'] {
+	font-style: normal !important;
+}
+
+/* Default icon font + sizing for inline <i> inside any shadow root */
+:where(moni-button, moni-icon, moni-chip, moni-tab, moni-fab, moni-menu-item,
+       moni-list-item, moni-checkbox, moni-radio, moni-switch, moni-slider,
+       moni-step, moni-badge, moni-tooltip, moni-toolbar) i {
+	font-family: var(--font-icon, 'Material Symbols Rounded');
+	font-weight: normal;
+	font-style: normal;
+	font-size: 1.5rem;
+	letter-spacing: normal;
+	text-transform: none;
+	direction: ltr;
+	font-feature-settings: 'liga';
+	-webkit-font-smoothing: antialiased;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	vertical-align: middle;
+	line-height: 1;
+}
+
+/* Fuente global para todos los elementos de formulario e interfaz */
+button,
+input,
+select,
+textarea,
+optgroup {
+	font-family: var(--font-sans);
+}
+
+/* Fuente de títulos dinámica */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.moni-font-title {
+	font-family: var(--font-title);
+}
+
+/* Grain overlay */
+.moni-grain::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	pointer-events: none;
+	opacity: var(--moni-grain-opacity, 0.03);
+	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	background-repeat: repeat;
+	background-size: 200px 200px;
+}
+
+/* Scrollbar discreto */
+*::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+	background: var(--color-outline-variant);
+	border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--color-outline);
+}
+
+/* Focus visible */
+:focus-visible {
+	outline: 2px solid var(--color-primary);
+	outline-offset: 2px;
+	border-radius: 4px;
+}
+
+/* Touch targets */
+.moni-touch-target {
+	min-height: 48px;
+	min-width: 48px;
+}
+
+/* Safe area helpers */
+.moni-safe-bottom {
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.moni-safe-top {
+	padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ─── Global List (Light DOM) ─── */
+moni-list {
+	display: flex;
+	flex-direction: column;
+	padding: 0;
+	margin: 0;
+	gap: 0;
+	flex: 1;
+	color: inherit;
+}
+
+moni-list-item {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	min-block-size: var(--moni-list-item-min-block-size, 3.5rem);
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+	border-block-end: var(--moni-list-divider, 0);
+	position: relative;
+	text-align: start;
+	font-style: normal !important;
+}
+
+moni-list-item[active] {
+	background-color: var(--color-secondary-container);
+	color: var(--color-on-secondary-container);
+	border-radius: var(--moni-list-radius, 0);
+}
+
+moni-list-item[disabled] {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+moni-list-item:last-of-type {
+	border-block-end: 0;
+}
+
+moni-list-item i {
+	font-family: var(--font-icon, 'Material Symbols Rounded');
+	font-size: 1.5rem;
+	font-weight: normal;
+	font-style: normal !important;
+	inline-size: 1.5rem;
+	block-size: 1.5rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+/* ─── Global User Select Prevention ─── */
+:is(moni-icon, moni-button, moni-chip, moni-tab, moni-fab, moni-fab-menu,
+    moni-menu-item, moni-menu, moni-context-menu, moni-checkbox, moni-radio,
+    moni-switch, moni-slider, moni-step, moni-stepper, moni-badge, moni-tooltip,
+    moni-toolbar, moni-list, moni-list-item, moni-nav, moni-nav-item,
+    moni-tabs, moni-divider, moni-progress,
+    moni-ripple, moni-card, moni-app-bar, moni-expansion,
+    moni-snackbar, moni-text-field, moni-textarea, moni-select,
+    moni-color-field, moni-file-field, .no-select) {
+	user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+/* Avoid text selection in slotted children of interactive hosts */
+:is(moni-button, moni-chip, moni-fab, moni-tab, moni-menu-item, moni-list-item,
+    moni-checkbox, moni-radio, moni-switch, moni-step, moni-tooltip) * {
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* ─── Selectable exceptions: where text SHOULD be selectable ─── */
+:is(input, textarea, pre, code, kbd, samp, [contenteditable]) {
+	user-select: text !important;
+	-webkit-user-select: text !important;
+}
+
+/* ─── Anchor-name helper: drop a CSS anchor on a parent and the WC can use it ─── */
+[data-anchor] {
+	anchor-name: --moni-anchor;
+}
+
+/* ─── Interactive cursor ─── */
+:is(button, summary, [role='button'], [role='tab'], [role='menuitem'], a[href]) {
+	cursor: pointer;
+}

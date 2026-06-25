@@ -1,0 +1,46 @@
+/* ─── BeerCSS keyframes (extracted from Moni-Labs/beercss-CDN/beer.css) ─── */
+
+@keyframes to-page {
+	from {
+		opacity: 0;
+		transform: var(--_transform);
+	}
+
+	to {
+		opacity: 1;
+		transform: translate(0, 0);
+	}
+}
+
+/* Indeterminate linear: the `::after` overlay slides across the track.
+   BeerCSS's original animated `padding`/`margin` on the native `<progress>`,
+   which browsers do not honour. We animate the absolutely-positioned
+   pseudo-element instead. */
+@keyframes to-indeterminate-progress {
+	0% {
+		inset-inline-start: -50%;
+	}
+
+	100% {
+		inset-inline-start: 100%;
+	}
+}
+
+@keyframes to-rotate {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes to-ripple {
+	to {
+		transform: scale(4);
+		opacity: 0;
+	}
+}
+
+

@@ -1,0 +1,1301 @@
+{
+  "components": [
+    {
+      "slug": "app-bars",
+      "title": "App bars",
+      "description": "App bars are placed at the top of the screen to help people navigate through a product.",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 4053,
+          "images": 6,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 13950,
+          "images": 28,
+          "tokens": 0
+        },
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 4229,
+          "images": 5,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 11516,
+          "images": 21,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "badges",
+      "title": "Badges",
+      "description": "Badges show notifications, counts, or status information on navigation items and icons",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1837,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 6735,
+          "images": 19,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2481,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4032,
+          "images": 7,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "bottom-sheets",
+      "title": "Bottom sheets",
+      "description": "Bottom sheets show secondary content anchored to the bottom of the screen",
+      "category": "Sheets",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1934,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 12147,
+          "images": 21,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 2449,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2626,
+          "images": 5,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "button-groups",
+      "title": "Button groups",
+      "description": "Button groups organize buttons and add interactions between them",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 2520,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 8024,
+          "images": 10,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2453,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 8335,
+          "images": 14,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "buttons",
+      "title": "Buttons",
+      "description": "Buttons prompt most actions in a UI.",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3611,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 17393,
+          "images": 43,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2381,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 8250,
+          "images": 18,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "cards",
+      "title": "Cards",
+      "description": "Cards display content and actions about a single subject",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1803,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 17301,
+          "images": 35,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4407,
+          "images": 11,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5636,
+          "images": 6,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "carousel",
+      "title": "Carousel",
+      "description": "Carousels show a collection of items that can be scrolled on and off the screen",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3192,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 11770,
+          "images": 14,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 6875,
+          "images": 17,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5661,
+          "images": 6,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "checkbox",
+      "title": "Checkbox",
+      "description": "Checkboxes let users select one or more items from a list, or turn an item on or off",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 2146,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 4226,
+          "images": 8,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3092,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 2914,
+          "images": 7,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "chips",
+      "title": "Chips",
+      "description": "Chips help people enter information, make selections, filter content, or trigger actions",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 2349,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 21840,
+          "images": 49,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 6775,
+          "images": 9,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9240,
+          "images": 17,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "date-pickers",
+      "title": "Date pickers",
+      "description": "Date pickers let people select a date, or a range of dates",
+      "category": "Date & time pickers",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3318,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 10616,
+          "images": 21,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 7734,
+          "images": 10,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9643,
+          "images": 26,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "dialogs",
+      "title": "Dialogs",
+      "description": "Dialogs provide important prompts in a user flow",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 2282,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 17947,
+          "images": 34,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4009,
+          "images": 6,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5797,
+          "images": 8,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "divider",
+      "title": "Divider",
+      "description": "Dividers are thin lines that group content in lists or other containers",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1586,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 672,
+          "images": 1,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 1588,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 5668,
+          "images": 17,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "extended-fab",
+      "title": "Extended FABs",
+      "description": "Extended floating action buttons (extended FABs) help people take primary actions",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3720,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 10895,
+          "images": 28,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3695,
+          "images": 6,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9542,
+          "images": 16,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "fab-menu",
+      "title": "FAB menu",
+      "description": "The floating action button (FAB) menu opens from a FAB to display multiple related actions",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 2354,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 8763,
+          "images": 20,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3724,
+          "images": 6,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 5594,
+          "images": 16,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "floating-action-button",
+      "title": "Floating action buttons (FABs)",
+      "description": "Floating action buttons (FABs) help people take primary actions",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3567,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 4615,
+          "images": 8,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 9498,
+          "images": 20,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 6624,
+          "images": 12,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "icon-buttons",
+      "title": "Icon buttons",
+      "description": "Icon buttons help people take actions with a single tap",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3375,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 9000,
+          "images": 14,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2752,
+          "images": 5,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9062,
+          "images": 18,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "lists",
+      "title": "Lists",
+      "description": "Lists are continuous, vertical indexes of text and images",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 4057,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 9403,
+          "images": 15,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 15519,
+          "images": 26,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 15449,
+          "images": 35,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "loading-indicator",
+      "title": "Loading indicator",
+      "description": "Loading indicators show the progress of a process for a short wait time",
+      "category": "Loading & progress",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1910,
+          "images": 0,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 6474,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2519,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 2537,
+          "images": 6,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "menus",
+      "title": "Menus",
+      "description": "Menus display a list of choices on a temporary surface",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3888,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 12994,
+          "images": 16,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5076,
+          "images": 7,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9026,
+          "images": 18,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "navigation-bar",
+      "title": "Navigation bar",
+      "description": "Navigation bars let people switch between UI views on smaller devices",
+      "category": "Navigation",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3643,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 6356,
+          "images": 15,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5000,
+          "images": 9,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 14937,
+          "images": 28,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "navigation-drawer",
+      "title": "Navigation drawer",
+      "description": "Navigation drawers let people switch between UI views on larger devices",
+      "category": "Navigation",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3464,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 17504,
+          "images": 28,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5873,
+          "images": 8,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4741,
+          "images": 9,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "navigation-rail",
+      "title": "Navigation rail",
+      "description": "Navigation rails let people switch between UI views on mid-sized devices",
+      "category": "Navigation",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3842,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 15480,
+          "images": 22,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 6041,
+          "images": 12,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 7739,
+          "images": 20,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "progress-indicators",
+      "title": "Progress indicators",
+      "description": "Progress indicators show the status of a process in real time",
+      "category": "Loading & progress",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3672,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 8699,
+          "images": 7,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4189,
+          "images": 9,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3856,
+          "images": 7,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "radio-button",
+      "title": "Radio button",
+      "description": "Radio buttons let people select one option from a set of options",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1778,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 2581,
+          "images": 5,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3693,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 5425,
+          "images": 14,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "search",
+      "title": "Search",
+      "description": "Search lets people enter a keyword or phrase to get relevant information",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3291,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 13452,
+          "images": 21,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3607,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9299,
+          "images": 19,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "segmented-buttons",
+      "title": "Segmented buttons",
+      "description": "Segmented buttons help people select options, switch views, or sort elements",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3330,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 8472,
+          "images": 20,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 4887,
+          "images": 6,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 3686,
+          "images": 6,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "side-sheets",
+      "title": "Side sheets",
+      "description": "Side sheets show secondary content anchored to the side of the screen",
+      "category": "Sheets",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1345,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 8799,
+          "images": 14,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2178,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 3639,
+          "images": 6,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "sliders",
+      "title": "Sliders",
+      "description": "Sliders allow users to make selections from a range of values",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3692,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3319,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 10641,
+          "images": 23,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4212,
+          "images": 10,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "snackbar",
+      "title": "Snackbar",
+      "description": "Snackbars show short updates about app processes at the bottom of the screen",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1597,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 4407,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 14063,
+          "images": 34,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 1858,
+          "images": 4,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "split-button",
+      "title": "Split buttons",
+      "description": "Split buttons open a menu to give people more options related to an action",
+      "category": "Buttons",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1708,
+          "images": 1,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 6106,
+          "images": 13,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2799,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 10686,
+          "images": 10,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "switch",
+      "title": "Switch",
+      "description": "Switches toggle the selection of an item on and off",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 2345,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 7202,
+          "images": 18,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 4040,
+          "images": 6,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4504,
+          "images": 11,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "tabs",
+      "title": "Tabs",
+      "description": "Tabs organize content across different screens and views",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1932,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 4708,
+          "images": 1,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 10517,
+          "images": 17,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 4701,
+          "images": 10,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "text-fields",
+      "title": "Text fields",
+      "description": "Text fields let users enter text into a UI",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1934,
+          "images": 2,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 16498,
+          "images": 29,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 5913,
+          "images": 11,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 9549,
+          "images": 17,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "time-pickers",
+      "title": "Time pickers",
+      "description": "Time pickers help people select and set a specific time",
+      "category": "Date & time pickers",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1983,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 9141,
+          "images": 15,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 3529,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 7179,
+          "images": 12,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "toolbars",
+      "title": "Toolbars",
+      "description": "Toolbars display frequently used actions relevant to the current page",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 3680,
+          "images": 4,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2559,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 17659,
+          "images": 39,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 7422,
+          "images": 16,
+          "tokens": 0
+        }
+      ]
+    },
+    {
+      "slug": "tooltips",
+      "title": "Tooltips",
+      "description": "Tooltips display brief labels or messages",
+      "category": "All other components",
+      "sections": [
+        {
+          "section": "overview",
+          "ok": true,
+          "bytes": 1650,
+          "images": 3,
+          "tokens": 0
+        },
+        {
+          "section": "guidelines",
+          "ok": true,
+          "bytes": 7473,
+          "images": 17,
+          "tokens": 0
+        },
+        {
+          "section": "specs",
+          "ok": true,
+          "bytes": 3267,
+          "images": 8,
+          "tokens": 0
+        },
+        {
+          "section": "accessibility",
+          "ok": true,
+          "bytes": 2781,
+          "images": 4,
+          "tokens": 0
+        }
+      ]
+    }
+  ],
+  "last_run": "2026-06-20T07:01:22.202Z"
+}
