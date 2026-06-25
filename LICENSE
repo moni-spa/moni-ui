@@ -1,6 +1,6 @@
-MIT License
+MIT License with UI Attribution
 
-Copyright (c) 2026 Moni Spa
+Copyright (c) 2026 Sebastián Nicolás Barraza Torres
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -9,8 +9,21 @@ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+2. UI Attribution Condition: Any website, web application, or public product
+   that integrates or uses this Software (whether in its original or modified
+   form) must include a visible and explicit acknowledgement to the original author.
+   This credit must be accessible to the end-user in a public section of the
+   website/application (e.g., an "About" page, "Credits" section, or the page footer),
+   stating: "Web components developed by Sebastián Nicolás Barraza Torres" and
+   including a hyperlink to the original repository (https://github.com/moni-spa/moni-ui)
+   or the author's official website.
+
+Design Note: The visual implementation of these components is inspired by
+Google's Material Design 3 guidelines. Material Design is a registered trademark
+of Google LLC.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
