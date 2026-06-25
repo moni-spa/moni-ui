@@ -6,7 +6,7 @@ import { MoniElement, sharedStyles } from './_base/index.js';
  * Visual-only icon.
  *
  * Renders a Material Symbols glyph by name. The font must be loaded
- * globally in the host document (see `@moni/ui/styles`).
+ * globally in the host document (see `@moni-spa/moni-ui/styles`).
  *
  * Attributes:
  *  - name:   icon name from https://fonts.google.com/icons

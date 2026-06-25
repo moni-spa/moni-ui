@@ -1,5 +1,5 @@
 {
-  "name": "@moni/ui",
+  "name": "@moni-spa/moni-ui",
   "version": "0.2.0",
   "private": false,
   "type": "module",
@@ -17,6 +17,7 @@
       "import": "./dist/web-components.js"
     },
     "./styles": "./dist/styles/index.css",
+    "./components/*.ts": "./src/components/*.ts",
     "./components/*": {
       "types": "./dist/components/*.d.ts",
       "import": "./dist/components/*.js"
