@@ -1,8 +1,8 @@
-# @moni-spa/moni-ui 🎨
+# @moni-labs/moni-ui 🎨
 
 > Sistema de diseño unificado, responsivo y de alto rendimiento para Moni. Basado en **Material Design 3 Expressive**, diseñado específicamente para ser mobile-first, accesible y con animaciones de nivel premium.
 
-`@moni-spa/moni-ui` es una biblioteca de componentes web listos para producción, construida con **Lit** y **TypeScript**. Es totalmente agnóstica de frameworks (funciona nativamente en HTML, React, Vue, Angular, Svelte, etc.) y cuenta con integraciones optimizadas para **Svelte 5** y **TailwindCSS v4**.
+`@moni-labs/moni-ui` es una biblioteca de componentes web listos para producción, construida con **Lit** y **TypeScript**. Es totalmente agnóstica de frameworks (funciona nativamente en HTML, React, Vue, Angular, Svelte, etc.) y cuenta con integraciones optimizadas para **Svelte 5** y **TailwindCSS v4**.
 
 ---
 
@@ -19,12 +19,12 @@
 
 ## Instalación 📦
 
-Instala `@moni-spa/moni-ui` y sus dependencias en tu proyecto:
+Instala `@moni-labs/moni-ui` y sus dependencias en tu proyecto:
 
 ```bash
-npm install @moni-spa/moni-ui svelte tailwindcss
+npm install @moni-labs/moni-ui svelte tailwindcss
 # O con bun
-bun add @moni-spa/moni-ui svelte tailwindcss
+bun add @moni-labs/moni-ui svelte tailwindcss
 ```
 
 ---
@@ -36,13 +36,13 @@ bun add @moni-spa/moni-ui svelte tailwindcss
 Para usar los componentes en tu aplicación, importa el punto de entrada principal. Esto registrará automáticamente todos los elementos `<moni-*>` en el registro de elementos personalizados del navegador (`customElements`).
 
 ```javascript
-import '@moni-spa/moni-ui';
+import '@moni-labs/moni-ui';
 ```
 
 O si solo deseas registrar los componentes web sin importar utilidades adicionales de Svelte:
 
 ```javascript
-import '@moni-spa/moni-ui/web-components';
+import '@moni-labs/moni-ui/web-components';
 ```
 
 ### 2. Importar los Estilos Globales
@@ -50,7 +50,7 @@ import '@moni-spa/moni-ui/web-components';
 Asegúrate de importar las variables del tema y estilos base en tu archivo de estilos principal (como `index.css` o `app.css`):
 
 ```css
-@import '@moni-spa/moni-ui/styles';
+@import '@moni-labs/moni-ui/styles';
 ```
 
 ---
@@ -148,7 +148,7 @@ Aplica máscaras vectoriales (SVG Clip-Paths/Masks) predefinidas y expresivas a 
 
 ## Motor de Temas Dinámico (Theme Engine) 🌈
 
-`@moni-spa/moni-ui` cuenta con un potente motor de generación de color basado en la API **HCT** de Material Design 3, el cual ajusta automáticamente los contrastes para cumplir con la norma **WCAG AA**.
+`@moni-labs/moni-ui` cuenta con un potente motor de generación de color basado en la API **HCT** de Material Design 3, el cual ajusta automáticamente los contrastes para cumplir con la norma **WCAG AA**.
 
 ### Integración en Svelte 5 (Runes)
 
@@ -156,7 +156,7 @@ Puedes utilizar el motor de temas reactivo importando `getThemeEngine` en tu apl
 
 ```svelte
 <script>
-  import { getThemeEngine } from '@moni-spa/moni-ui';
+  import { getThemeEngine } from '@moni-labs/moni-ui';
 
   // Inicializa el tema reactivo (usando Runes de Svelte 5)
   const theme = getThemeEngine({
@@ -185,7 +185,7 @@ Puedes utilizar el motor de temas reactivo importando `getThemeEngine` en tu apl
 
 ## Integración con TailwindCSS v4 🎨
 
-El sistema de tokens de `@moni-spa/moni-ui` se inyecta como variables CSS nativas en el `:root`. Para utilizarlos en tus clases de TailwindCSS v4, simplemente usa las variables directamente o configúralas en tu archivo CSS:
+El sistema de tokens de `@moni-labs/moni-ui` se inyecta como variables CSS nativas en el `:root`. Para utilizarlos en tus clases de TailwindCSS v4, simplemente usa las variables directamente o configúralas en tu archivo CSS:
 
 ```css
 @theme {
@@ -207,7 +207,7 @@ Ahora puedes escribir clases como:
 
 ## Desarrollo Local y Construcción 🛠_
 
-Si deseas contribuir al desarrollo o realizar pruebas locales de `@moni-spa/moni-ui`, utiliza los siguientes comandos dentro del directorio del paquete:
+Si deseas contribuir al desarrollo o realizar pruebas locales de `@moni-labs/moni-ui`, utiliza los siguientes comandos dentro del directorio del paquete:
 
 ```bash
 # Instalar dependencias

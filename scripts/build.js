@@ -13,7 +13,7 @@ const distStylesDir = path.resolve(distDir, 'styles');
 const srcAssetsDir = path.resolve(rootDir, 'src/assets');
 const distAssetsDir = path.resolve(distDir, 'assets');
 
-console.log('📦 Starting build for @moni-spa/moni-ui...');
+console.log('📦 Starting build for @moni-labs/moni-ui...');
 
 // 1. Clean dist directory
 console.log('🧹 Cleaning dist directory...');
