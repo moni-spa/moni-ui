@@ -1,36 +1,67 @@
+/**
+ * @file components/moni-tooltip.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Tooltip that faithfully ports BeerCSS's `.tooltip` styles and adds M3
- * Expressive semantics.
+ * Material Design 3 Tooltip component.
  *
- * **M3 spec** (`m3-docs/components/tooltips/specs.md`):
- *  - Two types: **plain** (text only) and **rich** (HTML content).
- *  - 6 placements: top, top-start, top-end, bottom, bottom-start, bottom-end.
- *  - Trigger: hover (mouse) or focus (keyboard) on the parent.
- *  - Auto-dismiss: tooltip hides on `mouseleave` / `focusout` / `Escape`.
+ * Tooltips provide contextual text labels or rich content that appear when
+ * users hover over, focus on, or tap an element. They surface supplementary
+ * information that helps users understand interface elements without
+ * permanently occupying screen space.
  *
- * The component delegates trigger detection to the parent element (consistent
- * with the original BeerCSS port). The tooltip element is `position: absolute`
- * inside the parent so it follows the trigger naturally.
+ * **M3 spec reference:** `m3-docs/components/tooltips/specs.md`
  *
- * **Accessibility**:
- *  - The tooltip has `role="tooltip"` (M3 spec).
- *  - When `rich` content is used, the parent should also have
- *    `aria-describedby="<tooltip-id>"`. The component sets a unique `id` on
- *    the tooltip element and exposes it via `tooltipId` getter.
- *  - `Escape` closes the tooltip (WAI-ARIA tooltip pattern).
+ * **Types:**
+ * - **Plain** (default) — Text-only label for simple descriptions (max 1 line).
+ * - **Rich** (`rich` attribute) — HTML content including formatted text,
+ *   links, and icons. Rich tooltips can contain multiple lines and action links.
  *
- * Attributes:
- *  - text:      tooltip text (plain tooltip)
- *  - position:  top (default) | top-start | top-end | bottom | bottom-start | bottom-end
- *  - size:      '' (default) | small | medium | large
- *  - rich:      boolean — when true, the default slot accepts arbitrary HTML
- *               for rich content (links, icons, etc.). When false (default),
- *               the slot is rendered as text only.
- *  - id:        forwarded to the tooltip element (useful for aria-describedby)
+ * **Placements:**
+ * - `top` (default), `top-start`, `top-end`
+ * - `bottom`, `bottom-start`, `bottom-end`
+ *
+ * **Trigger mechanism:**
+ * The tooltip uses `position: absolute` inside the parent element. The parent
+ * must have `position: relative` (set automatically via `connectedCallback`).
+ * Hover/focus events on the parent trigger the tooltip's CSS `:hover` and
+ * `:focus-within` selectors, which drive the show/hide transition.
+ *
+ * **Accessibility:**
+ * - The tooltip has `role="tooltip"`.
+ * - For keyboard accessibility, the parent should have `aria-describedby`
+ *   pointing to the tooltip's `id` attribute. The component exposes a
+ *   `tooltipId` getter for this purpose.
+ * - The `Escape` key closes rich tooltips.
+ *
+ * @example
+ * ```html
+ * <!-- Plain tooltip -->
+ * <button aria-describedby="save-tip">
+ *   Save
+ *   <moni-tooltip id="save-tip" text="Ctrl+S"></moni-tooltip>
+ * </button>
+ *
+ * <!-- Rich tooltip -->
+ * <button>
+ *   Filter
+ *   <moni-tooltip rich position="bottom">
+ *     <strong>Filter by date</strong>
+ *     <p>Select a date range to filter results.</p>
+ *   </moni-tooltip>
+ * </button>
+ * ```
+ *
+ * @slot default - Rich content for the tooltip body (only used when `rich=true`).
+ *
+ * @csspart tooltip - The tooltip container element.
  */
 @customElement('moni-tooltip')
 export class MoniTooltip extends MoniElement {

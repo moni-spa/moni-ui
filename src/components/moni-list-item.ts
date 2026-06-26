@@ -1,38 +1,70 @@
+/**
+ * @file components/moni-list-item.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material 3 List Item (`m3-docs/components/lists/specs.md`).
+ * Material Design 3 List Item component.
  *
- * One row in a `<moni-list>`. Supports up to 3 lines of text:
- *  - line 1: headline (required).
- *  - line 2: supporting text (optional).
- *  - line 3: trailing meta text (optional).
+ * A single row within a `<moni-list>`. List items display a headline and
+ * optional supporting text, metadata, icons, or avatars.
  *
- * Plus optional leading/trailing icons or avatars.
+ * **M3 spec reference:** `m3-docs/components/lists/specs.md`
  *
- * M3 measurements:
- *  - Min height: 56dp (1-line), 72dp (2-line), 88dp (3-line).
- *  - Horizontal padding: 16dp.
- *  - Vertical padding: 8dp top/bottom (so 1-line is 56dp tall).
- *  - Leading icon/avatar size: 24dp.
+ * **Line configurations:**
+ * The `lines` attribute configures the layout and minimum height of the item:
+ * - `lines="1"` (default) — 56dp min height. Only the headline slot is shown.
+ * - `lines="2"` — 72dp min height. Shows headline and supporting text.
+ * - `lines="3"` — 88dp min height. Shows headline, supporting text, and meta text.
  *
- * Attributes:
- *  - lines: 1 (default) | 2 | 3
- *  - icon:   Material Symbols name (leading icon)
- *  - avatar: URL for a leading image
- *  - trailing-icon: Material Symbols name (trailing icon)
- *  - active:   present → background uses secondary-container
- *  - disabled: present → opacity 38%, cursor not-allowed
- *  - href:     present → renders as <a>; otherwise <button>
+ * **Interactive behavior:**
+ * By default, items render as `<button>` elements, gaining the M3 state layer
+ * (hover, focus, and press ripple effects).
+ * If the `href` attribute is provided, the item internally renders as an `<a>`
+ * element, allowing native link routing and interactions while preserving the
+ * list item styling.
  *
- * Slots:
- *  - default:   headline (line 1)
- *  - supporting:line 2 text
- *  - meta:      line 3 text
- *  - trailing-meta: trailing small text (right side)
+ * **Visual elements:**
+ * - `icon` (attribute) — Material Symbol name for the leading icon (24dp).
+ * - `avatar` (attribute) — URL for a leading circular image (40dp).
+ * - `trailing-icon` (attribute) — Material Symbol name for the trailing icon.
+ *
+ * @example
+ * ```html
+ * <!-- 1-line item with icon -->
+ * <moni-list-item icon="inbox">
+ *   Inbox
+ * </moni-list-item>
+ *
+ * <!-- 2-line item with avatar and trailing meta -->
+ * <moni-list-item lines="2" avatar="/user.jpg">
+ *   Ali Connors
+ *   <span slot="supporting">Brunch this weekend?</span>
+ *   <span slot="trailing-meta">10 min</span>
+ * </moni-list-item>
+ *
+ * <!-- Link item -->
+ * <moni-list-item href="/settings" icon="settings">
+ *   Settings
+ * </moni-list-item>
+ * ```
+ *
+ * @slot default       - Headline text (Line 1).
+ * @slot supporting    - Supporting text (Line 2, requires `lines>=2`).
+ * @slot meta          - Additional meta text (Line 3, requires `lines=3`).
+ * @slot trailing-meta - Small text displayed on the far right edge.
+ *
+ * @csspart item          - The outer `<button>` or `<a>` container.
+ * @csspart leading-icon  - Container for the leading icon/avatar.
+ * @csspart text          - Container for the multi-line text block.
+ * @csspart trailing-icon - Container for the trailing icon.
  */
 @customElement('moni-list-item')
 export class MoniListItem extends MoniElement {

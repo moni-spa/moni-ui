@@ -26,11 +26,23 @@ execSync('node scripts/build-shape-component.cjs', { cwd: rootDir, stdio: 'inher
 
 // 3. Compile TypeScript
 console.log('🚀 Compiling TypeScript...');
-try {
-	// Execute tsc via the local project executable
-	const tscPath = path.resolve(rootDir, 'node_modules/.bin/tsc');
-	execSync(`"${tscPath}" -p tsconfig.build.json`, { cwd: rootDir, stdio: 'inherit' });
-} catch (error) {
+	try {
+		let compilerCmd = 'npx --package=typescript tsc';
+		const localPaths = [
+			path.resolve(rootDir, 'node_modules/.bin/tsc'),
+			path.resolve(rootDir, 'node_modules/.bin/tsc.cmd'),
+			path.resolve(rootDir, '../../node_modules/.bin/tsc'),
+			path.resolve(rootDir, '../../node_modules/.bin/tsc.cmd')
+		];
+		for (const p of localPaths) {
+			if (fs.existsSync(p)) {
+				compilerCmd = `"${p}"`;
+				break;
+			}
+		}
+		console.log(`Using compiler command: ${compilerCmd}`);
+		execSync(`${compilerCmd} -p tsconfig.build.json`, { cwd: rootDir, stdio: 'inherit' });
+	} catch (error) {
 	console.error('❌ TypeScript compilation failed.');
 	process.exit(1);
 }

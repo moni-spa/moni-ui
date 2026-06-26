@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-select.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -7,25 +14,96 @@ import './moni-icon.js';
 import './moni-progress.js';
 import './moni-select-option.js';
 
+/**
+ * Internal representation of a single option within the select dropdown.
+ *
+ * @internal
+ */
 interface OptionNode {
+	/** Discriminant property that identifies this node as an option. */
 	type: 'option';
+	/** The value submitted when this option is selected. */
 	value: string;
+	/** The display label shown in the dropdown list. */
 	label: string;
+	/** When `true`, the option is non-interactive and grayed out. */
 	disabled?: boolean;
+	/** Reference to the original slotted `<moni-select-option>` element, if any. */
 	element?: HTMLElement;
+	/** Optional group name for organizing options under a `<moni-select-group>`. */
 	group?: string;
 }
 
+/**
+ * Internal representation of an option group within the select dropdown.
+ *
+ * @internal
+ */
 interface GroupNode {
+	/** Discriminant property that identifies this node as a group. */
 	type: 'group';
+	/** The group header label displayed above the group's options. */
 	label: string;
+	/** The options nested within this group. */
 	children: DropdownNode[];
 }
 
+/** Union type for any node in the dropdown tree. @internal */
 type DropdownNode = OptionNode | GroupNode;
 
 /**
- * Custom Searchable Select Component with Subcategories, Animations, and Drawer/Sheet option.
+ * Material Design 3 Select (Dropdown) component.
+ *
+ * A fully-featured custom select dropdown with searchability, option groups,
+ * keyboard navigation, animation, and optional mobile drawer/sheet mode.
+ * Replaces the native `<select>` element with a fully styled, accessible
+ * M3-compliant alternative.
+ *
+ * **M3 spec reference:** `m3-docs/components/menus/specs.md` (dropdown menus)
+ *
+ * **Feature summary:**
+ * - Filled and outlined variants matching the M3 text field styles.
+ * - Floating label with the standard field-styles floating label animation.
+ * - Searchable mode: `searchable` attribute adds an inline filter input.
+ * - Option groups: slot `<moni-select-group>` elements for hierarchical options.
+ * - Mobile drawer: `drawer` attribute opens options in a `<moni-bottom-sheet>`
+ *   instead of a dropdown popup, ideal for touch UIs.
+ * - Keyboard navigation: Arrow keys, Enter, Escape, and Tab per ARIA combobox.
+ * - Loading state: `loading` shows an indeterminate circular progress.
+ * - Multi-value support: `multiple` enables multiple selection.
+ *
+ * **Option sources:**
+ * Options can be provided in two ways:
+ * 1. **Slotted `<moni-select-option>` elements** (default, recommended for SSR).
+ * 2. **`options` property** — a `DropdownNode[]` array for fully programmatic control.
+ *
+ * **Value binding:**
+ * The `value` property holds the currently selected option's value string.
+ * For multiple selection, `values` holds `string[]`. On change, a composed
+ * `'change'` event is fired.
+ *
+ * @fires change - Bubbles and is composed. Fired when the selected value changes.
+ *                 Read `element.value` (or `element.values` for `multiple`).
+ *
+ * @example
+ * ```html
+ * <moni-select label="Country" name="country" variant="outlined">
+ *   <moni-select-option value="us">United States</moni-select-option>
+ *   <moni-select-option value="gb">United Kingdom</moni-select-option>
+ *   <moni-select-option value="de">Germany</moni-select-option>
+ * </moni-select>
+ *
+ * <!-- Searchable select -->
+ * <moni-select label="Language" searchable>
+ *   <moni-select-option value="ts">TypeScript</moni-select-option>
+ *   <moni-select-option value="py">Python</moni-select-option>
+ * </moni-select>
+ * ```
+ *
+ * @slot default - `<moni-select-option>` or `<moni-select-group>` children.
+ *
+ * @csspart field    - The outer `.field` div container.
+ * @csspart dropdown - The floating option list container.
  */
 @customElement('moni-select')
 export class MoniSelect extends MoniElement {

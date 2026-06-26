@@ -1,33 +1,135 @@
+/**
+ * @file components/moni-ripple.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only ripple decoration.
+ * Visual-only ripple decoration component.
  *
- * To trigger a ripple at a specific point, set the `x` and `y` attributes
- * and toggle the `active` attribute. The visual scale-in animation will
- * run for `duration` ms and then the element becomes hidden.
+ * Provides a pointer-origin ripple animation — the expanding circle starts
+ * at the exact pointer-down coordinates rather than the element's center.
+ * This is the full-fidelity M3 ripple; for a simpler CSS-only center-ripple,
+ * use the `interactionStyles` `.interactive::after` pseudo-element instead.
  *
- * Attributes:
- *  - x, y:        origin in px (0..100, %)
- *  - active:      present → visible
- *  - speed:       fast | normal (default) | slow
- *  - color:       primary (default) | secondary | surface
+ * **Usage:**
+ * Drop `<moni-ripple>` as a **child** of any interactive element. The component
+ * automatically attaches a `pointerdown` listener to its `parentElement` and
+ * calculates the ripple origin in percentage coordinates relative to the parent.
+ *
+ * The parent element must NOT have `position: static` (the ripple applies
+ * `position: relative` automatically in `connectedCallback`).
+ *
+ * **Timing model:**
+ * On `pointerdown`:
+ * 1. `active = false` is set (cancels any in-progress ripple).
+ * 2. A `requestAnimationFrame` tick ensures the browser has processed the reset.
+ * 3. `active = true` triggers the CSS scale animation.
+ * 4. A `setTimeout` of `duration` ms (based on `speed`) resets `active = false`.
+ *
+ * The duration matches the CSS transition duration so the opacity fade-out
+ * completes before `active` is cleared.
+ *
+ * **Cleanup:**
+ * `disconnectedCallback` removes the `pointerdown` listener and clears any
+ * pending timeout. Always call `super.disconnectedCallback()` if subclassing.
+ *
+ * @example
+ * ```html
+ * <!-- Ripple on a custom element -->
+ * <div class="my-button" style="position: relative; overflow: hidden;">
+ *   Click me
+ *   <moni-ripple color="primary"></moni-ripple>
+ * </div>
+ * ```
+ *
+ * @csspart ripple - The inner `<span>` that performs the scale animation.
  */
 @customElement('moni-ripple')
 export class MoniRipple extends MoniElement {
+	/**
+	 * Horizontal origin of the ripple as a percentage of the parent's width.
+	 *
+	 * Set automatically by `_onPointerDown` based on the pointer coordinates.
+	 * Can be set manually to trigger a ripple at a specific location.
+	 *
+	 * @default 50
+	 */
 	@property({ type: Number, reflect: true }) x = 50;
+
+	/**
+	 * Vertical origin of the ripple as a percentage of the parent's height.
+	 *
+	 * Set automatically by `_onPointerDown` based on the pointer coordinates.
+	 *
+	 * @default 50
+	 */
 	@property({ type: Number, reflect: true }) y = 50;
+
+	/**
+	 * When `true`, the ripple is visible and animating.
+	 *
+	 * Toggled automatically by `_onPointerDown`. Can be set manually for
+	 * programmatically-triggered ripple effects.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) active = false;
+
+	/**
+	 * Animation speed of the ripple expand-and-fade sequence.
+	 *
+	 * Maps to the `--_dur` CSS custom property:
+	 * - `'fast'`   — 300ms
+	 * - `'normal'` — 600ms (default)
+	 * - `'slow'`   — 1200ms
+	 *
+	 * @default 'normal'
+	 */
 	@property({ reflect: true })
 	speed: 'fast' | 'normal' | 'slow' = 'normal';
+
+	/**
+	 * Color token for the ripple overlay.
+	 *
+	 * Sets the `color` CSS property on `:host`, which the `.ripple` span
+	 * inherits via `background-color: currentColor`.
+	 *
+	 * - `'primary'`   — `--primary` (default)
+	 * - `'secondary'` — `--secondary`
+	 * - `'surface'`   — `--surface-variant` (subtle, for surface containers)
+	 *
+	 * @default 'primary'
+	 */
 	@property({ reflect: true })
 	color: 'primary' | 'secondary' | 'surface' = 'primary';
 
+	/**
+	 * Reference to the parent element that the ripple is anchored to.
+	 * Populated in `connectedCallback`, cleared in `disconnectedCallback`.
+	 */
 	private _target: HTMLElement | null = null;
+
+	/**
+	 * ID of the pending `setTimeout` that clears `active` after the animation.
+	 * Stored so it can be cancelled if a second pointer event fires before the
+	 * first ripple finishes (rapid double-tap prevention).
+	 */
 	private _timeoutId: any = null;
 
+	/**
+	 * Attaches the ripple to its parent element.
+	 *
+	 * - Stores a reference to `parentElement` for pointer event listening.
+	 * - Ensures the parent has `position: relative` so the ripple's `position: absolute`
+	 *   stays within bounds.
+	 * - Registers the `_onPointerDown` event listener.
+	 */
 	override connectedCallback() {
 		super.connectedCallback();
 		this._target = this.parentElement;
@@ -40,6 +142,12 @@ export class MoniRipple extends MoniElement {
 		}
 	}
 
+	/**
+	 * Detaches the ripple from its parent element.
+	 *
+	 * Removes the `pointerdown` listener and clears any pending timeout to
+	 * prevent the `active` flag from being set after the element is removed.
+	 */
 	override disconnectedCallback() {
 		if (this._target) {
 			this._target.removeEventListener('pointerdown', this._onPointerDown);
@@ -50,6 +158,15 @@ export class MoniRipple extends MoniElement {
 		super.disconnectedCallback();
 	}
 
+	/**
+	 * Handles pointer-down events on the parent element.
+	 *
+	 * Computes the ripple origin as a percentage of the parent's bounding rect,
+	 * cancels any in-progress ripple, then triggers a new one after one
+	 * animation frame to guarantee the CSS transition fires from the new position.
+	 *
+	 * @param e - The `PointerEvent` from the parent's `pointerdown` listener.
+	 */
 	private _onPointerDown = (e: PointerEvent) => {
 		if (!this._target) return;
 		const rect = this._target.getBoundingClientRect();

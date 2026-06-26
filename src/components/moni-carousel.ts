@@ -1,34 +1,85 @@
+/**
+ * @file components/moni-carousel.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query, state, queryAll } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import { gsap } from 'gsap';
 
+/**
+ * Data model for a single item in a `<moni-carousel>`.
+ */
 export interface CarouselItem {
+	/** Display title overlaid on the item. */
 	title: string;
+	/** URL or path to the background image. */
 	img: string;
+	/** Optional link target. If provided, the item renders as an `<a>` element. */
 	href?: string;
+	/** Link target attribute (e.g. `'_blank'`). Only applies if `href` is set. */
 	target?: string;
 }
 
 /**
  * Material Design 3 Expressive Carousel component.
- * Supports three layouts:
- *  - `multi-browse`: Shows a collection of items (large, medium, and small items).
- *  - `hero`: Focuses on one large item with a smaller item peeking.
- *  - `uncontained`: Standard same-sized layout bleeding off the edges.
  *
- * Attributes:
- *  - layout: 'multi-browse' | 'hero' | 'uncontained'
- *  - auto: if true, dynamically calculates items sizes to fit the container without gaps.
- *  - large-width: width of large items (used in non-auto mode or as a guideline).
- *  - medium-width: width of medium items (multi-browse layout).
- *  - small-width: width of small/peeking items.
- *  - gap: spacing between elements (default 8px).
- *  - padding: leading/trailing padding (default 16px).
- *  - border-radius: radius of cards (default 28px).
- *  - header-text: header title of the carousel.
- *  - show-all: renders a "Show all" action button/link.
- *  - show-all-text: customize the text for the "Show all" action.
+ * Carousels display a collection of related items in a scrollable, horizontal list.
+ * They allow users to quickly browse through items like images, cards, or products.
+ *
+ * **M3 spec reference:** `m3-docs/components/carousel/specs.md`
+ *
+ * **Layout variants:**
+ * - `multi-browse` (default) — Shows a mix of large, medium, and small (peeking)
+ *   items. Best for exploring a large number of items.
+ * - `hero` — Focuses on one large primary item while showing a sliver of the
+ *   next item. Best for featuring important content.
+ * - `uncontained` — Standard layout where all items have the same width and
+ *   bleed off the edges of the container.
+ *
+ * **Animation & Gestures:**
+ * This component uses GSAP for smooth drag, flick, and snap animations,
+ * mirroring the high-fidelity M3 Expressive motion specs. It handles touch
+ * gestures for mobile and mouse-drag for desktop.
+ *
+ * **Auto-sizing (`auto` mode):**
+ * When `auto=true` (default), the carousel measures its own width and
+ * dynamically calculates the optimal sizes for large, medium, and small items
+ * based on the active `layout` to ensure they fit perfectly without awkward gaps
+ * or clipping at the edges.
+ *
+ * @example
+ * ```html
+ * <!-- Declarative usage via DOM properties (recommended) -->
+ * <moni-carousel layout="hero"></moni-carousel>
+ * <script>
+ *   const carousel = document.querySelector('moni-carousel');
+ *   carousel.items = [
+ *     { title: 'Item 1', img: '/img1.jpg', href: '/link1' },
+ *     { title: 'Item 2', img: '/img2.jpg' }
+ *   ];
+ * </script>
+ *
+ * <!-- Slot-based usage (for SSR or simple static content) -->
+ * <moni-carousel layout="uncontained">
+ *   <div slot="item">
+ *     <img src="/img1.jpg" />
+ *     <h3>Static Item</h3>
+ *   </div>
+ * </moni-carousel>
+ * ```
+ *
+ * @slot item - Alternative to the `items` property. Slot individual HTML elements
+ *              instead of passing data objects.
+ *
+ * @csspart carousel - The outer wrapper.
+ * @csspart track    - The scrolling track element.
+ * @csspart item     - Individual carousel item containers.
+ * @csspart img      - The image elements inside the items.
+ * @csspart title    - The title text elements inside the items.
  */
 @customElement('moni-carousel')
 export class MoniCarousel extends MoniElement {

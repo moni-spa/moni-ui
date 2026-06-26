@@ -1,16 +1,51 @@
+/**
+ * @file components/moni-select-option.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Option item for custom moni-select dropdown.
+ * Material Design 3 Select Option component.
  *
- * Attributes:
- *  - value:    string value of the option
- *  - label:    text label (uses textContent or slot if empty)
- *  - group:    subcategory group/category name
- *  - selected: present -> active highlight state
- *  - disabled: present -> disabled
+ * An individual selectable item designed to be placed inside a
+ * `<moni-select>` dropdown.
+ *
+ * **Interaction and layout:**
+ * Options are rendered as accessible `<li>` elements styled identically to
+ * `<moni-menu-item>`. When slotted into a `<moni-select>`, the parent
+ * component extracts their `value`, `label`, and `group` attributes to build
+ * its internal data model and handles the actual selection logic, keyboard
+ * navigation, and rendering within the dropdown popup.
+ *
+ * **Grouping:**
+ * Options can be categorized into subcategories by providing a `group`
+ * attribute. The parent `<moni-select>` uses this to automatically generate
+ * group headers (`<moni-select-group>`) in the dropdown list.
+ *
+ * @example
+ * ```html
+ * <moni-select label="Favorite framework">
+ *   <!-- Standard option -->
+ *   <moni-select-option value="lit">Lit Element</moni-select-option>
+ *
+ *   <!-- Disabled option -->
+ *   <moni-select-option value="react" disabled>React (not allowed)</moni-select-option>
+ *
+ *   <!-- Grouped option -->
+ *   <moni-select-option value="vue" group="Other">Vue.js</moni-select-option>
+ * </moni-select>
+ * ```
+ *
+ * @slot default - The text label for the option. If the `label` attribute is
+ *                omitted, the parent `<moni-select>` will read this slot's
+ *                `textContent`.
+ *
+ * @csspart item - The outer `<li>` element.
  */
 @customElement('moni-select-option')
 export class MoniSelectOption extends MoniElement {

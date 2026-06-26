@@ -1,46 +1,51 @@
-@import 'tailwindcss';
+/**
+ * @file styles/tokens.css
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
 
-@theme {
-	/* ─── Material Design 3 Expressive tokens ─── */
-	--color-primary: var(--md-sys-color-primary);
-	--color-on-primary: var(--md-sys-color-on-primary);
-	--color-primary-container: var(--md-sys-color-primary-container);
-	--color-on-primary-container: var(--md-sys-color-on-primary-container);
+:root {
+	/* ─── Moni Design System core prefixed tokens ─── */
+	--moni-primary: var(--md-sys-color-primary, #6750a4);
+	--moni-on-primary: var(--md-sys-color-on-primary, #ffffff);
+	--moni-primary-container: var(--md-sys-color-primary-container, #eaddff);
+	--moni-on-primary-container: var(--md-sys-color-on-primary-container, #21005d);
 
-	--color-secondary: var(--md-sys-color-secondary);
-	--color-on-secondary: var(--md-sys-color-on-secondary);
-	--color-secondary-container: var(--md-sys-color-secondary-container);
-	--color-on-secondary-container: var(--md-sys-color-on-secondary-container);
+	--moni-secondary: var(--md-sys-color-secondary, #625b71);
+	--moni-on-secondary: var(--md-sys-color-on-secondary, #ffffff);
+	--moni-secondary-container: var(--md-sys-color-secondary-container, #e8def8);
+	--moni-on-secondary-container: var(--md-sys-color-on-secondary-container, #1d192b);
 
-	--color-tertiary: var(--md-sys-color-tertiary);
-	--color-on-tertiary: var(--md-sys-color-on-tertiary);
-	--color-tertiary-container: var(--md-sys-color-tertiary-container);
-	--color-on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+	--moni-tertiary: var(--md-sys-color-tertiary, #7d5260);
+	--moni-on-tertiary: var(--md-sys-color-on-tertiary, #ffffff);
+	--moni-tertiary-container: var(--md-sys-color-tertiary-container, #ffd8e4);
+	--moni-on-tertiary-container: var(--md-sys-color-on-tertiary-container, #31111d);
 
-	--color-error: var(--md-sys-color-error);
-	--color-on-error: var(--md-sys-color-on-error);
-	--color-error-container: var(--md-sys-color-error-container);
-	--color-on-error-container: var(--md-sys-color-on-error-container);
+	--moni-error: var(--md-sys-color-error, #b3261e);
+	--moni-on-error: var(--md-sys-color-on-error, #ffffff);
+	--moni-error-container: var(--md-sys-color-error-container, #f9dedc);
+	--moni-on-error-container: var(--md-sys-color-on-error-container, #410e0b);
 
-	--color-background: var(--md-sys-color-background);
-	--color-on-background: var(--md-sys-color-on-background);
-	--color-surface: var(--md-sys-color-surface);
-	--color-on-surface: var(--md-sys-color-on-surface);
-	--color-surface-variant: var(--md-sys-color-surface-variant);
-	--color-on-surface-variant: var(--md-sys-color-on-surface-variant);
+	--moni-background: var(--md-sys-color-background, #fef7ff);
+	--moni-on-background: var(--md-sys-color-on-background, #1d1b20);
+	--moni-surface: var(--md-sys-color-surface, #fef7ff);
+	--moni-on-surface: var(--md-sys-color-on-surface, #1d1b20);
+	--moni-surface-variant: var(--md-sys-color-surface-variant, #e7e0ec);
+	--moni-on-surface-variant: var(--md-sys-color-on-surface-variant, #49454f);
 
-	--color-outline: var(--md-sys-color-outline);
-	--color-outline-variant: var(--md-sys-color-outline-variant);
+	--moni-outline: var(--md-sys-color-outline, #79747e);
+	--moni-outline-variant: var(--md-sys-color-outline-variant, #cac4d0);
 
-	--color-surface-container-lowest: var(--md-sys-color-surface-container-lowest);
-	--color-surface-container-low: var(--md-sys-color-surface-container-low);
-	--color-surface-container: var(--md-sys-color-surface-container);
-	--color-surface-container-high: var(--md-sys-color-surface-container-high);
-	--color-surface-container-highest: var(--md-sys-color-surface-container-highest);
+	--moni-surface-container-lowest: var(--md-sys-color-surface-container-lowest, #ffffff);
+	--moni-surface-container-low: var(--md-sys-color-surface-container-low, #f7f2fa);
+	--moni-surface-container: var(--md-sys-color-surface-container, #f3edf7);
+	--moni-surface-container-high: var(--md-sys-color-surface-container-high, #ece6f0);
+	--moni-surface-container-highest: var(--md-sys-color-surface-container-highest, #e6e1e5);
 
-	--color-inverse-surface: var(--md-sys-color-inverse-surface);
-	--color-inverse-on-surface: var(--md-sys-color-inverse-on-surface);
-	--color-inverse-primary: var(--md-sys-color-inverse-primary);
+	--moni-inverse-surface: var(--md-sys-color-inverse-surface, #313033);
+	--moni-inverse-on-surface: var(--md-sys-color-inverse-on-surface, #f4f0f4);
+	--moni-inverse-primary: var(--md-sys-color-inverse-primary, #d0bcff);
 
 	/* ─── Semantic Moni tokens ─── */
 	--color-success: #16a34a;
@@ -126,65 +131,72 @@
 	--moni-grain-opacity: var(--moni-grain-opacity, 0.03);
 
 	/* ─── Legacy Moni tokens (fallback durante la migración) ─── */
-	--color-brand-bg: var(--md-sys-color-background);
-	--color-brand-surface: var(--md-sys-color-surface);
-	--color-brand-primary: var(--md-sys-color-on-surface);
-	--color-brand-muted: var(--md-sys-color-on-surface-variant);
-	--color-brand-border: var(--md-sys-color-outline-variant);
-	--color-brand-accent: var(--md-sys-color-primary);
+	--color-brand-bg: var(--moni-background);
+	--color-brand-surface: var(--moni-surface);
+	--color-brand-primary: var(--moni-on-surface);
+	--color-brand-muted: var(--moni-on-surface-variant);
+	--color-brand-border: var(--moni-outline-variant);
+	--color-brand-accent: var(--moni-primary);
 
-	--color-admin-bg: var(--md-sys-color-background);
-	--color-admin-surface: var(--md-sys-color-surface);
-	--color-admin-sidebar: var(--md-sys-color-inverse-surface);
-	--color-admin-sidebar-fg: var(--md-sys-color-inverse-on-surface);
-	--color-admin-sidebar-muted: var(--md-sys-color-inverse-on-surface);
-	--color-admin-accent: var(--md-sys-color-primary);
-	--color-admin-accent-soft: var(--md-sys-color-primary-container);
-	--color-admin-text: var(--md-sys-color-on-surface);
+	--color-admin-bg: var(--moni-background);
+	--color-admin-surface: var(--moni-surface);
+	--color-admin-sidebar: var(--moni-inverse-surface);
+	--color-admin-sidebar-fg: var(--moni-inverse-on-surface);
+	--color-admin-sidebar-muted: var(--moni-inverse-on-surface);
+	--color-admin-accent: var(--moni-primary);
+	--color-admin-accent-soft: var(--moni-primary-container);
+	--color-admin-text: var(--moni-on-surface);
 	--color-admin-success: var(--color-success);
 	--color-admin-warn: var(--color-warning);
 	--color-admin-danger: var(--color-danger);
 	--color-admin-info: var(--color-info);
-}
 
-:root {
-	--primary: var(--md-sys-color-primary);
-	--on-primary: var(--md-sys-color-on-primary);
-	--primary-container: var(--md-sys-color-primary-container);
-	--on-primary-container: var(--md-sys-color-on-primary-container);
+	/* ─── CSS compatibility aliases for Light DOM / external styling ─── */
+	--color-primary: var(--moni-primary);
+	--color-on-primary: var(--moni-on-primary);
+	--color-primary-container: var(--moni-primary-container);
+	--color-on-primary-container: var(--moni-on-primary-container);
 
-	--secondary: var(--md-sys-color-secondary);
-	--on-secondary: var(--md-sys-color-on-secondary);
-	--secondary-container: var(--md-sys-color-secondary-container);
-	--on-secondary-container: var(--md-sys-color-on-secondary-container);
+	--color-secondary: var(--moni-secondary);
+	--color-on-secondary: var(--moni-on-secondary);
+	--color-secondary-container: var(--moni-secondary-container);
+	--color-on-secondary-container: var(--moni-on-secondary-container);
 
-	--tertiary: var(--md-sys-color-tertiary);
-	--on-tertiary: var(--md-sys-color-on-tertiary);
-	--tertiary-container: var(--md-sys-color-tertiary-container);
-	--on-tertiary-container: var(--md-sys-color-on-tertiary-container);
+	--color-tertiary: var(--moni-tertiary);
+	--color-on-tertiary: var(--moni-on-tertiary);
+	--color-tertiary-container: var(--moni-tertiary-container);
+	--color-on-tertiary-container: var(--moni-on-tertiary-container);
 
-	--error: var(--md-sys-color-error);
-	--on-error: var(--md-sys-color-on-error);
-	--error-container: var(--md-sys-color-error-container);
-	--on-error-container: var(--md-sys-color-on-error-container);
+	--color-error: var(--moni-error);
+	--color-on-error: var(--moni-on-error);
+	--color-error-container: var(--moni-error-container);
+	--color-on-error-container: var(--moni-on-error-container);
 
-	--background: var(--md-sys-color-background);
-	--on-background: var(--md-sys-color-on-background);
-	--surface: var(--md-sys-color-surface);
-	--on-surface: var(--md-sys-color-on-surface);
-	--surface-variant: var(--md-sys-color-surface-variant);
-	--on-surface-variant: var(--md-sys-color-on-surface-variant);
+	--color-background: var(--moni-background);
+	--color-on-background: var(--moni-on-background);
+	--color-surface: var(--moni-surface);
+	--color-on-surface: var(--moni-on-surface);
+	--color-surface-variant: var(--moni-surface-variant);
+	--color-on-surface-variant: var(--moni-on-surface-variant);
 
-	--outline: var(--md-sys-color-outline);
-	--outline-variant: var(--md-sys-color-outline-variant);
+	--color-outline: var(--moni-outline);
+	--color-outline-variant: var(--moni-outline-variant);
 
-	--surface-container-lowest: var(--md-sys-color-surface-container-lowest);
-	--surface-container-low: var(--md-sys-color-surface-container-low);
-	--surface-container: var(--md-sys-color-surface-container);
-	--surface-container-high: var(--md-sys-color-surface-container-high);
-	--surface-container-highest: var(--md-sys-color-surface-container-highest);
+	--color-surface-container-lowest: var(--moni-surface-container-lowest);
+	--color-surface-container-low: var(--moni-surface-container-low);
+	--color-surface-container: var(--moni-surface-container);
+	--color-surface-container-high: var(--moni-surface-container-high);
+	--color-surface-container-highest: var(--moni-surface-container-highest);
 
-	--inverse-surface: var(--md-sys-color-inverse-surface);
-	--inverse-on-surface: var(--md-sys-color-inverse-on-surface);
-	--inverse-primary: var(--md-sys-color-inverse-primary);
+	--color-inverse-surface: var(--moni-inverse-surface);
+	--color-inverse-on-surface: var(--moni-inverse-on-surface);
+	--color-inverse-primary: var(--moni-inverse-primary);
+
+	/* Deprecated global variables fallback (can be disabled if conflicting) */
+	--primary: var(--moni-primary);
+	--on-primary: var(--moni-on-primary);
+	--background: var(--moni-background);
+	--surface: var(--moni-surface);
+	--on-surface: var(--moni-on-surface);
+	--outline: var(--moni-outline);
 }

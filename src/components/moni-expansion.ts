@@ -1,17 +1,54 @@
+/**
+ * @file components/moni-expansion.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only expansion panel. Renders a `<details>` element.
+ * Material Design 3 Expansion panel component.
  *
- * Attributes:
- *  - open: present → panel expanded
- *  - title: heading text for the summary
+ * A lightweight wrapper around the native HTML `<details>` and `<summary>`
+ * elements, styled according to M3 surface and elevation guidelines.
+ * Expansion panels contain creation flows and allow lightweight editing of an element.
  *
- * Slots:
- *  - default:  panel body
- *  - summary:  custom summary content (overrides title)
+ * **Visual architecture:**
+ * The component renders a `<details>` element with a `<summary>` that acts
+ * as the expandable header. The default slot content is placed inside the
+ * `<details>` tag (but outside the `<summary>`), naturally hiding and showing
+ * based on the native behavior. An M3 `expand_more` icon is added via a CSS
+ * `::after` pseudo-element and rotates when the panel is open.
+ *
+ * **Usage:**
+ * Set the `title` attribute for a simple text header, or use the `summary`
+ * slot to project custom rich content (like icons or secondary text) into the
+ * header area.
+ *
+ * @example
+ * ```html
+ * <!-- Simple text title -->
+ * <moni-expansion title="Advanced Settings">
+ *   <p>Enable developer mode features here.</p>
+ * </moni-expansion>
+ *
+ * <!-- Rich summary content via slot -->
+ * <moni-expansion open>
+ *   <div slot="summary" style="display: flex; gap: 8px;">
+ *     <moni-icon>person</moni-icon>
+ *     <span>Personal Information</span>
+ *   </div>
+ *   <form>
+ *     <moni-text-field label="Name"></moni-text-field>
+ *   </form>
+ * </moni-expansion>
+ * ```
+ *
+ * @slot default - The content of the expansion panel body.
+ * @slot summary - Custom header content (overrides the `title` attribute).
  */
 @customElement('moni-expansion')
 export class MoniExpansion extends MoniElement {

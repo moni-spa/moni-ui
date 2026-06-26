@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-fab-menu.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
@@ -6,28 +13,41 @@ import './moni-icon.js';
 import type { MoniFab } from './moni-fab.js';
 
 /**
- * Visual-only FAB menu. Combines a main `<moni-fab>` trigger with a `<menu>`
- * of secondary FABs (slotted via default slot).
+ * Material Design 3 FAB Menu component.
  *
- * The component wires the trigger's `click` to toggle the `open` attribute.
- * Consumers can also set/unset the attribute externally for programmatic
- * control. The menu scales and fades via CSS transitions.
+ * A specialized container that combines a main `<moni-fab>` trigger with a
+ * `<menu>` of secondary FABs. It allows multiple actions to be tucked away
+ * behind a single primary Floating Action Button, reducing screen clutter.
  *
- * **Focus management** (M3 spec § FAB menu):
- *  - When `open` becomes true, focus moves to the first focusable item in
- *    the menu (or stays on the trigger if the menu is empty).
- *  - When `open` becomes false, focus returns to the trigger.
- *  - `Tab` cycles within the menu while open; `Escape` closes the menu.
- *  - Click outside the menu closes it.
+ * **M3 spec reference:** `m3-docs/components/floating-action-buttons/specs.md` (FAB menus)
  *
- * Attributes:
- *  - open:      present → menu is shown
- *  - icon:      Material Symbols name for the trigger
- *  - size:      small | medium (default) | large
- *  - color:     primary (default) | secondary | tertiary | surface
- *  - shape:     rounded (default) | circle
- *  - direction: up (default) | down | left | right
- *  - position:  same as moni-fab
+ * **Trigger and animation:**
+ * The component wires the primary trigger FAB's `click` event to toggle its
+ * internal `open` state. When `open=true`, the nested secondary FABs scale up
+ * and fade in via CSS transitions. Consumers can also control the `open` state
+ * programmatically by setting the attribute.
+ *
+ * **Focus management (Accessibility):**
+ * - When the menu opens, focus automatically moves to the first focusable
+ *   secondary item (or remains on the trigger if empty).
+ * - While open, the `Tab` key cycles focus strictly within the menu items to
+ *   prevent keyboard focus from escaping (focus trap).
+ * - Pressing `Escape` or clicking anywhere outside the menu closes it and
+ *   returns focus to the primary trigger FAB.
+ *
+ * @example
+ * ```html
+ * <!-- Bottom-trailing FAB menu opening upwards -->
+ * <moni-fab-menu icon="add" color="tertiary" direction="up">
+ *   <moni-fab size="small" icon="edit" label="Draft"></moni-fab>
+ *   <moni-fab size="small" icon="photo_camera" label="Camera"></moni-fab>
+ * </moni-fab-menu>
+ * ```
+ *
+ * @slot default - The secondary `<moni-fab>` elements that appear when open.
+ *
+ * @csspart trigger - The primary `<moni-fab>` trigger element.
+ * @csspart menu    - The `<menu>` container holding the secondary items.
  */
 @customElement('moni-fab-menu')
 export class MoniFabMenu extends MoniElement {

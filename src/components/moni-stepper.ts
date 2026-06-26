@@ -1,15 +1,53 @@
+/**
+ * @file components/moni-stepper.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import type { MoniStep } from './moni-step.js';
 
 /**
- * Visual-only stepper. Wraps a list of <moni-step> children, propagates the
- * `current` index to each child, and styles the connectors between them.
+ * Material Design 3 Stepper component.
  *
- * Attributes:
- *  - orientation: horizontal (default) | vertical
- *  - current:     zero-based index of the active step
+ * A container for a linear progression of `<moni-step>` elements. Steppers
+ * convey progress through numbered steps and indicate the user's current
+ * position within a flow.
+ *
+ * **M3 spec reference:** `m3-docs/components/progress-indicators/specs.md`
+ *
+ * **Orchestration:**
+ * This component acts as the orchestrator for its slotted `<moni-step>` children.
+ * Whenever the `current` property changes, or children are added/removed, the
+ * stepper iterates over all child steps and injects their state:
+ * - Assigns the sequential `index` (0-based) to each step.
+ * - Sets `active=true` on the step matching the `current` index.
+ * - Sets `completed=true` on all steps prior to the `current` index.
+ *
+ * **Visual layout:**
+ * The stepper manages the layout (flex row or column based on `orientation`)
+ * and ensures the connector lines between steps are rendered correctly via
+ * CSS pseudo-elements defined in the child `<moni-step>` styling.
+ *
+ * @example
+ * ```html
+ * <moni-stepper current="1" orientation="horizontal">
+ *   <moni-step title="Step 1"></moni-step>
+ *   <moni-step title="Step 2"></moni-step>
+ *   <moni-step title="Step 3"></moni-step>
+ * </moni-stepper>
+ *
+ * <script>
+ *   const stepper = document.querySelector('moni-stepper');
+ *   // Move to next step
+ *   stepper.current = 2;
+ * </script>
+ * ```
+ *
+ * @slot default - `<moni-step>` elements.
  */
 @customElement('moni-stepper')
 export class MoniStepper extends MoniElement {

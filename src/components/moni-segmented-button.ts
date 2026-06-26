@@ -1,26 +1,47 @@
+/**
+ * @file components/moni-segmented-button.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import { MoniButtonSegment } from './moni-button-segment.js';
 
 /**
+ * Material Design 3 Segmented Button component (Legacy).
+ *
  * A form-associated group of selectable segmented buttons.
  *
- * @deprecated since v0.3.0 — `moni-segmented-button` is **no longer
- * recommended** by Material Design 3 Expressive. Use
- * `moni-button-group[variant="connected"]` instead, which has the same
- * functionality with an updated visual design. See
- * `m3-docs/components/segmented-buttons/overview.md` § M3 Expressive update.
+ * **Deprecation Notice:** The M3 spec (`m3-docs/components/segmented-buttons/overview.md`)
+ * has updated the segmented button pattern. The bespoke segments have been
+ * replaced with standard `<moni-button>` elements grouped inside a
+ * `<moni-button-group variant="connected">`.
  *
  * This component continues to work for backward compatibility but will be
  * removed in v1.0. A deprecation warning is logged to the console when the
  * element is connected to the DOM.
  *
- * Attributes:
- *  - name:       Name of the control in forms
- *  - multi:      Whether multiple options can be selected
- *  - hide-check: Hides checkmarks on all child segments
- *  - gap:        Custom gap space (e.g. "8px" or "1rem")
+ * @deprecated Use `<moni-button-group variant="connected">` instead.
+ *
+ * @example
+ * ```html
+ * <!-- Legacy usage (not recommended) -->
+ * <moni-segmented-button name="view" multi>
+ *   <moni-button-segment value="day">Day</moni-button-segment>
+ *   <moni-button-segment value="week">Week</moni-button-segment>
+ * </moni-segmented-button>
+ *
+ * <!-- Modern M3 equivalent -->
+ * <moni-button-group variant="connected">
+ *   <moni-button>Day</moni-button>
+ *   <moni-button>Week</moni-button>
+ * </moni-button-group>
+ * ```
+ *
+ * @slot default - `<moni-button-segment>` elements.
  */
 @customElement('moni-segmented-button')
 export class MoniSegmentedButton extends MoniElement {

@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-nav-item.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -5,15 +12,49 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Visual-only navigation item. Renders an `<a>` styled with the BeerCSS
- * nav link helper.
+ * Material Design 3 Navigation Item component.
  *
- * Attributes:
- *  - href:     link target
- *  - target:   link target
- *  - icon:     Material Symbols name
- *  - label:    link text
- *  - active:   present → active style
+ * A single destination item within a `<moni-nav>` container. Renders as an
+ * accessible `<a>` element with an icon, label, and M3 state layer.
+ *
+ * **M3 spec references:**
+ * - Navigation bar item: `m3-docs/components/navigation-bar/specs.md`
+ * - Navigation rail item: `m3-docs/components/navigation-rail/specs.md`
+ * - Navigation drawer item: `m3-docs/components/navigation-drawer/specs.md`
+ *
+ * **Layout adaptation:**
+ * The `placement`, `variant`, and `layout` properties are forwarded from
+ * the parent `<moni-nav>` (typically via attribute binding in the parent's
+ * render method). The nav item uses these to conditionally render:
+ * - Icon + label below (navigation bar).
+ * - Icon only + horizontal label (rail).
+ * - Icon + full label (drawer).
+ *
+ * **Responsive behavior:**
+ * Uses `window.matchMedia('(min-width: 601px)')` to detect medium screens
+ * and stores the result in `_isMediumScreen`. This drives automatic layout
+ * switching between bar and rail styles.
+ *
+ * **Active state:**
+ * The `active` attribute applies the M3 active indicator: a pill-shaped
+ * `secondary-container` background behind the icon and a darker label color.
+ *
+ * @example
+ * ```html
+ * <moni-nav placement="bottom">
+ *   <moni-nav-item href="/" icon="home" label="Home" active></moni-nav-item>
+ *   <moni-nav-item href="/search" icon="search" label="Search"></moni-nav-item>
+ *   <moni-nav-item href="/profile" icon="person" label="Profile">
+ *     <moni-badge value="3"></moni-badge>  <!-- notification badge -->
+ *   </moni-nav-item>
+ * </moni-nav>
+ * ```
+ *
+ * @slot default - Additional content slotted after the icon (e.g. `<moni-badge>`).
+ *
+ * @csspart item   - The outer `<a>` element.
+ * @csspart icon   - The icon container.
+ * @csspart label  - The label text element.
  */
 @customElement('moni-nav-item')
 export class MoniNavItem extends MoniElement {

@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-switch.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -5,33 +12,111 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Switch styled per Material Design 3 specs.
+ * Material Design 3 Switch component.
  *
- * M3 measurements (`m3-docs/components/switch/specs.md`):
- *  - Track: 52dp × 32dp, 2dp outline, full corner radius
- *  - Handle (thumb): 16dp unselected, 24dp selected, 28dp pressed
- *  - State layer: 40dp circular ripple on hover/focus/pressed
- *  - Icon (optional): 16dp on selected and/or unselected handle
+ * Switches toggle the state of a single setting on or off. They are the
+ * binary on/off equivalent of a checkbox, but optimized for toggling a
+ * single state rather than selecting from a list.
  *
- * Attributes:
- *  - label:    text label (displayed to the right of the switch)
- *  - checked:  present
- *  - disabled: present
- *  - icon:     present → renders check/close icons inside the thumb
- *  - name:     forwarded to input.name
- *  - value:    forwarded to input.value
+ * **M3 spec reference:** `m3-docs/components/switch/specs.md`
+ *
+ * **M3 measurements:**
+ * - Track: 52dp × 32dp, 2dp border, full-radius pill shape.
+ * - Handle (thumb): 16dp unselected → 24dp selected → 28dp pressed.
+ * - State layer: 40dp circular ripple on hover/focus/pressed states.
+ * - Icon (optional): 16dp icon rendered inside the thumb when `icon` is set.
+ *
+ * **Visual architecture:**
+ * Like `<moni-checkbox>`, the native `<input type="checkbox" role="switch">`
+ * occupies real layout space but is visually hidden via `opacity: 0`. Two
+ * `<span>` pseudo-elements render the track (`::after`) and thumb (`::before`).
+ * When `icon=true`, `<i>` elements render `close` and `check` glyphs inside
+ * the thumb, with visibility toggled via CSS based on the checked state.
+ *
+ * @fires change - Bubbles and is composed. Fired when the switch is toggled.
+ *                 Read `element.checked` for the new state.
+ *
+ * @example
+ * ```html
+ * <moni-switch label="Dark mode" name="dark-mode"></moni-switch>
+ * <moni-switch icon checked label="Notifications"></moni-switch>
+ *
+ * <script>
+ *   document.querySelector('moni-switch').addEventListener('change', (e) => {
+ *     console.log('enabled:', e.target.checked);
+ *   });
+ * </script>
+ * ```
+ *
+ * @csspart switch - The outer `<label>` element containing the switch.
  */
 @customElement('moni-switch')
 export class MoniSwitch extends MoniElement {
+	/**
+	 * Text label displayed to the right of the switch.
+	 *
+	 * When non-empty, renders as a padded text span after the track.
+	 * When empty, the default slot is rendered, allowing custom HTML labels.
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) label = '';
+
+	/**
+	 * Whether the switch is in the "on" (checked) state.
+	 *
+	 * When `true`:
+	 * - Track fills with `--primary` color.
+	 * - Thumb grows from 16dp to 24dp and slides to the trailing edge.
+	 * - Thumb color changes to `--on-primary`.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) checked = false;
+
+	/**
+	 * When `true`, the switch is non-interactive and renders at 50% opacity.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * When `true`, renders icon glyphs inside the thumb.
+	 *
+	 * Uses Material Symbols ligatures:
+	 * - Unchecked state: `close` icon.
+	 * - Checked state: `check` icon.
+	 *
+	 * The icon size (16dp) is set via the `--_thumb` CSS custom property.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) icon = false;
+
+	/**
+	 * Forwarded to the native `<input name>` attribute for form participation.
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) name = '';
+
+	/**
+	 * Forwarded to the native `<input value>` attribute.
+	 * The value submitted in a form when this switch is checked.
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) value = '';
 
+	/** Direct reference to the native input element for programmatic access. */
 	@query('input') private _input!: HTMLInputElement;
 
+	/**
+	 * Syncs `checked` and `disabled` imperatively to the native input after render.
+	 *
+	 * @param changed - Map of changed property names to their previous values.
+	 */
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
 			if (changed.has('checked')) this._input.checked = this.checked;
@@ -39,6 +124,14 @@ export class MoniSwitch extends MoniElement {
 		}
 	}
 
+	/**
+	 * Handles the native input `change` event.
+	 *
+	 * Updates `this.checked` and re-dispatches a composed `'change'` event
+	 * so it bubbles across shadow DOM boundaries.
+	 *
+	 * @param e - The native `change` event from the hidden `<input>`.
+	 */
 	private _onChange(e: Event) {
 		this.checked = (e.target as HTMLInputElement).checked;
 		this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));

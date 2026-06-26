@@ -1,40 +1,133 @@
+/**
+ * @file components/moni-progress.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, svg, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Progress indicator that faithfully ports BeerCSS's progress styles.
+ * Material Design 3 Progress Indicator component.
  *
- * BeerCSS uses the native <progress> element with `::after`, `::before` and
- * `mask-image` pseudo-elements. Those don't work inside Shadow DOM because:
- *  - `<progress>` native pseudo-elements (::webkit-progress-value, ::after)
- *    are blocked by the UA shadow root in Chrome/Firefox within a custom shadow.
- *  - `mask-image` on those pseudo-elements doesn't apply at all in shadows.
+ * Progress indicators express an unspecified wait time or display the length
+ * of a process. They inform users about the status of ongoing processes such
+ * as loading an app, submitting a form, or saving updates.
  *
- * Solution: use a plain <div> wrapper that replicates BeerCSS's visual rules
- * exactly, and an SVG for the circular variant (matching BeerCSS's conic-gradient
- * approach but with SVG stroke for better cross-browser support).
+ * **M3 spec reference:** `m3-docs/components/progress-indicators/specs.md`
  *
- * Attributes:
- *  - value:         0..max (omit for indeterminate)
- *  - max:           upper bound (default 100)
- *  - variant:       linear (default) | circular | wavy | circular-wavy
- *  - size:          small | medium (default) | large
- *  - indeterminate: present → infinite animation
+ * **Variants:**
+ * - `linear` (default) — A horizontal bar that fills left-to-right.
+ * - `circular` — A circular SVG stroke indicator.
+ * - `wavy` — An animated wave bar (Moni extension; not in M3 spec).
+ * - `circular-wavy` — Circular + wave combo (Moni extension).
+ *
+ * **Shadow DOM compatibility note:**
+ * BeerCSS's progress uses native `<progress>` pseudo-elements (`::before`,
+ * `::after`, `::webkit-progress-value`) and `mask-image`, which are blocked
+ * by the UA shadow root in Chrome/Firefox. This component uses a plain `<div>`
+ * wrapper that replicates the visual rules exactly, and an `<svg>` element
+ * for the circular variant using SVG stroke-dashoffset animation for superior
+ * cross-browser support compared to `conic-gradient`.
+ *
+ * **Percentage computation:**
+ * `_pct` is computed in `willUpdate()` as `(value / max) * 100`, clamped to
+ * `[0, 100]`. When `indeterminate` is set, `_pct` is fixed at `50` to drive
+ * the infinite loop animation.
+ *
+ * @example
+ * ```html
+ * <!-- Determinate linear progress -->
+ * <moni-progress value="65" max="100"></moni-progress>
+ *
+ * <!-- Indeterminate circular progress (loading spinner) -->
+ * <moni-progress variant="circular" indeterminate></moni-progress>
+ * ```
+ *
+ * @csspart bar      - The outer container div.
+ * @csspart fill     - The inner fill element (linear variant).
+ * @csspart svg      - The SVG element (circular variant).
  */
 @customElement('moni-progress')
 export class MoniProgress extends MoniElement {
+	/**
+	 * Current progress value.
+	 *
+	 * Must be in the range `[0, max]`. Values outside this range are clamped
+	 * during percentage computation in `willUpdate()`. Ignored when
+	 * `indeterminate` is set.
+	 *
+	 * @default 0
+	 */
 	@property({ type: Number, reflect: true }) value = 0;
+
+	/**
+	 * Maximum value of the progress range.
+	 *
+	 * Defaults to `100` so `value` can be set as a percentage directly.
+	 * For non-percentage ranges (e.g. steps), set `max` to the total step count
+	 * and `value` to the current step.
+	 *
+	 * @default 100
+	 */
 	@property({ type: Number, reflect: true }) max = 100;
+
+	/**
+	 * Visual variant of the progress indicator.
+	 *
+	 * - `'linear'` (default) — Horizontal fill bar.
+	 * - `'circular'` — SVG circle with stroke-dashoffset animation.
+	 * - `'wavy'` — Animated wave bar.
+	 * - `'circular-wavy'` — Combination of circular and wave.
+	 *
+	 * @default 'linear'
+	 */
 	@property({ reflect: true })
 	variant: 'linear' | 'circular' | 'wavy' | 'circular-wavy' = 'linear';
+
+	/**
+	 * Visual size of the progress indicator.
+	 *
+	 * - `'small'`  — Compact; suitable for inline or tight layouts.
+	 * - `'medium'` — Standard M3 size (default).
+	 * - `'large'`  — Prominent; for full-page loading states.
+	 *
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' = 'medium';
+
+	/**
+	 * When `true`, the indicator animates in an infinite loop regardless of `value`.
+	 *
+	 * Use for operations where the completion percentage is unknown
+	 * (e.g. network requests, file processing). When `indeterminate` is set,
+	 * `_pct` is fixed at `50` to drive a continuous sweep animation.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) indeterminate = false;
 
-	/** Computed fill percentage (0-100) used in styles/SVG */
+	/**
+	 * Computed fill percentage in the range `[0, 100]`.
+	 *
+	 * Updated in `willUpdate()` whenever `value`, `max`, or `indeterminate` changes.
+	 * Used directly in CSS custom property bindings and SVG stroke attributes.
+	 *
+	 * @internal
+	 */
 	@state() private _pct = 0;
 
+	/**
+	 * Computes the fill percentage before each render.
+	 *
+	 * Recalculates `_pct` whenever `value`, `max`, or `indeterminate` changes.
+	 * The `Math.max(1, max)` guard prevents division-by-zero when `max` is 0.
+	 *
+	 * @param changed - Map of property names to their previous values.
+	 */
 	override willUpdate(changed: Map<string, unknown>) {
 		if (changed.has('value') || changed.has('max') || changed.has('indeterminate')) {
 			this._pct = this.indeterminate

@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-morph-modal.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
@@ -36,6 +43,11 @@ type Placement =
 	| 'viewport-bottom-left'
 	| 'viewport-bottom-right';
 
+/**
+ * Internal coordinate and styling state of the morph target before animation.
+ *
+ * @internal
+ */
 interface TargetState {
 	rect: DOMRect;
 	backgroundColor: string;
@@ -43,40 +55,62 @@ interface TargetState {
 	borderRadius: string;
 }
 
+/**
+ * References to the internal icon and text elements animated during the morph.
+ *
+ * @internal
+ */
 interface MorphElements {
 	text: HTMLElement | null;
 	icon: HTMLElement | null;
 }
 
 /**
- * Morph-modal: abre un panel Material Design 3 a partir de cualquier elemento
- * del DOM usando una animación FLIP (First / Last / Invert / Play) con GSAP.
+ * Material Design 3 Morph Modal component.
  *
- * El elemento disparador (`target`) no se modifica estructuralmente; solo se
- * lee su rectángulo y estilos computados para hacer coincidir el punto inicial
- * de la morph-animation. El contenido del panel se declara dentro del propio
- * componente, de forma recursiva: dentro de un `<moni-morph-modal>` abierto se
- * puede declarar otro `<moni-morph-modal>` apuntando a un botón interior.
+ * A highly interactive dialog that uses GSAP FLIP (First, Last, Invert, Play)
+ * animations to seamlessly "morph" any clicked element on the page into a full
+ * modal surface, and morph it back when closed.
  *
- * Attributes:
- *  - target:               selector CSS del elemento disparador.
- *  - open:                 estado abierto/cerrado (reflejado).
- *  - modal:                si se muestra fondo oscuro (scrim).
- *  - placement:            posición final del panel expandido.
- *  - expanded-width:       ancho del panel (px, rem, %, vw).
- *  - expanded-height:      alto del panel (px, rem, %, vh).
- *  - close-on-click-outside: cierra al clicar fuera.
- *  - close-on-esc:         cierra con Escape.
- *  - show-close-button:    muestra una “X” en el header.
- *  - morph-label:          anima el label/icono del target hacia el header.
- *  - morph-label-selector: selector dentro del target para targets arbitrarios.
+ * **Motion choreography:**
+ * This component implements the complex M3 container transform pattern. When
+ * triggered, the source element visually expands into the modal. The modal's
+ * background color, border radius, and typography fade and cross-dissolve
+ * perfectly with the origin element.
  *
- * Slots:
- *  - default: cuerpo del panel.
- *  - header:  encabezado.
- *  - footer:  acciones al pie.
- *  - trigger-label: contenido explícito a animar desde el target.
+ * **Triggering mechanism:**
+ * Consumers must provide the `triggerEvent` property containing the original
+ * pointer/click `Event` that initiated the open action. The component extracts
+ * the `event.target` (or uses `clientX/Y` as a fallback) to determine the exact
+ * origin coordinates for the GSAP FLIP animation.
+ *
+ * **Dialog behavior:**
+ * Internally, it uses the native `<dialog>` element. It traps focus, supports
+ * `Escape` to close, and handles scrim/backdrop clicks (which trigger the
+ * reverse morph animation before actually closing the native dialog).
+ *
+ * @example
+ * ```html
+ * <moni-morph-modal id="myModal" title="Details">
+ *   <p>This modal morphed from the button you just clicked.</p>
+ * </moni-morph-modal>
+ *
+ * <moni-button id="openBtn">Open Details</moni-button>
+ *
+ * <script>
+ *   const modal = document.getElementById('myModal');
+ *   document.getElementById('openBtn').addEventListener('click', (e) => {
+ *     modal.triggerEvent = e; // Pass the event so it knows where to morph from
+ *     modal.open = true;
+ *   });
+ * </script>
+ * ```
+ *
+ * @slot default - The main body content of the modal.
+ * @slot header  - Custom header content (overrides `title` attribute).
+ * @slot actions - Action buttons displayed at the bottom right.
  */
+
 const litBool = {
 	fromAttribute: (value: string | null) => value !== 'false' && value !== null,
 	toAttribute: (value: boolean) => (value ? '' : null)

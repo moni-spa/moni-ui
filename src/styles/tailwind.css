@@ -1,0 +1,67 @@
+/**
+ * @file styles/tailwind.css
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
+@import 'tailwindcss';
+
+@theme {
+	/* ─── Material Design 3 Expressive tokens integration ─── */
+	--color-primary: var(--moni-primary);
+	--color-on-primary: var(--moni-on-primary);
+	--color-primary-container: var(--moni-primary-container);
+	--color-on-primary-container: var(--moni-on-primary-container);
+
+	--color-secondary: var(--moni-secondary);
+	--color-on-secondary: var(--moni-on-secondary);
+	--color-secondary-container: var(--moni-secondary-container);
+	--color-on-secondary-container: var(--moni-on-secondary-container);
+
+	--color-tertiary: var(--moni-tertiary);
+	--color-on-tertiary: var(--moni-on-tertiary);
+	--color-tertiary-container: var(--moni-tertiary-container);
+	--color-on-tertiary-container: var(--moni-on-tertiary-container);
+
+	--color-error: var(--moni-error);
+	--color-on-error: var(--moni-on-error);
+	--color-error-container: var(--moni-error-container);
+	--color-on-error-container: var(--moni-on-error-container);
+
+	--color-background: var(--moni-background);
+	--color-on-background: var(--moni-on-background);
+	--color-surface: var(--moni-surface);
+	--color-on-surface: var(--moni-on-surface);
+	--color-surface-variant: var(--moni-surface-variant);
+	--color-on-surface-variant: var(--moni-on-surface-variant);
+
+	--color-outline: var(--moni-outline);
+	--color-outline-variant: var(--moni-outline-variant);
+
+	--color-surface-container-lowest: var(--moni-surface-container-lowest);
+	--color-surface-container-low: var(--moni-surface-container-low);
+	--color-surface-container: var(--moni-surface-container);
+	--color-surface-container-high: var(--moni-surface-container-high);
+	--color-surface-container-highest: var(--moni-surface-container-highest);
+
+	--color-inverse-surface: var(--moni-inverse-surface);
+	--color-inverse-on-surface: var(--moni-inverse-on-surface);
+	--color-inverse-primary: var(--moni-inverse-primary);
+
+	/* ─── Typography ─── */
+	--font-sans: var(--moni-font-sans, 'Geist', system-ui, -apple-system, sans-serif);
+	--font-serif: var(--moni-font-title, 'Instrument Serif', Georgia, serif);
+	--font-mono: 'Geist Mono', 'Fira Code', monospace;
+	--font-brand: var(--moni-font-sans, 'Geist', system-ui, sans-serif);
+	--font-title: var(--moni-font-title, 'Instrument Serif', Georgia, serif);
+	--font-icon: var(--moni-font-icon, 'Material Symbols Rounded');
+
+	/* ─── Radius scale ─── */
+	--radius-base: var(--moni-radius-base, 12px);
+	--radius-sm: calc(var(--moni-radius-base, 12px) * 0.5);
+	--radius-md: var(--moni-radius-base, 12px);
+	--radius-lg: calc(var(--moni-radius-base, 12px) * 1.5);
+	--radius-xl: calc(var(--moni-radius-base, 12px) * 2);
+	--radius-full: 9999px;
+}

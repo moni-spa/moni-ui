@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-color-field.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -5,12 +12,44 @@ import { classMap } from 'lit/directives/class-map.js';
 import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
 
 /**
- * Visual-only color field. Renders a hidden `<input type="color">` plus a
- * preview swatch and a read-only text display of the current value.
+ * Material Design 3 Color Field component.
  *
- * Attributes:
- *  - name, label, value, variant, size, shape, disabled, helper, error,
- *    error-text, placeholder — see moni-text-field.
+ * A specialized text field for color input that combines a native
+ * `<input type="color">` with a read-only text display of the selected
+ * hex value, wrapped in the standard M3 field shell.
+ *
+ * **Visual architecture:**
+ * Extends the field styling pattern used by `<moni-text-field>`. The
+ * leading icon slot is replaced by a circular color swatch (`.swatch`)
+ * which is absolutely positioned over an invisible native color input.
+ * Clicking the swatch opens the system color picker. The text input portion
+ * displays the selected hex code and is strictly `readOnly`.
+ *
+ * **State syncing:**
+ * The component listens to the native `change` event on the color input,
+ * updates the `value` property, and re-dispatches a composed `'change'` event.
+ * It does not listen to `input` (continuous drag in the color picker) to avoid
+ * excessive event firing, but consumers can attach their own `input` listeners
+ * directly to the element if live preview is needed.
+ *
+ * @fires change - Bubbles and is composed. Fired when the color picker closes
+ *                 and the value is committed. Read `element.value`.
+ *
+ * @example
+ * ```html
+ * <moni-color-field
+ *   label="Theme Color"
+ *   name="primaryColor"
+ *   value="#6750a4"
+ *   variant="outlined"
+ * ></moni-color-field>
+ * ```
+ *
+ * @csspart field       - The outer `.field` div container.
+ * @csspart swatch      - The circular color preview element.
+ * @csspart input-color - The native, visually hidden `<input type="color">`.
+ * @csspart input-text  - The native `<input type="text">` displaying the hex code.
+ * @csspart label       - The floating `<label>` element.
  */
 @customElement('moni-color-field')
 export class MoniColorField extends MoniElement {

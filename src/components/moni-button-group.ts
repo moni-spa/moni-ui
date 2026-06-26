@@ -1,34 +1,61 @@
+/**
+ * @file components/moni-button-group.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only button group. Organizes `moni-button` or `moni-icon-button`
- * components in a row.
+ * Material Design 3 Button Group component.
  *
- * **`variant="connected"`** is the Material Design 3 Expressive replacement
- * for the deprecated `moni-segmented-button` (see
- * `m3-docs/components/segmented-buttons/overview.md` § M3 Expressive update).
- * In connected mode, segments share borders via propagated `shape` values
- * (`left-round-flat`, `no-round`, `right-round-flat` for a gap-less row), and
- * the group manages single/multi-select toggle state. This is the
- * **only Moni component that intentionally uses `@click` listeners** —
- * toggle behavior is essential to the M3 connected button group semantics.
+ * Organizes multiple `<moni-button>` or `<moni-icon-button>` components
+ * into a single row.
  *
- * Accessibility:
- *  - The host renders `role="group"` (configurable via `role` attribute).
- *  - `aria-label` / `aria-labelledby` should be set by the consumer to
- *    identify the group to assistive technology.
+ * **Variants:**
+ * - `standard` (default) — A simple flex row with a gap between buttons.
+ * - `connected` — The M3 Expressive replacement for segmented buttons. In this
+ *   mode, buttons share borders and form a single continuous pill shape. The
+ *   group manages the single/multi-select toggle state of its children.
  *
- * Attributes:
- *  - variant:    standard (default) | connected
- *  - size:       small | medium (default) | large | extra
- *  - multi:      boolean (default false) — multiple toggles allowed
- *  - gap:        custom gap space (e.g. "8px" or "1rem"); in `connected`
- *                variant the default is 0.125rem (2dp) per M3 spec
- *  - role:       ARIA role override (default "group")
- *  - label:      aria-label for the group
- *  - labelled-by: aria-labelledby reference
+ * **`connected` variant details:**
+ * - **Shape propagation:** The group automatically propagates M3 shape classes
+ *   (`left-round-flat`, `no-round`, `right-round-flat`) to its children so
+ *   they interlock seamlessly.
+ * - **Toggle management:** The group listens to child clicks and toggles their
+ *   `active` attributes. When `multi=false` (default), only one button can be
+ *   active at a time (radio button behavior). When `multi=true`, multiple buttons
+ *   can be active (checkbox behavior).
+ * - **Event propagation:** Fires a `'change'` event when the selection changes.
+ *
+ * **Accessibility:**
+ * - Renders with `role="group"` (can be overridden to `toolbar` or `radiogroup`).
+ * - Consumers should provide an `aria-label` or `aria-labelledby` attribute
+ *   to identify the group's purpose to assistive technologies.
+ *
+ * @fires change - Fired when a button is clicked in `connected` mode and the
+ *                 selection state updates.
+ *
+ * @example
+ * ```html
+ * <!-- Connected single-select group -->
+ * <moni-button-group variant="connected" label="Alignment">
+ *   <moni-button icon="format_align_left" active></moni-button>
+ *   <moni-button icon="format_align_center"></moni-button>
+ *   <moni-button icon="format_align_right"></moni-button>
+ * </moni-button-group>
+ *
+ * <!-- Standard button row -->
+ * <moni-button-group gap="1rem">
+ *   <moni-button variant="text">Cancel</moni-button>
+ *   <moni-button>Save</moni-button>
+ * </moni-button-group>
+ * ```
+ *
+ * @slot default - The `<moni-button>` elements that make up the group.
  */
 @customElement('moni-button-group')
 export class MoniButtonGroup extends MoniElement {

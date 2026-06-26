@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-button.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -6,41 +13,54 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Visual-only button. Renders a native `<button>` styled per Material 3 Expressive.
+ * Material Design 3 Button component.
  *
- * **Shape morph on press** (`m3-docs/components/buttons/specs.md` § Shape morph):
- * round and square buttons both morph to the same pressed shape, with per-size
- * corner radii: XS 8dp, S 8dp, M 12dp, L 16dp, XL 16dp. The per-size rules
- * `.button.{xsmall,small,large,xlarge,extra}:active` override the default
- * `:active` rule by specificity (0,4,0 vs 0,3,0).
+ * Buttons allow users to take actions and make choices with a single tap.
+ * This component provides all M3 button variants, sizes, and shape morphing
+ * capabilities (e.g. morphing to a pill shape on press or toggle).
  *
- * **Shape morph on selected** (toggle): when `active` is true, the resting
- * shape flips (round ↔ square). See `render()`.
+ * **M3 spec reference:** `m3-docs/components/buttons/specs.md`
  *
- * Attributes:
- *  - variant:   filled (default) | tonal | elevated | outlined | text | fill
- *  - size:      xsmall | small | medium (default) | large | xlarge
- *               (legacy `extra` alias for `xlarge`, deprecated in v0.3.0)
- *  - shape:     round (default) | square | circle | no-round
- *               | left-round | right-round | top-round | bottom-round
- *               | left-round-flat | right-round-flat | top-round-flat
- *               | bottom-round-flat | inner-round
- *               (the `-flat` and `inner-round` shapes are Moni brand
- *                extensions; not part of M3 — see WEB_COMPONENT_GUIDELINES.md)
- *  - disabled:  present → native disabled
- *  - loading:   present → shows an indeterminate circular progress
- *  - active:    present → toggle (selection) state; applies shape morph
- *               (round↔square) and variant-specific color swap
- *  - icon:      Material Symbols name to prepend
- *  - icon-trailing: Material Symbols name to append
- *  - type:      button (default) | submit | reset
- *  - href:      present → renders as `<a>` instead of `<button>`
- *  - target:    for `<a>` rendering
+ * **Variants:**
+ * - `filled` (default) — High emphasis. Use for primary actions.
+ * - `tonal` — Medium emphasis. Secondary actions that still need to stand out.
+ * - `elevated` — Medium emphasis with shadow. Used when sitting on patterned backgrounds.
+ * - `outlined` — Medium emphasis, no fill. Secondary or tertiary actions.
+ * - `text` — Low emphasis. Tertiary actions (e.g. dialog cancel button).
  *
- * Slots:
- *  - default:   button label
- *  - icon:      optional override for the leading icon
- *  - icon-trailing: optional override for the trailing icon
+ * **Shape morphing (M3 Expressive feature):**
+ * - On press (active state): Round and square buttons morph to a slightly squarer
+ *   "pressed" shape with specific M3 corner radii (e.g. XS/S 8dp, M 12dp).
+ * - On toggle (`active` attribute): The resting shape flips (e.g. round ↔ square).
+ *
+ * **Rendering as a link:**
+ * When the `href` attribute is provided, the component internally renders as
+ * an `<a>` element instead of a `<button>`, allowing native routing and
+ * middle-click (open in new tab) behaviors while maintaining button visuals.
+ *
+ * @example
+ * ```html
+ * <!-- Primary filled button -->
+ * <moni-button icon="add">Create new</moni-button>
+ *
+ * <!-- Outlined button -->
+ * <moni-button variant="outlined">Cancel</moni-button>
+ *
+ * <!-- Toggle button (toggles active state on click) -->
+ * <moni-button icon="favorite" active>Like</moni-button>
+ *
+ * <!-- Link button -->
+ * <moni-button href="/settings" icon="settings">Settings</moni-button>
+ * ```
+ *
+ * @slot default       - The button label text.
+ * @slot icon          - Optional override for the leading icon.
+ * @slot icon-trailing - Optional override for the trailing icon.
+ *
+ * @csspart button     - The inner `<button>` or `<a>` element.
+ * @csspart icon       - The leading icon container.
+ * @csspart label      - The label container.
+ * @csspart trailing-icon - The trailing icon container.
  */
 @customElement('moni-button')
 export class MoniButton extends MoniElement {

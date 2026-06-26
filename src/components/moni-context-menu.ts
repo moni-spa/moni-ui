@@ -1,34 +1,57 @@
+/**
+ * @file components/moni-context-menu.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-menu.js';
 
 /**
- * Context menu triggered by right-click on the parent element.
+ * Material Design 3 Context Menu component.
  *
- * **Usage** (`m3-docs/components/menus/guidelines.md`): the menu opens at
- * the cursor's coordinates and flips to the opposite side if there isn't
- * enough space in the viewport.
+ * A specialized menu that opens at the exact coordinates of a pointer event,
+ * typically triggered by a right-click (`contextmenu` event). It provides
+ * contextual actions related to the specific item clicked.
  *
- * **Wiring example**:
- *   ```html
- *   <div style="position: relative;">
- *     <moni-context-menu flip>
- *       <moni-menu-item>Cut</moni-menu-item>
- *       <moni-menu-item>Copy</moni-menu-item>
- *       <moni-menu-item>Paste</moni-menu-item>
- *     </moni-context-menu>
- *     Right-click anywhere in this div
- *   </div>
- *   ```
+ * **M3 spec reference:** `m3-docs/components/menus/specs.md` (Contextual menus)
  *
- * Attributes:
- *  - placement: bottom (default) | top | left | right
- *  - flip:      present → auto-flip to opposite side if menu would overflow
- *               the viewport (M3 spec)
+ * **Triggering mechanism:**
+ * The component does not require programmatic triggering via an `open` property.
+ * Instead, it attaches a `contextmenu` event listener to its parent element
+ * during `connectedCallback`. When the parent is right-clicked, the menu
+ * captures the `clientX`/`clientY` coordinates, prevents the default browser
+ * context menu, and opens itself at the cursor position using `position: fixed`.
  *
- * Slots:
- *  - default: menu items
+ * **Auto-flip behavior (`flip` attribute):**
+ * Per the M3 guidelines, menus should flip to the opposite side of the cursor
+ * if opening in the requested `placement` would cause them to overflow the
+ * viewport. When `flip=true`, the component dynamically calculates viewport
+ * bounds before opening and overrides `placement` if necessary (e.g., flipping
+ * from `bottom` to `top` if clicked near the bottom of the screen).
+ *
+ * **Auto-dismiss:**
+ * Closes automatically when clicking anywhere outside the menu, or when
+ * pressing the `Escape` key.
+ *
+ * @example
+ * ```html
+ * <!-- Wrap the trigger area and the menu in a container -->
+ * <div>
+ *   <p>Right-click me for options</p>
+ *   <moni-context-menu flip>
+ *     <moni-menu-item>Copy</moni-menu-item>
+ *     <moni-menu-item>Paste</moni-menu-item>
+ *     <moni-divider></moni-divider>
+ *     <moni-menu-item>Delete</moni-menu-item>
+ *   </moni-context-menu>
+ * </div>
+ * ```
+ *
+ * @slot default - The `<moni-menu-item>` elements that make up the menu.
  */
 @customElement('moni-context-menu')
 export class MoniContextMenu extends MoniElement {

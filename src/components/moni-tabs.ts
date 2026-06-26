@@ -1,20 +1,59 @@
+/**
+ * @file components/moni-tabs.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only tab bar. Renders a `<nav>` styled with the BeerCSS `.tabs`
- * helper.
+ * Material Design 3 Tabs container component.
  *
- * Attributes:
- *  - mode:      primary (default) | secondary
- *  - scrollable: present → overflow-x: auto
- *  - align:     default (space-around) | left | center | right
- *  - indicator: default (full) | min | max
- *  - vertical:  present → icon above label
+ * A navigational container that groups multiple `<moni-tab>` elements. Tabs
+ * organize content into high-level categories and allow the user to switch
+ * between them.
  *
- * Slots:
- *  - default: <moni-tab> children
+ * **M3 spec reference:** `m3-docs/components/tabs/specs.md`
+ *
+ * **Modes (Primary vs Secondary):**
+ * - `primary` (default): Used for top-level navigation at the highest hierarchy,
+ *   often placed directly below a top app bar. They span the full width and
+ *   feature a prominent active indicator.
+ * - `secondary`: Used for deeper content hierarchies within a specific area
+ *   or page. They are typically more subtle.
+ *
+ * **Layout & Alignment:**
+ * - `scrollable`: If the number of tabs exceeds the container width, this
+ *   enables horizontal scrolling (`overflow-x: auto`) rather than squishing.
+ * - `align`: Controls how the tabs are distributed (`default` space-around,
+ *   `left`, `center`, or `right`).
+ * - `vertical`: Stacks the icon above the text label inside the child tabs.
+ *
+ * **Active Indicator:**
+ * The `indicator-size` attribute allows customizing the width of the active
+ * underline indicator (`default` fits the tab content, `min` is narrow, `max`
+ * fills the full tab width).
+ *
+ * @example
+ * ```html
+ * <!-- Primary, scrollable tabs -->
+ * <moni-tabs scrollable>
+ *   <moni-tab active label="Flights"></moni-tab>
+ *   <moni-tab label="Trips"></moni-tab>
+ *   <moni-tab label="Explore"></moni-tab>
+ * </moni-tabs>
+ *
+ * <!-- Secondary, centered tabs with vertical layout -->
+ * <moni-tabs mode="secondary" align="center" vertical>
+ *   <moni-tab active icon="video_camera_front" label="Video"></moni-tab>
+ *   <moni-tab icon="photo_camera" label="Photo"></moni-tab>
+ * </moni-tabs>
+ * ```
+ *
+ * @slot default - `<moni-tab>` child elements.
  */
 @customElement('moni-tabs')
 export class MoniTabs extends MoniElement {

@@ -1,31 +1,57 @@
+/**
+ * @file components/moni-typography.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { unsafeStatic, html as staticHtml } from 'lit/static-html.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material 3 Typography (`m3-docs/components/`).
+ * Material Design 3 Typography component.
  *
- * Renders a single piece of text using the M3 type scale. The component
- * chooses both the semantic tag and the typography class based on the
- * `variant` attribute. Consumers can override the tag via `as`.
+ * A specialized text component that enforces the M3 type scale. It ensures
+ * typography is consistent, accessible, and correctly styled across the
+ * application without requiring manual CSS classes.
  *
- * M3 type scale (5 categories, 3 sizes each):
- *  - **display**: largest text, used for marketing or hero content.
- *  - **headline**: page-level headings (H1 equivalent).
- *  - **title**:    section headings, dialog titles.
- *  - **body**:     paragraph text.
- *  - **label**:    button text, captions.
+ * **M3 spec reference:** `m3-docs/components/typography/specs.md`
  *
- * Each category has `large`, `medium`, and `small` sizes (per M3 spec).
+ * **Type Scale Categories:**
+ * - `display`: The largest text on the screen, reserved for short, important
+ *   text or numerals. Works best on large screens. (Renders `<h1>` by default).
+ * - `headline`: High-emphasis text for primary page/section headers.
+ *   (Renders `<h2>` by default).
+ * - `title`: Medium-emphasis text used for dialog headers or smaller section
+ *   titles. (Renders `<h3>` by default).
+ * - `body`: Standard paragraph text used for long-form content.
+ *   (Renders `<p>` by default).
+ * - `label`: Small, utilitarian text used for buttons, captions, and form
+ *   elements. (Renders `<label>` by default).
  *
- * Attributes:
- *  - variant: display | headline | title | body | label (default body)
- *  - size:    large | medium | small (default medium)
- *  - as:      override the rendered tag (e.g. "span", "p", "label")
+ * Each category supports three sizes: `large`, `medium`, and `small`.
  *
- * Slots:
- *  - default: text content (falls back to `text` attribute if empty)
+ * **Semantic Tags:**
+ * The component automatically selects an appropriate HTML semantic tag based on
+ * the variant. You can explicitly override this by setting the `as` attribute
+ * (e.g., to render a `headline` style but using a `<span>` tag for SEO or
+ * structural reasons).
+ *
+ * @example
+ * ```html
+ * <!-- Renders an <h1> with display-large styles -->
+ * <moni-typography variant="display" size="large">Hero Text</moni-typography>
+ *
+ * <!-- Renders a <p> with body-medium styles -->
+ * <moni-typography variant="body">Standard paragraph text.</moni-typography>
+ *
+ * <!-- Overriding the semantic tag -->
+ * <moni-typography variant="title" as="span">Inline title</moni-typography>
+ * ```
+ *
+ * @slot default - The text content to display.
  */
 @customElement('moni-typography')
 export class MoniTypography extends MoniElement {

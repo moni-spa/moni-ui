@@ -1,18 +1,48 @@
+/**
+ * @file components/moni-split-button.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, queryAssignedElements } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only split button. Combines a primary action button and a dropdown menu trigger.
+ * Material Design 3 Split Button component.
  *
- * Attributes:
- *  - variant: filled (default) | tonal | outlined | elevated
- *  - size:    small | medium (default) | large | extra
- *  - gap:     custom gap space (e.g. "8px" or "1rem")
+ * A split button combines a primary action button with a secondary dropdown
+ * button. The two buttons sit flush against each other, typically sharing
+ * a background color and elevation, but separated by a distinct border.
  *
- * Slots:
- *  - leading-button:  The main action button
- *  - trailing-button: The menu dropdown button
+ * **Visual architecture:**
+ * The component acts as a layout container (`display: inline-flex`) that
+ * groups two standard buttons. It overrides the margins of the trailing
+ * button to create the "connected" look (similar to connected button groups).
+ *
+ * **Usage:**
+ * Consumers must provide exactly two buttons via the named slots:
+ * - `slot="leading-button"` — The primary action (usually text or text+icon).
+ * - `slot="trailing-button"` — The secondary action (usually just a dropdown icon).
+ *
+ * Both buttons should be standard `<moni-button>` or `<moni-icon-button>`
+ * elements configured with matching variants for a cohesive appearance.
+ *
+ * @example
+ * ```html
+ * <moni-split-button variant="filled">
+ *   <moni-button slot="leading-button" icon="send">Send</moni-button>
+ *   <moni-button slot="trailing-button" icon="arrow_drop_down" id="schedule-trigger"></moni-button>
+ * </moni-split-button>
+ *
+ * <moni-menu id="schedule-menu" placement="bottom">
+ *   <moni-menu-item>Schedule send...</moni-menu-item>
+ * </moni-menu>
+ * ```
+ *
+ * @slot leading-button  - The primary action button on the left.
+ * @slot trailing-button - The secondary action (dropdown trigger) on the right.
  */
 @customElement('moni-split-button')
 export class MoniSplitButton extends MoniElement {

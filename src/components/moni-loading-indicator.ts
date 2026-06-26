@@ -1,21 +1,49 @@
+/**
+ * @file components/moni-loading-indicator.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, unsafeCSS } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import { loadingIndicatorPolygons } from './loading-shapes.js';
 
 /**
- * Shape-shifting indeterminate loading indicator based on Material 3 Expressive spec.
+ * Material Design 3 Loading Indicator component.
  *
- * Attributes:
- *  - variant: 'uncontained' (default) | 'contained'
+ * An indeterminate loading indicator that visually represents an unspecified
+ * wait time. Unlike standard circular spinners, this component uses a morphing
+ * polygon animation that shifts between shapes (circle, rounded square, etc.)
+ * in accordance with the high-fidelity M3 Expressive motion specifications.
  *
- * CSS custom properties for customization:
- *  - --moni-loading-indicator-size: Size of the active indicator (default: 2.375rem)
- *  - --moni-loading-indicator-active-color: Active indicator color in uncontained mode (default: var(--primary))
- *  - --moni-loading-indicator-contained-active-color: Active indicator color in contained mode (default: var(--on-primary-container))
- *  - --moni-loading-indicator-contained-container-color: Background color of container in contained mode (default: var(--secondary-container))
- *  - --moni-loading-indicator-container-shape: Border radius of container in contained mode (default: 9999px)
- *  - --moni-loading-indicator-container-size: Container size (default: 3rem)
+ * **Variants:**
+ * - `uncontained` (default) — A standalone morphing shape that inherits color
+ *   from its text context (or defaults to `primary`).
+ * - `contained` — The morphing shape is placed inside a circular container
+ *   with a distinct background color, useful for high-contrast loading states
+ *   or overlaying imagery.
+ *
+ * **Animation & Accessibility:**
+ * The component manages its own SVG `<animate>` tags. The animation is
+ * automatically started/stopped via `connectedCallback`/`disconnectedCallback`
+ * to save CPU cycles when the element is off-screen. It applies standard ARIA
+ * roles (`role="progressbar"`) and value attributes to ensure screen readers
+ * identify it correctly as an indeterminate loading state.
+ *
+ * @example
+ * ```html
+ * <!-- Uncontained indicator -->
+ * <moni-loading-indicator></moni-loading-indicator>
+ *
+ * <!-- Contained indicator (default container is secondary-container) -->
+ * <moni-loading-indicator variant="contained"></moni-loading-indicator>
+ * ```
+ *
+ * @csspart container - The outer `.container` wrapper.
+ * @csspart svg       - The inner `<svg>` element.
+ * @csspart shape     - The `<path>` element that morphs.
  */
 @customElement('moni-loading-indicator')
 export class MoniLoadingIndicator extends MoniElement {

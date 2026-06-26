@@ -1,40 +1,66 @@
+/**
+ * @file components/moni-menu.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Menu that faithfully ports BeerCSS's `menu` styles.
+ * Material Design 3 Menu component.
  *
- * BeerCSS uses a plain `<menu>` with class `.active` toggled by JS —
- * NO Popover API. The menu positions itself as `position: absolute`
- * relative to the nearest positioned ancestor.
+ * Menus display a list of choices on a temporary surface. They appear when
+ * users interact with a button, action, or other control.
  *
- * Shadow DOM note: we keep :host as `display: contents` so the inner
- * `<menu>` can position relative to the consumer's layout context.
- * The consumer must have `position: relative` on the trigger's wrapper.
+ * **M3 spec reference:** `m3-docs/components/menus/guidelines.md`
  *
- * **M3 spec** (`m3-docs/components/menus/guidelines.md`): menus should
- * auto-flip to the opposite side when there isn't enough viewport space
- * in the requested placement.
+ * **Positioning architecture:**
+ * The menu uses `position: absolute` relative to its nearest positioned
+ * ancestor. The component's `:host` uses `display: contents`, meaning the
+ * inner `<menu>` element directly participates in the consumer's layout context.
+ * **Crucial:** The consumer must apply `position: relative` to the wrapper
+ * element that contains both the trigger and the `<moni-menu>`.
  *
- * **Flip implementation** (P4.3):
- *  - Modern browsers (Chrome 125+, Edge 125+, Safari 18+): uses CSS
- *    `@position-try-fallback` (Baseline 2024) when `flip` is set.
- *  - Older browsers (Firefox, Safari < 18): JS polyfill. After the menu
- *    becomes active, we measure the inner `<menu>` rect; if it overflows
- *    the viewport on the requested side, we set `_resolvedPlacement`
- *    to the opposite side and the CSS picks up the change.
+ * **Auto-flip positioning:**
+ * Per M3 guidelines, menus should flip to the opposite side of the anchor
+ * if they overflow the viewport.
+ * - **Modern browsers (Chrome/Edge 125+, Safari 18+):** Uses CSS anchor
+ *   positioning and `@position-try-fallback` natively when `flip=true`.
+ * - **Fallback:** A JavaScript polyfill measures the menu after it opens. If
+ *   it overflows the requested `placement`, it sets an internal state to flip
+ *   the placement classes.
  *
- * Attributes:
- *  - placement:  bottom (default) | top | left | right | min | max
- *  - no-wrap:    present
- *  - space:      no-space | space | small-space | medium-space | large-space | extra-space
- *  - active:     present → menu is visible
- *  - flip:       present → enable auto-flip when there is no viewport space
- *                (works on all browsers; CSS-native when supported)
+ * **State management:**
+ * The `active` attribute controls visibility. Consumers must listen to trigger
+ * events (like `click`) and toggle the `active` property.
  *
- * Slots:
- *  - default: menu items (moni-menu-item or li elements)
+ * @example
+ * ```html
+ * <!-- Wrapper must have position: relative -->
+ * <div style="position: relative; display: inline-block;">
+ *   <moni-button id="menu-trigger">Open Menu</moni-button>
+ *
+ *   <moni-menu placement="bottom" flip id="my-menu">
+ *     <moni-menu-item icon="edit">Edit</moni-menu-item>
+ *     <moni-menu-item icon="content_copy">Copy</moni-menu-item>
+ *     <moni-divider></moni-divider>
+ *     <moni-menu-item icon="delete">Delete</moni-menu-item>
+ *   </moni-menu>
+ * </div>
+ *
+ * <script>
+ *   const btn = document.getElementById('menu-trigger');
+ *   const menu = document.getElementById('my-menu');
+ *   btn.addEventListener('click', () => menu.active = !menu.active);
+ * </script>
+ * ```
+ *
+ * @slot default - `<moni-menu-item>`, `<moni-divider>`, or raw `<li>` elements.
+ *
+ * @csspart menu - The inner `<menu>` container.
  */
 @customElement('moni-menu')
 export class MoniMenu extends MoniElement {

@@ -1,45 +1,109 @@
+/**
+ * @file components/moni-card.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material 3 Card (`m3-docs/components/cards/specs.md`).
+ * Material Design 3 Card component.
  *
- * Cards display content and actions on a single subject. Three variants:
- *  - **elevated**: surface-container-low background + elevation 1 shadow.
- *    Default for collections where the card needs separation from a
- *    patterned background.
- *  - **filled**: surface-container-highest background, no shadow.
- *    Lowest emphasis; use when cards sit directly on the background.
- *  - **outlined**: surface background + outline-variant 1dp stroke.
- *    Highest emphasis without shadow; good on solid color backgrounds.
+ * Cards display content and actions about a single subject. They are
+ * container surfaces that group related information together, making it
+ * easy for users to scan and interact with collections of related data.
  *
- * M3 measurements:
- *  - Container corner radius: **12dp**.
- *  - Left/right padding: **16dp**.
- *  - Padding between cards in a collection: max **8dp**.
- *  - Headline text alignment: **start**.
+ * **M3 spec reference:** `m3-docs/components/cards/specs.md`
  *
- * Slots:
- *  - media:        image or video at the top of the card.
- *  - default:      primary content (headline, subhead, supporting text).
- *  - headline:     shortcut for the H3-equivalent title (semantic).
- *  - subhead:      secondary title slot.
- *  - supporting:   supporting text slot.
- *  - actions:      action buttons row at the bottom of the card.
+ * **Variants:**
+ * - `elevated` (default) — `surface-container-low` background + `--elevate1` shadow.
+ *   Best for collections where the card needs visual separation from a
+ *   patterned or colored background. Gains shadow on hover/drag.
+ * - `filled` — `surface-container-highest` background, no shadow.
+ *   Lowest emphasis; use when cards sit directly on the main background surface.
+ * - `outlined` — `surface` background + 1dp `outline-variant` stroke.
+ *   Highest structural emphasis without casting a shadow. Best on solid backgrounds.
  *
- * Attributes:
- *  - variant: elevated (default) | filled | outlined
- *  - clickable: present → apply hover/focus/pressed state layers
- *  - draggable:  present → apply dragged state elevation (3)
- *  - disabled:   present → reduced opacity + cursor not-allowed
+ * **M3 measurements:**
+ * - Container corner radius: 12dp.
+ * - Horizontal content padding: 16dp.
+ * - Gap between cards in a collection: max 8dp.
+ * - Headline text alignment: start.
+ *
+ * **Interactive cards:**
+ * When `clickable=true`, the card renders M3 state layer overlays on hover,
+ * focus, and press via the `::before` pseudo-element. The consumer must handle
+ * the `click` event to implement navigation or selection logic.
+ *
+ * @example
+ * ```html
+ * <moni-card variant="outlined" clickable>
+ *   <img slot="media" src="photo.jpg" alt="Card image" />
+ *   <h3 slot="headline">Card Title</h3>
+ *   <p slot="supporting">Supporting text that describes the card topic.</p>
+ *   <div slot="actions">
+ *     <moni-button variant="text">Cancel</moni-button>
+ *     <moni-button>Confirm</moni-button>
+ *   </div>
+ * </moni-card>
+ * ```
+ *
+ * @slot media      - An image, video, or icon at the top of the card.
+ * @slot default    - Primary body content (replaces all named slots if used).
+ * @slot headline   - H3-equivalent title text.
+ * @slot subhead    - Secondary title below the headline.
+ * @slot supporting - Descriptive supporting body text.
+ * @slot actions    - Action buttons row at the bottom of the card.
+ *
+ * @csspart card    - The outer card container.
+ * @csspart media   - The media area wrapper.
+ * @csspart content - The content wrapper.
+ * @csspart actions - The actions row wrapper.
  */
 @customElement('moni-card')
 export class MoniCard extends MoniElement {
+	/**
+	 * Visual variant of the card.
+	 *
+	 * - `'elevated'` (default) — Surface-low background + elevation shadow.
+	 * - `'filled'` — Surface-highest background, no shadow.
+	 * - `'outlined'` — Surface background + outline-variant stroke.
+	 *
+	 * @default 'elevated'
+	 */
 	@property({ reflect: true })
 	variant: 'elevated' | 'filled' | 'outlined' = 'elevated';
+
+	/**
+	 * When `true`, applies M3 state layer overlays (hover, focus, pressed)
+	 * to communicate interactivity. The card background shifts slightly on hover.
+	 *
+	 * Use when the card itself is a clickable navigation or selection target.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) clickable = false;
+
+	/**
+	 * When `true`, applies `--elevate3` box-shadow to simulate the M3 "dragged"
+	 * state as specified in the M3 card interaction spec.
+	 *
+	 * Consumers should toggle this attribute based on the drag state of the card
+	 * (e.g. via a drag-and-drop library callback).
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) draggable = false;
+
+	/**
+	 * When `true`, the card renders at 50% opacity with `cursor: not-allowed`,
+	 * signaling that the card and its actions are unavailable.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
 	static override styles = [

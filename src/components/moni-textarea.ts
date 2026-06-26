@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-textarea.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -7,26 +14,50 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Visual-only textarea. Same field shell as moni-text-field but renders a
- * `<textarea>`. Visual-only: no `@input` listener.
+ * Material Design 3 Textarea component.
  *
- * M3 spec (`m3-docs/components/text-fields/specs.md`): the textarea supports
- * both **filled** and **outlined** variants. When `maxlength` is set, a
- * character counter is shown next to the supporting text
- * (`{value.length} / {maxlength}`).
+ * A multi-line text input field designed for collecting longer amounts of text,
+ * such as comments, descriptions, or messages.
  *
- * Attributes:
- *  - name, label, value, variant, size, shape, disabled, helper, error,
- *    error-text, placeholder — see moni-text-field.
- *  - icon:           leading Material Symbols name
- *  - trailing-icon:  trailing Material Symbols name
- *  - prefix:         short text rendered before the input (e.g. "https://")
- *  - suffix:         short text rendered after the input (e.g. ".com")
- *  - loading:        present → shows indeterminate circular progress
- *  - rows:           native textarea rows attribute (default 3)
- *  - maxlength:      when set, displays a character counter
- *                    (auto-shown; can be hidden via `no-counter`)
- *  - no-counter:     suppress the character counter even when maxlength is set
+ * **M3 spec reference:** `m3-docs/components/text-fields/specs.md`
+ *
+ * **Visual architecture:**
+ * It shares the exact same `.field` shell and styling engine as
+ * `<moni-text-field>`, but internally renders a native `<textarea>` instead
+ * of an `<input>`. This ensures visual consistency across all form elements
+ * regarding floating labels, helper text, error states, and icons.
+ *
+ * **Character Counter:**
+ * If the `maxlength` attribute is set, the textarea automatically displays
+ * a character counter (`{current length} / {maxlength}`) positioned at the
+ * trailing edge of the supporting text area (bottom right). This can be
+ * suppressed by setting the `no-counter` attribute.
+ *
+ * **State management:**
+ * This component is purely visual and presentational. It reflects attributes
+ * down to the native textarea, but it does NOT attach internal `@input` or
+ * `@change` listeners. Consumers should attach standard DOM listeners directly
+ * to this element to capture user input, just as they would with a native
+ * textarea.
+ *
+ * @example
+ * ```html
+ * <!-- Standard filled textarea -->
+ * <moni-textarea label="Description" rows="4"></moni-textarea>
+ *
+ * <!-- Outlined textarea with character counter -->
+ * <moni-textarea
+ *   variant="outlined"
+ *   label="Bio"
+ *   maxlength="160"
+ * ></moni-textarea>
+ * ```
+ *
+ * @csspart field     - The outer `.field` div container.
+ * @csspart input     - The native `<textarea>` element.
+ * @csspart label     - The floating `<label>` element.
+ * @csspart helper    - The helper/error text area.
+ * @csspart counter   - The character counter element.
  */
 @customElement('moni-textarea')
 export class MoniTextarea extends MoniElement {

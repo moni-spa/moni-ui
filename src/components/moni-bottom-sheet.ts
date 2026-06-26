@@ -1,42 +1,154 @@
+/**
+ * @file components/moni-bottom-sheet.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only bottom sheet. Renders a `<dialog>` that the consumer opens
- * by calling `dialog.showModal()` from the light DOM. The `open` attribute
- * mirrors that state.
+ * Material Design 3 Bottom Sheet component.
  *
- * Attributes:
- *  - open:  present → visibility on
- *  - size:  small | medium (default) | large | auto
- *  - modal: present → backdrop rendered
- *  - title: heading text
+ * Bottom sheets are surfaces anchored to the bottom of the screen that
+ * supplement the main view. They display supplementary content, contextual
+ * actions, or task flows without fully obscuring the primary content.
  *
- * Slots:
- *  - handle:  grab handle
- *  - default: body
- *  - footer:  action buttons
+ * **M3 spec reference:** `m3-docs/components/sheets-bottom/specs.md`
+ *
+ * **Implementation note — native `<dialog>` element:**
+ * Like `<moni-dialog>`, this component wraps the native `<dialog>` element.
+ * The `open` property drives `dialog.showModal()` / `dialog.close()`. When
+ * `modal=true` (default), a `::backdrop` scrim is rendered automatically.
+ *
+ * **Teleportation (body-level mounting):**
+ * When `positioning="body"` (default), the component moves itself to
+ * `document.body` on `connectedCallback` so the fixed-bottom dialog renders
+ * above all stacking contexts. On `disconnectedCallback`, it is moved back
+ * to its original DOM position. This avoids clipping by `overflow: hidden`
+ * or `transform` ancestors.
+ *
+ * **Sizes:**
+ * - `small`  — Compact sheet; suitable for simple action menus.
+ * - `medium` — Standard height (default).
+ * - `large`  — Expanded height (`expandedHeight` controls the max block-size).
+ * - `auto`   — Content-driven height.
+ *
+ * @example
+ * ```html
+ * <moni-bottom-sheet title="Share">
+ *   <moni-list-item icon="share">Copy link</moni-list-item>
+ *   <moni-list-item icon="mail">Send via email</moni-list-item>
+ * </moni-bottom-sheet>
+ *
+ * <script>
+ *   document.querySelector('moni-bottom-sheet').open = true;
+ * </script>
+ * ```
+ *
+ * @slot default - The body content of the bottom sheet.
+ * @slot handle  - The drag handle area at the top of the sheet.
+ * @slot footer  - Action buttons at the bottom of the sheet.
+ *
+ * @csspart dialog - The native `<dialog>` element.
+ * @csspart header - The header container with title and close button.
+ * @csspart body   - The scrollable body content area.
+ * @csspart footer - The footer action buttons area.
  */
 @customElement('moni-bottom-sheet')
 export class MoniBottomSheet extends MoniElement {
+	/**
+	 * Controls the open/closed state of the bottom sheet.
+	 *
+	 * When set to `true`, calls `dialog.showModal()` or `dialog.show()`
+	 * depending on the `modal` property. When set to `false`, calls `dialog.close()`.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) open = false;
+
+	/**
+	 * Height variant of the sheet container.
+	 *
+	 * - `'small'`  — Compact; suitable for quick confirmations.
+	 * - `'medium'` — Standard height (default).
+	 * - `'large'`  — Fills `expandedHeight` of the viewport.
+	 * - `'auto'`   — Content-driven; height adapts to the slotted content.
+	 *
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' | 'auto' = 'medium';
+
+	/**
+	 * When `true` (default), the sheet opens as a modal dialog with a backdrop
+	 * scrim. When `false`, it opens as a non-modal overlay with no scrim.
+	 *
+	 * @default true
+	 */
 	@property({ type: Boolean, reflect: true }) modal = true;
+
+	/**
+	 * Heading text displayed in the sheet's header area.
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) title = '';
+
+	/**
+	 * Controls how the sheet is positioned in the document.
+	 *
+	 * - `'body'` (default) — Teleports the element to `document.body` so
+	 *   the fixed overlay renders above all stacking contexts.
+	 * - `'fixed'` — Fixed positioning within its current DOM subtree.
+	 * - `'absolute'` — Absolute within the nearest positioned ancestor.
+	 * - `'static'` — Static flow (rarely needed; for testing only).
+	 *
+	 * @default 'fixed'
+	 */
 	@property({ reflect: true })
 	positioning: 'body' | 'fixed' | 'absolute' | 'static' = 'fixed';
+
+	/**
+	 * Maximum block-size (height) of the sheet when `size="large"`.
+	 *
+	 * Accepts any valid CSS `max-block-size` value (e.g. `'85%'`, `'600px'`).
+	 * Defaults to `'85%'` which is the M3-recommended maximum for bottom sheets
+	 * on compact screens.
+	 *
+	 * @default '85%'
+	 */
 	@property({ reflect: true, attribute: 'expanded-height' })
 	expandedHeight = '85%';
+
+	/**
+	 * Optional maximum inline-size (width) constraint for the sheet.
+	 *
+	 * When set (e.g. `'640px'`), the sheet will not exceed this width even on
+	 * wide displays. Useful for tablet/desktop breakpoints where a centered
+	 * modal is preferred over a full-width sheet.
+	 *
+	 * @default '' (no constraint)
+	 */
 	@property({ reflect: true, attribute: 'max-width' })
 	maxWidth = '';
 
+	/**
+	 * Original parent node before teleportation to `document.body`.
+	 * Used to restore the element's DOM position in `disconnectedCallback`.
+	 */
 	private _originalParent: Node | null = null;
+
+	/**
+	 * Original next sibling before teleportation to `document.body`.
+	 * Used alongside `_originalParent` to restore the exact DOM position.
+	 */
 	private _originalSibling: Node | null = null;
 
+	/** Direct reference to the native `<dialog>` element. */
 	@query('dialog') private _dialog!: HTMLDialogElement;
-
 	private _isDragging = false;
 	private _startY = 0;
 	private _currentTranslationY = 0;

@@ -1,37 +1,134 @@
+/**
+ * @file components/moni-dialog.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only dialog. Renders a native `<dialog>` element. The consumer
- * opens/closes by calling the native `show()` / `showModal()` /
- * `close()` / `showPopover()` methods on the inner dialog via
- * `this.querySelector('dialog')` from the light DOM.
+ * Material Design 3 Dialog component.
  *
- * Attributes:
- *  - open:   present → dialog[open]
- *  - side:   center (default) | top | right | bottom | left | max
- *  - size:   small | medium (default) | large
- *  - modal:  present → adds the `modal` class (used by BeerCSS)
- *  - title:  header text
+ * Dialogs inform users about a task and can contain critical information,
+ * require decisions, or involve multiple tasks. They interrupt the user's
+ * workflow and should be used sparingly.
  *
- * Slots:
- *  - default: body
- *  - header:  title
- *  - footer:  action buttons
+ * **M3 spec reference:** `m3-docs/components/dialogs/specs.md`
+ *
+ * **Implementation note — native `<dialog>` element:**
+ * This component wraps the native `<dialog>` HTML element. Opening and closing
+ * are controlled via the `open` attribute (and its JS property). The component
+ * syncs `open` changes to the native `<dialog>` in `updated()`:
+ * - `modal=true` → calls `dialog.showModal()` (blocks focus, adds backdrop).
+ * - `modal=false` → calls `dialog.show()` (non-blocking, no backdrop).
+ * - `open=false` → calls `dialog.close()`.
+ *
+ * **Placement (`side` attribute):**
+ * - `center` (default) — Centered in the viewport. Standard M3 dialog.
+ * - `top`, `right`, `bottom`, `left` — Edge-anchored panels (side sheet pattern).
+ * - `max` — Full-screen dialog for complex flows.
+ *
+ * @example
+ * ```html
+ * <!-- Basic modal dialog -->
+ * <moni-dialog open modal title="Delete item?" size="small">
+ *   <p>This action cannot be undone.</p>
+ *   <div slot="footer">
+ *     <moni-button variant="text">Cancel</moni-button>
+ *     <moni-button>Delete</moni-button>
+ *   </div>
+ * </moni-dialog>
+ * ```
+ *
+ * @slot default - The dialog body content.
+ * @slot header  - Custom header content (overrides `title` attribute).
+ * @slot footer  - Action buttons row at the bottom of the dialog.
+ *
+ * @csspart dialog - The native `<dialog>` element.
+ * @csspart header - The header container.
+ * @csspart body   - The body content wrapper.
+ * @csspart footer - The footer actions wrapper.
  */
 @customElement('moni-dialog')
 export class MoniDialog extends MoniElement {
+	/**
+	 * Controls the open/closed state of the dialog.
+	 *
+	 * When set to `true`, the component calls `dialog.showModal()` (if `modal`)
+	 * or `dialog.show()`. When set to `false`, calls `dialog.close()`.
+	 * Reflected as an HTML attribute for CSS and external state readers.
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) open = false;
+
+	/**
+	 * When `true`, opens the dialog as a modal using `<dialog>.showModal()`.
+	 *
+	 * Modal dialogs:
+	 * - Block keyboard focus from leaving the dialog.
+	 * - Render a `::backdrop` scrim over the rest of the page.
+	 * - Can be closed by pressing `Escape` (native browser behavior).
+	 *
+	 * When `false`, uses `<dialog>.show()` which is non-blocking (no focus trap
+	 * and no backdrop).
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) modal = false;
+
+	/**
+	 * Placement of the dialog within the viewport.
+	 *
+	 * - `'center'` (default) — Centered. Standard M3 dialog placement.
+	 * - `'top'`    — Anchored to the top edge (drawer from top).
+	 * - `'right'`  — Anchored to the right edge (side sheet pattern).
+	 * - `'bottom'` — Anchored to the bottom edge (bottom sheet alternative).
+	 * - `'left'`   — Anchored to the left edge (navigation drawer pattern).
+	 * - `'max'`    — Full-screen (covers the entire viewport).
+	 *
+	 * @default 'center'
+	 */
 	@property({ reflect: true })
 	side: 'center' | 'top' | 'right' | 'bottom' | 'left' | 'max' = 'center';
+
+	/**
+	 * Size of the dialog container.
+	 *
+	 * - `'small'`  — Narrow dialog; ideal for simple confirmations.
+	 * - `'medium'` — Standard dialog width (default).
+	 * - `'large'`  — Wide dialog; for forms or complex content.
+	 *
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' = 'medium';
+
+	/**
+	 * Text displayed in the dialog header area.
+	 *
+	 * When non-empty, renders as a styled heading inside the header container.
+	 * The `header` slot takes precedence over this attribute when both are present.
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) title = '';
 
+	/** Direct reference to the native `<dialog>` element for programmatic access. */
 	@query('dialog') private _dialog!: HTMLDialogElement;
 
+	/**
+	 * Syncs the `open` and `modal` state to the native `<dialog>` element.
+	 *
+	 * Called by Lit after every render cycle where tracked properties change.
+	 * Avoids calling `showModal()` or `show()` if the dialog is already open
+	 * (prevents the `InvalidStateError` DOMException).
+	 *
+	 * @param changed - Map of changed property names to their previous values.
+	 */
 	override updated(changed: Map<string, unknown>) {
 		if (changed.has('open') && this._dialog) {
 			if (this.open) {

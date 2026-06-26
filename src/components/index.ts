@@ -1,3 +1,10 @@
+/**
+ * @file components/index.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 // Auto-register all Moni UI Web Components.
 // Importing this file defines every <moni-*> custom element.
 

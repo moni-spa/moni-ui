@@ -1,17 +1,38 @@
+/**
+ * @file components/moni-button-segment.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * A selectable segment button designed to be grouped inside a `moni-segmented-button`.
+ * Material Design 3 Segmented Button component (Legacy).
  *
- * Attributes:
- *  - value:      The value of the segment (default "on")
- *  - checked:    Whether the segment is checked/selected
- *  - disabled:   Whether the segment is disabled
- *  - position:   Automatically set by the parent (first | middle | last | solo)
- *  - hide-check: Hides the checkmark when selected
+ * **Deprecation Notice:** The M3 spec (`m3-docs/components/segmented-buttons/overview.md`)
+ * has replaced the bespoke segmented button component with standard buttons arranged
+ * in a "connected" group. Please use `<moni-button-group variant="connected">`
+ * containing standard `<moni-button>` elements instead of this component.
+ *
+ * This component remains for backwards compatibility but will be removed in a
+ * future major release. It renders a single segment within a `<moni-segmented-button>`.
+ *
+ * @deprecated Use `<moni-button-group variant="connected">` instead.
+ *
+ * @example
+ * ```html
+ * <!-- Legacy usage (not recommended) -->
+ * <moni-segmented-button>
+ *   <moni-button-segment value="day" checked>Day</moni-button-segment>
+ *   <moni-button-segment value="week">Week</moni-button-segment>
+ * </moni-segmented-button>
+ * ```
+ *
+ * @slot default - The segment label text.
  */
 @customElement('moni-button-segment')
 export class MoniButtonSegment extends MoniElement {

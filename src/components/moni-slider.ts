@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-slider.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -5,33 +12,58 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Slider that faithfully ports BeerCSS's `.slider` styles.
+ * Material Design 3 Slider component.
  *
- * Fixes:
- *  - Uses @state() for internal reactive values so CSS vars update on every input
- *  - Track visual (span) and tooltip positions update immediately on drag
+ * Sliders allow users to select a single value or a range of values from a
+ * continuous or discrete scale.
  *
- * M3 spec (`m3-docs/components/sliders/specs.md`):
- *  - Continuous slider: smooth drag between min/max.
- *  - Discrete slider: snap to `step` intervals; tick marks visible.
- *  - Tick marks: in Chrome/Edge, native `<datalist>` ticks render at every
- *    option value. In Firefox, the datalist ticks are not rendered for
- *    range inputs; consumers can use `tick-interval` to manually generate
- *    a visual fallback if needed (P3.4 — outside the scope of this release).
- *  - State layer: hover/focus state uses CSS `::before` overlay at 0.08/0.12
- *    opacity per M3 (handled by `interaction-styles.ts`).
+ * **M3 spec reference:** `m3-docs/components/sliders/specs.md`
  *
- * Attributes:
- *  - name, min, max, step, value, disabled
- *  - size:       tiny | small | medium (default) | large | extra
- *  - vertical:   present → rotated
- *  - range:      present → two thumbs
- *  - ticks:      present → datalist with min/max marks
- *  - tick-interval: number — when set, generates datalist options every
- *                    N units between min and max. Overrides `ticks`.
- *  - indicator:  present → show value tooltip on focus
- *  - indicator-placement: top (default) | bottom
- *  - inset-icon: Material Symbols name inside the colored track
+ * **Slider modes:**
+ * - **Continuous** (default) — Smooth drag between `min` and `max`. Use when
+ *   the exact value does not need to be defined by the user (e.g. volume).
+ * - **Discrete** — Set `step` to snap to discrete intervals. Tick marks
+ *   appear via the native `<datalist>` element in Chrome/Edge. Firefox does
+ *   not render datalist ticks for range inputs.
+ * - **Range** (`range` attribute) — Two thumbs that define a minimum and
+ *   maximum value within the slider's extent.
+ * - **Vertical** (`vertical` attribute) — 90° rotated slider.
+ *
+ * **Value label tooltip:**
+ * When `indicator` is set, the current value is displayed in a tooltip above
+ * (or below, via `indicator-placement`) the active thumb during focus/drag.
+ *
+ * **Tick marks:**
+ * - `ticks` attribute: adds datalist with marks at `min` and `max` only.
+ * - `tick-interval` attribute: generates datalist options at every N units
+ *   between `min` and `max`, creating visible tick marks at those positions.
+ *
+ * **Internal state management:**
+ * Uses `@state()` for `_value` and `_valueHigh` so the fill track width and
+ * tooltip position update reactively on every drag `input` event without
+ * waiting for the `change` event.
+ *
+ * @fires change - Bubbles and is composed. Fired when dragging ends and the
+ *                 value is committed. Read `element.value` for the new value.
+ * @fires input  - Fired on every drag step. Read `element.value` for the
+ *                 live value during drag.
+ *
+ * @example
+ * ```html
+ * <!-- Continuous slider -->
+ * <moni-slider name="volume" min="0" max="100" value="60"></moni-slider>
+ *
+ * <!-- Discrete slider with ticks every 10 units -->
+ * <moni-slider step="10" tick-interval="10" indicator></moni-slider>
+ *
+ * <!-- Range slider -->
+ * <moni-slider range min="0" max="100" value="20" value-high="80"></moni-slider>
+ * ```
+ *
+ * @csspart slider    - The outer slider container.
+ * @csspart track     - The track background.
+ * @csspart fill      - The filled portion of the track.
+ * @csspart indicator - The value label tooltip.
  */
 @customElement('moni-slider')
 export class MoniSlider extends MoniElement {

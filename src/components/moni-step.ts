@@ -1,18 +1,52 @@
+/**
+ * @file components/moni-step.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Visual-only step. Renders an icon/number, a title, and a description.
+ * Material Design 3 Step component.
  *
- * Attributes:
- *  - title:       step heading
- *  - description: step secondary text
- *  - active:      present → primary color highlight
- *  - completed:   present → filled circle with check
- *  - icon:        Material Symbols name (overrides the number)
- *  - index:       numeric label (auto-set by parent stepper, optional)
+ * An individual step within a `<moni-stepper>`. Steps display progress through
+ * a sequence of logical and numbered operations.
+ *
+ * **M3 spec reference:** `m3-docs/components/progress-indicators/specs.md` (Stepper pattern)
+ *
+ * **Anatomy & Visuals:**
+ * A step renders a circular indicator containing either its sequence number
+ * (automatically injected by the parent stepper) or a custom icon. Below or
+ * beside the indicator (depending on the parent's `orientation`), it renders
+ * the `title` and an optional `description`.
+ *
+ * **State management:**
+ * The parent `<moni-stepper>` automatically calculates and injects the `index`,
+ * `active`, and `completed` properties based on its current state.
+ * - **Active:** Highlighted with the primary color, indicating the current step.
+ * - **Completed:** Displayed with a solid primary background and a checkmark
+ *   icon (`completed` state overrides the numeric index).
+ *
+ * @example
+ * ```html
+ * <!-- Typically used inside a stepper -->
+ * <moni-stepper current="1">
+ *   <moni-step title="Shipping" description="Enter address"></moni-step>
+ *   <moni-step title="Payment" description="Credit card details"></moni-step>
+ *   <moni-step title="Review" description="Confirm order"></moni-step>
+ * </moni-stepper>
+ *
+ * <!-- Overriding the icon -->
+ * <moni-step title="Done" icon="celebration"></moni-step>
+ * ```
+ *
+ * @csspart step-indicator - The circular badge containing the number/icon.
+ * @csspart title          - The main title text.
+ * @csspart description    - The secondary description text.
  */
 @customElement('moni-step')
 export class MoniStep extends MoniElement {

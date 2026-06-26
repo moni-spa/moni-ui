@@ -1,29 +1,65 @@
+/**
+ * @file components/moni-nav.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only navigation. Renders a `<nav>` styled with BeerCSS helpers.
+ * Material Design 3 Navigation container component.
  *
- * M3 navigation patterns (`m3-docs/components/navigation-*`):
- *  - Navigation bar: placement="bottom"
- *  - Navigation rail: placement="left|right" variant="rail"
- *  - Navigation drawer: placement="left|right" variant="drawer"
- *    * Standard drawer: always visible, no scrim (default)
- *    * Modal drawer: `modal` toggles open/closed, renders a scrim and
- *      traps focus while open. See `m3-docs/components/navigation-drawer/specs.md`.
+ * `<moni-nav>` is the container that wraps `<moni-nav-item>` elements and
+ * controls the M3 navigation pattern: navigation bar, navigation rail, or
+ * navigation drawer.
  *
- * Attributes:
- *  - placement: top (default) | bottom | left | right
- *  - variant:   rail | drawer
- *  - modal:     present → drawer is modal (requires variant="drawer")
- *  - open:      present → modal drawer is open (default true)
- *  - layout:    vertical | horizontal | auto (default)
+ * **M3 spec references:**
+ * - Navigation bar: `m3-docs/components/navigation-bar/specs.md`
+ * - Navigation rail: `m3-docs/components/navigation-rail/specs.md`
+ * - Navigation drawer: `m3-docs/components/navigation-drawer/specs.md`
  *
- * Slots:
- *  - default: <moni-nav-item> children
- *  - header:  content above nav items (drawer only)
- *  - footer:  content below nav items (drawer only)
+ * **Navigation patterns:**
+ * - **Navigation bar** (`placement="bottom"`) — Horizontal bar of icon+label
+ *   items at the bottom of the screen. Best for 3–5 top-level destinations.
+ * - **Navigation rail** (`variant="rail"`) — Vertical rail of icon+label items
+ *   on the side of the screen. Best for medium/expanded breakpoints.
+ * - **Standard drawer** (`variant="drawer"`) — Always-visible vertical panel
+ *   with full text labels. No scrim. Best for large screens.
+ * - **Modal drawer** (`variant="drawer" modal`) — Overlay drawer with scrim.
+ *   Opened/closed via the `open` property. Traps keyboard focus while open.
+ *   Closes on `Escape` key press.
+ *
+ * **Keyboard handling:**
+ * When `modal=true`, the component adds a global `keydown` listener in
+ * `connectedCallback` that closes the drawer on `Escape`. The listener is
+ * removed in `disconnectedCallback`.
+ *
+ * @example
+ * ```html
+ * <!-- Bottom navigation bar -->
+ * <moni-nav placement="bottom">
+ *   <moni-nav-item icon="home" label="Home" active></moni-nav-item>
+ *   <moni-nav-item icon="search" label="Search"></moni-nav-item>
+ *   <moni-nav-item icon="person" label="Profile"></moni-nav-item>
+ * </moni-nav>
+ *
+ * <!-- Modal navigation drawer -->
+ * <moni-nav variant="drawer" modal open placement="left">
+ *   <h3 slot="header">My App</h3>
+ *   <moni-nav-item icon="home" label="Home" active></moni-nav-item>
+ *   <moni-nav-item icon="settings" label="Settings"></moni-nav-item>
+ * </moni-nav>
+ * ```
+ *
+ * @slot default - `<moni-nav-item>` children.
+ * @slot header  - Content above the nav items (drawer variant only).
+ * @slot footer  - Content below the nav items (drawer variant only).
+ *
+ * @csspart nav     - The inner `<nav>` element.
+ * @csspart scrim   - The backdrop scrim (modal drawer only).
  */
 @customElement('moni-nav')
 export class MoniNav extends MoniElement {

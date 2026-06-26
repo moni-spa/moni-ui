@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-time-picker.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
@@ -5,18 +12,42 @@ import './moni-icon.js';
 import './moni-button.js';
 
 /**
- * Material Design 3 Time Picker Component.
- * Supports interactive clock face (dial) and manual keyboard input.
+ * Material Design 3 Time Picker component.
  *
- * Attributes:
- *  - value: Time value in "HH:MM" 24h format (default "00:00")
- *  - use24Hour: If true, uses 24-hour mode without AM/PM toggle (default false)
- *  - mode: "dial" | "input" (default "dial")
+ * A highly interactive control that allows users to select a specific time.
+ * It provides two distinct input modes:
+ * 1. **Dial mode:** An interactive clock face where users can drag or click
+ *    to select hours and minutes.
+ * 2. **Input mode:** Standard text inputs for precise keyboard entry.
  *
- * Events:
- *  - change: Fired when value changes (detail: { value })
- *  - cancel: Fired when cancel button is clicked
- *  - ok: Fired when OK button is clicked (detail: { value })
+ * **M3 spec reference:** `m3-docs/components/time-pickers/specs.md`
+ *
+ * **Time formats & modes:**
+ * - The `value` property expects and always outputs a 24-hour formatted string
+ *   (`HH:MM`, e.g., `"14:30"`).
+ * - Setting `use-24-hour` configures the visual presentation to use a 24-hour
+ *   clock dial (inner and outer rings) and removes the AM/PM toggle. Otherwise,
+ *   it uses a standard 12-hour dial with an AM/PM toggle.
+ *
+ * **Responsive design:**
+ * The `orientation` attribute configures the layout. `vertical` stacks the
+ * time display above the clock face, `horizontal` places them side-by-side,
+ * and `auto` responds to the container/viewport width automatically.
+ *
+ * @fires change - Fired when the selected time changes interactively. The
+ *                 `detail.value` contains the new time in `HH:MM` format.
+ * @fires cancel - Fired when the 'Cancel' button is clicked.
+ * @fires ok     - Fired when the 'OK' button is clicked. The `detail.value`
+ *                 contains the final confirmed time.
+ *
+ * @example
+ * ```html
+ * <!-- 12-hour format (AM/PM) -->
+ * <moni-time-picker value="14:30"></moni-time-picker>
+ *
+ * <!-- 24-hour format -->
+ * <moni-time-picker use-24-hour value="14:30"></moni-time-picker>
+ * ```
  */
 @customElement('moni-time-picker')
 export class MoniTimePicker extends MoniElement {

@@ -1,17 +1,45 @@
+/**
+ * @file components/moni-tab.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Visual-only tab. Renders an `<a>` styled with the BeerCSS `.tabs > a`
- * helper.
+ * Material Design 3 Tab component.
  *
- * Attributes:
- *  - active: present → active style
- *  - icon:   Material Symbols name
- *  - label:  tab text
- *  - href:   link target
+ * An individual interactive tab element designed to be placed inside a
+ * `<moni-tabs>` container. Tabs organize content across different screens,
+ * data sets, and other interactions.
+ *
+ * **M3 spec reference:** `m3-docs/components/tabs/specs.md`
+ *
+ * **Visual layout & interaction:**
+ * Internally renders as an `<a>` element to support native link behavior when
+ * an `href` is provided, but behaves visually as a tab button. It displays a
+ * text label and an optional Material icon. If the parent `<moni-tabs>` has the
+ * `vertical` attribute set, the layout automatically adjusts to stack the icon
+ * above the text.
+ *
+ * **State:**
+ * The `active` attribute highlights the tab, applying the primary color to the
+ * text and rendering the active indicator line (handled via CSS in the parent
+ * container or pseudo-elements).
+ *
+ * @example
+ * ```html
+ * <moni-tabs>
+ *   <moni-tab active icon="home" label="Home"></moni-tab>
+ *   <moni-tab icon="settings" label="Settings" href="/settings"></moni-tab>
+ * </moni-tabs>
+ * ```
+ *
+ * @csspart tab - The inner `<a>` element acting as the tab button.
  */
 @customElement('moni-tab')
 export class MoniTab extends MoniElement {

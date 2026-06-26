@@ -1,17 +1,41 @@
+/**
+ * @file components/moni-menu-item.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Visual-only menu item. Renders an `<li>` styled with the BeerCSS
- * `menu > li` rule.
+ * Material Design 3 Menu Item component.
  *
- * Attributes:
- *  - active:    present → tertiary-container highlight
- *  - disabled:  present
- *  - icon:      Material Symbols name
- *  - label:     item text
+ * A single interactive item within a `<moni-menu>` or `<moni-context-menu>`.
+ * It provides standard M3 menu item styling, hover states, and optional
+ * leading icons.
+ *
+ * **M3 spec reference:** `m3-docs/components/menus/specs.md`
+ *
+ * **Interaction states:**
+ * - Hover: applies an opacity layer.
+ * - Active (`active=true`): applies a `tertiary-container` background highlight,
+ *   useful for indicating the currently selected option in a list.
+ * - Disabled (`disabled=true`): reduces opacity and disables pointer events.
+ *
+ * @example
+ * ```html
+ * <moni-menu-item icon="edit">Edit text</moni-menu-item>
+ * <moni-menu-item icon="content_copy" disabled>Copy</moni-menu-item>
+ * <moni-menu-item active>Currently selected</moni-menu-item>
+ * ```
+ *
+ * @slot default - The text label for the menu item.
+ *
+ * @csspart item - The outer `<li>` element.
+ * @csspart icon - The container for the leading icon.
  */
 @customElement('moni-menu-item')
 export class MoniMenuItem extends MoniElement {

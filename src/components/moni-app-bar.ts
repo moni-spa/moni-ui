@@ -1,51 +1,140 @@
+/**
+ * @file components/moni-app-bar.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material 3 App Bar (`m3-docs/components/app-bars/specs.md`).
+ * Material Design 3 App Bar component.
  *
- * App bars are placed at the top of a screen to help users navigate.
- * Two main placements:
- *  - **top** (default): header above content. Standard height **64dp**.
- *  - **bottom**: footer below content (mobile pattern). Houses navigation
- *    icons and an optional FAB anchor.
+ * App bars provide navigation and action controls at the top (or bottom) of a
+ * screen. They are positioned sticky by default so they remain visible as the
+ * user scrolls through content.
  *
- * Two variants:
- *  - **standard** (default): flat surface with no shadow at rest.
- *  - **floating**: gains an elevation 2 shadow when content scrolls under it.
+ * **M3 spec reference:** `m3-docs/components/app-bars/specs.md`
  *
- * Two size modes:
- *  - **default**: 64dp tall.
- *  - **prominent**: 152dp tall, used when a subtitle is shown.
+ * **Placement:**
+ * - `top` (default) — 64dp header fixed above page content. Uses `position: sticky`
+ *   with `inset-block-start: 0` so it stays at the top of the scroll container.
+ * - `bottom` — Mobile navigation footer anchored to the bottom of the viewport.
+ *   Ideal for housing primary navigation icons and an optional FAB.
  *
- * Center-aligned title (M3 spec): title is centered horizontally.
- * Navigation icons go to the leading edge; actions to the trailing edge.
+ * **Variants:**
+ * - `standard` — Flat surface (no shadow) when content is at the top. Best for most UIs.
+ * - `floating` — Always elevated with `--elevate2` shadow. Use when the bar visually
+ *   floats above the content regardless of scroll position.
  *
- * Attributes:
- *  - placement:  top (default) | bottom
- *  - variant:   standard (default) | floating
- *  - size:      default (default, 64dp) | prominent (152dp)
- *  - title:     text content of the title (centered)
- *  - subtitle:  optional subtitle shown below the title (prominent only)
- *  - elevated:  present → adds elevation 2 shadow (e.g. when scrolled)
+ * **Sizes:**
+ * - `default` — 64dp (4rem) tall. Standard for most use cases.
+ * - `prominent` — 152dp (9.5rem) tall. Use when a subtitle or expanded area is needed.
+ *   The `subtitle` attribute is only rendered in this size.
  *
- * Slots:
- *  - leading:  navigation icon(s) on the leading edge
- *  - trailing: action icon(s) on the trailing edge
- *  - fab:      (bottom only) FAB anchored to the trailing edge
- *  - default:  any extra content (e.g. tabs)
+ * @example
+ * ```html
+ * <!-- Top app bar with navigation icon and action buttons -->
+ * <moni-app-bar title="Settings">
+ *   <moni-button slot="leading" shape="circle" variant="text" icon="menu"></moni-button>
+ *   <moni-button slot="trailing" shape="circle" variant="text" icon="search"></moni-button>
+ *   <moni-button slot="trailing" shape="circle" variant="text" icon="more_vert"></moni-button>
+ * </moni-app-bar>
+ * ```
+ *
+ * @example
+ * ```html
+ * <!-- Prominent app bar with subtitle -->
+ * <moni-app-bar size="prominent" title="Inbox" subtitle="12 unread messages" elevated>
+ * </moni-app-bar>
+ * ```
+ *
+ * @slot leading   - Navigation icon(s) placed on the leading (start) edge.
+ * @slot trailing  - Action icon(s) placed on the trailing (end) edge.
+ * @slot fab       - FAB anchored to the trailing edge (bottom placement only).
+ * @slot default   - Additional content (e.g. a tab bar below the title row).
+ *
+ * @csspart bar      - The inner grid container.
+ * @csspart leading  - The leading slot wrapper.
+ * @csspart trailing - The trailing slot wrapper.
+ * @csspart title    - The title text element.
+ * @csspart subtitle - The subtitle text element (prominent size only).
+ * @csspart actions  - The actions slot wrapper (prominent size only).
  */
 @customElement('moni-app-bar')
 export class MoniAppBar extends MoniElement {
+	/**
+	 * Determines whether the bar is placed at the top or bottom of the viewport.
+	 *
+	 * - `'top'` (default) — Sticky header at the top of the scroll container.
+	 * - `'bottom'` — Fixed footer; primarily used for mobile bottom navigation patterns.
+	 *
+	 * @default 'top'
+	 */
 	@property({ reflect: true })
 	placement: 'top' | 'bottom' = 'top';
+
+	/**
+	 * Visual variant of the app bar.
+	 *
+	 * - `'standard'` (default) — Flat surface. No shadow at rest; gains shadow
+	 *   programmatically via the `elevated` attribute when content scrolls beneath it.
+	 * - `'floating'` — Permanently elevated with `--elevate2` box-shadow.
+	 *
+	 * @default 'standard'
+	 */
 	@property({ reflect: true })
 	variant: 'standard' | 'floating' = 'standard';
+
+	/**
+	 * Height variant of the app bar.
+	 *
+	 * - `'default'` — 64dp (4rem). Standard M3 top app bar height.
+	 * - `'prominent'` — 152dp (9.5rem). Use when showing a subtitle or when
+	 *   extra vertical space is needed for a contextual action row.
+	 *
+	 * @default 'default'
+	 */
 	@property({ reflect: true })
 	size: 'default' | 'prominent' = 'default';
+
+	/**
+	 * Title text displayed in the center of the app bar.
+	 *
+	 * The title is center-aligned per M3 spec. Long titles are truncated with
+	 * an ellipsis. For semantic HTML, the consumer should also provide an `<h1>`
+	 * in the page content that matches this title.
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) title = '';
+
+	/**
+	 * Optional subtitle displayed below the title.
+	 *
+	 * Only rendered when `size="prominent"`. Provides secondary context
+	 * (e.g. folder name, item count, description).
+	 *
+	 * @default ''
+	 */
 	@property({ reflect: true }) subtitle = '';
+
+	/**
+	 * When present, applies `--elevate2` box-shadow to signal that content has
+	 * scrolled beneath the bar.
+	 *
+	 * Consumers are responsible for toggling this attribute reactively based on
+	 * the scroll position of the main content area:
+	 * ```ts
+	 * container.addEventListener('scroll', () => {
+	 *   appBar.elevated = container.scrollTop > 0;
+	 * });
+	 * ```
+	 *
+	 * @default false
+	 */
 	@property({ type: Boolean, reflect: true }) elevated = false;
 
 	static override styles = [
@@ -155,6 +244,18 @@ export class MoniAppBar extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renders the app bar grid layout.
+	 *
+	 * The inner `.bar` element uses a 3-column CSS grid:
+	 * - Column 1: leading slot (navigation icon).
+	 * - Column 2: title (center-aligned, fills remaining space).
+	 * - Column 3: trailing slot (action icons).
+	 *
+	 * In `prominent` size, a subtitle row and an actions row are appended
+	 * conditionally. The subtitle only renders when the `subtitle` attribute
+	 * is non-empty; the actions slot always renders for prominent bars.
+	 */
 	override render() {
 		const hasSubtitle = this.size === 'prominent' && Boolean(this.subtitle);
 		const hasActions = Boolean(this.size === 'prominent');

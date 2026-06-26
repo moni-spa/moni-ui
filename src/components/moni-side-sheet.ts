@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-side-sheet.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, PropertyValues } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
@@ -5,24 +12,55 @@ import './moni-icon.js';
 import './moni-button.js';
 
 /**
- * Material Design 3 Side Sheet Component.
- * Can act as a standard (non-modal) side sheet or a modal side sheet.
+ * Material Design 3 Side Sheet component.
  *
- * Attributes:
- *  - open:            boolean (reflect: true)
- *  - modal:           boolean (reflect: true)
- *  - side:            'right' | 'left' (default: 'right')
- *  - title:           Header text (default: '')
- *  - detached:        boolean (adds 16px/16dp margins/rounded corners all around)
- *  - showClose:       boolean (shows standard close button)
- *  - showBack:        boolean (shows standard back button)
- *  - noBorder:        boolean (removes borders, default: false)
- *  - withHandle:      boolean (shows grab handle and enables dragging to close/resize, default: false)
- *  - expanded-width:  string (width when expanded, default: '600px')
- *  - max-width:       string (maximum width restriction, default: '100%')
+ * Side sheets show supplementary content that is anchored to the left or right
+ * edge of the screen. They can be standard (inline with content) or modal
+ * (overlaying content with a scrim).
  *
- * Events:
- *  - close:       Fired when the sheet is closed/dismissed
+ * **M3 spec reference:** `m3-docs/components/side-sheets/specs.md`
+ *
+ * **Dialog behavior:**
+ * Internally, this component uses the native HTML `<dialog>` element for robust
+ * accessibility, focus trapping, and top-layer rendering.
+ * - When `modal=true`, the sheet uses `dialog.showModal()`, rendering a scrim
+ *   backdrop and trapping focus. Pressing `Escape` closes it.
+ * - When `modal=false`, the sheet uses `dialog.show()` and remains interactive
+ *   alongside the main page content.
+ *
+ * **Drag & Resize (Moni feature):**
+ * Setting the `with-handle` attribute adds a draggable grab handle to the inner
+ * edge of the sheet. Users can click and drag this handle to resize the sheet's
+ * width up to the `max-width` limit. If the user drags the sheet towards the
+ * screen edge quickly or beyond a certain threshold, it automatically closes.
+ *
+ * **Animations:**
+ * Side sheets slide in from the specified `side` (`left` or `right`). The open
+ * and close animations are handled via CSS transitions tied to the `open` property.
+ *
+ * @fires close - Fired when the side sheet is completely closed (after animations
+ *                finish), either via the close button, scrim click, drag-to-close,
+ *                or `Escape` key.
+ *
+ * @example
+ * ```html
+ * <!-- Modal side sheet on the right -->
+ * <moni-side-sheet id="details-sheet" modal title="Item Details">
+ *   <p>Here is more information about the selected item.</p>
+ *   <div slot="footer">
+ *     <moni-button>Save</moni-button>
+ *   </div>
+ * </moni-side-sheet>
+ *
+ * <!-- Resizable, detached side sheet on the left -->
+ * <moni-side-sheet side="left" detached with-handle max-width="50vw">
+ *   <p>Navigation options</p>
+ * </moni-side-sheet>
+ * ```
+ *
+ * @slot default - Main body content.
+ * @slot header  - Custom header content (overrides `title`, close/back buttons remain).
+ * @slot footer  - Bottom-anchored action area.
  */
 @customElement('moni-side-sheet')
 export class MoniSideSheet extends MoniElement {

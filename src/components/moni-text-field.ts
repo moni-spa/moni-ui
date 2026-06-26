@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-text-field.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
@@ -7,17 +14,56 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Visual-only text field. Renders the `.field` family of BeerCSS helpers
- * with a native `<input>`.
+ * Material Design 3 Text Field component.
  *
- * This component is **visual-only**: it does NOT listen to `@input` to
- * sync the `value` attribute back from the underlying input. Consumers
- * either use form submission or wire their own change handling.
+ * A full-featured input field that wraps a native `<input>` inside the M3
+ * field shell (`.field` class from `fieldStyles`). Supports floating labels,
+ * filled and outlined variants, leading/trailing icons, helper text, and
+ * error states.
  *
- * Attributes:
- *  - name, label, value, variant, size, shape, type, icon, trailing-icon,
- *    prefix, suffix, helper, error, error-text, disabled, placeholder — see below.
- *  - loading:   present → shows indeterminate circular progress
+ * **M3 spec reference:** `m3-docs/components/text-fields/specs.md`
+ *
+ * **Visual architecture:**
+ * Uses `fieldStyles` for the complete CSS field shell. The field container
+ * is a `<div class="field [modifiers]">` wrapping:
+ * 1. Optional leading icon.
+ * 2. Native `<input>` element.
+ * 3. Floating `<label>` (when `label` is set).
+ * 4. Optional trailing icon or loading spinner.
+ * 5. `<output>` for helper/error text.
+ *
+ * **Visual-only contract:**
+ * This component does **not** listen to `@input` events to sync the `value`
+ * attribute back from the underlying `<input>`. Consumers must either:
+ * - Submit the native form (the `<input name>` participates in form submission).
+ * - Listen to `change` or `input` events via standard DOM event handling.
+ * - Use a framework binding (e.g. `bind:value` in Svelte, `v-model` in Vue).
+ *
+ * @example
+ * ```html
+ * <moni-text-field
+ *   label="Email address"
+ *   type="email"
+ *   name="email"
+ *   icon="mail"
+ *   variant="outlined"
+ *   helper="We'll never share your email."
+ * ></moni-text-field>
+ *
+ * <moni-text-field
+ *   label="Amount"
+ *   type="number"
+ *   prefix="$"
+ *   error
+ *   error-text="Value must be positive"
+ * ></moni-text-field>
+ * ```
+ *
+ * @csspart field         - The outer `.field` div container.
+ * @csspart input         - The native `<input>` element.
+ * @csspart label         - The floating `<label>` element.
+ * @csspart helper        - The helper `<output>` element.
+ * @csspart error-output  - The error `<output>` element.
  */
 @customElement('moni-text-field')
 export class MoniTextField extends MoniElement {

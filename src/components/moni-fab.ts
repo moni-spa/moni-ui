@@ -1,31 +1,58 @@
+/**
+ * @file components/moni-fab.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Visual-only Floating Action Button.
+ * Material Design 3 Floating Action Button (FAB) component.
  *
- * Material 3 Expressive update (May 2025):
- *  - `size="small"` is **no longer recommended** by M3. Use `medium` (40dp/56dp
- *    on M3 spec) or `large`. Deprecated in v0.3.1; will be removed in v1.0.
- *  - `shape="circle"` is **not part of M3**; M3 FABs are `rounded` with a 16dp
- *    corner radius (or `full` when on hover/focus). The M3 spec does not
- *    define a perfect-circle FAB. Deprecated in v0.3.1; will be removed in v1.0.
- *  - `color="surface"` is **no longer recommended** by M3. Use `primary`,
- *    `secondary`, or `tertiary` (and their container variants).
+ * FABs represent the primary, or most common, action on a screen. They appear
+ * in front of all screen content, typically as a circular shape with an icon in
+ * its center.
  *
- * Attributes:
- *  - size:      medium (default) | large  (small: deprecated)
- *  - color:     primary (default) | secondary | tertiary  (surface: deprecated)
- *  - shape:     rounded (default)  (circle: deprecated)
- *  - extended:  present → wider with label always visible
- *  - expanded:  present → force expanded
- *  - disabled:  present
- *  - icon:      Material Symbols name
- *  - label:     text when extended
- *  - position:  bottom-trailing (default) | bottom-leading
- *               | top-trailing | top-leading
+ * **M3 spec reference:** `m3-docs/components/floating-action-buttons/specs.md`
+ *
+ * **M3 Expressive Updates & Deprecations (May 2025):**
+ * - `size="small"` is **no longer recommended** by M3. Use `medium` (40dp or 56dp)
+ *   or `large` (96dp). Deprecated in v0.3.1; will be removed in v1.0.
+ * - `shape="circle"` is **not part of M3**. M3 FABs use a `rounded` shape with a
+ *   16dp corner radius (which morphs to a `full` radius on hover/focus).
+ *   Deprecated in v0.3.1; will be removed in v1.0.
+ * - `color="surface"` is **no longer recommended**. Use `primary`, `secondary`,
+ *   or `tertiary` to ensure proper color mapping to the M3 theme.
+ *
+ * **Extended FABs:**
+ * When `extended` is true, the FAB displays a text label next to the icon.
+ * Extended FABs are wider and are typically used when the action needs explicit
+ * text to be clear. The `expanded` attribute forces the FAB to its full extended
+ * width, useful for animating between standard and extended states on scroll.
+ *
+ * **Positioning:**
+ * The `position` attribute applies predefined absolute/fixed positioning
+ * (e.g. `bottom-trailing`), snapping the FAB to standard screen corners.
+ *
+ * @example
+ * ```html
+ * <!-- Standard primary FAB -->
+ * <moni-fab icon="edit"></moni-fab>
+ *
+ * <!-- Extended tertiary FAB -->
+ * <moni-fab color="tertiary" extended icon="add" label="New task"></moni-fab>
+ *
+ * <!-- Positioned FAB -->
+ * <moni-fab position="bottom-trailing" icon="navigation"></moni-fab>
+ * ```
+ *
+ * @csspart button - The internal `<button>` element.
+ * @csspart icon   - The container for the icon.
+ * @csspart label  - The text label (only visible when extended).
  */
 @customElement('moni-fab')
 export class MoniFab extends MoniElement {

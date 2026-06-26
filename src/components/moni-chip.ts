@@ -1,3 +1,10 @@
+/**
+ * @file components/moni-chip.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
@@ -5,35 +12,55 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Visual-only chip. Renders a native `<button>` styled per Material 3 Expressive.
+ * Material Design 3 Chip component.
  *
- * M3 spec (`m3-docs/components/chips/specs.md`) defines **4 variants**:
- *  - **assist**     — smart/automated actions; outlined; `outline` 1dp stroke.
- *  - **filter**     — filters for a collection; outlined; leading check when selected.
- *  - **input**      — discrete user input; outlined; trailing remove icon.
- *  - **suggestion** — product-generated suggestions; outlined; no icons.
+ * Chips are compact, interactive elements that represent actions, filters,
+ * attributes, or user inputs. They are visual-only shells — the consumer
+ * owns all state management (selection, removal, active filter state).
  *
- * All variants share M3 measurements: 32dp height, 8dp corner, 18dp icon.
- * Container height scales with `size` (`small` = 32dp = M3 default,
- * `medium`/`large` are Moni extensions with larger touch targets).
+ * **M3 spec reference:** `m3-docs/components/chips/specs.md`
  *
- * **A11y** — `assist` and `suggestion` use `var(--outline)` for the
- * stroke to ensure 3:1 contrast (per `m3-docs/components/chips/accessibility.md`
- * § *Showing chip interactivity*). `filter` and `input` use `outline-variant`
- * for the resting state but show a clear `secondary-container` background
- * when selected, passing contrast.
+ * **Variants:**
+ * - `assist` (default) — Smart or suggested actions. Uses `var(--outline)` border
+ *   to ensure 3:1 contrast per the M3 accessibility spec. Alias: `outlined`.
+ * - `filter` — Filters for a content collection. Shows a leading checkmark when
+ *   `selected`. Alias: `fill`.
+ * - `input` — Represents discrete user input (tags, tokens). Adds a trailing
+ *   remove icon when `removable`.
+ * - `suggestion` — Product-generated suggestions. Outlined, no icons.
  *
- * Attributes:
- *  - variant:   assist (default) | filter | input | suggestion
- *               | outlined (alias for assist) | fill (alias for filter)
- *  - size:      small (default, 32dp = M3) | medium | large
- *  - shape:     round (default) | square | circle | no-round
- *               | left-round | right-round | top-round | bottom-round
- *  - selected:  present → background uses secondary-container (M3 filter/input)
- *  - removable: present → adds a trailing ✕ icon (M3 input chip, visual only)
- *  - disabled:  present → native disabled
- *  - loading:   present → shows indeterminate circular progress
- *  - icon:      Material Symbols name (leading icon)
+ * **M3 measurements:**
+ * - Default height: 32dp (`small` size = M3 spec baseline).
+ * - Corner radius: 8dp.
+ * - Icon size: 18dp.
+ * - `medium` and `large` sizes are Moni extensions with larger touch targets.
+ *
+ * **Accessibility:**
+ * `assist` and `suggestion` chips use `var(--outline)` for their stroke to
+ * guarantee 3:1 contrast against the surface background at rest.
+ * `filter` and `input` use `outline-variant` at rest but achieve contrast
+ * through the `secondary-container` fill when selected.
+ *
+ * @fires remove - Bubbles and is composed. Fired when the trailing remove
+ *                 icon is clicked on an `input` chip with `removable`.
+ *
+ * @example
+ * ```html
+ * <!-- Filter chip with selected state -->
+ * <moni-chip variant="filter" selected>Technology</moni-chip>
+ *
+ * <!-- Input chip (tag/token) -->
+ * <moni-chip variant="input" removable icon="label">TypeScript</moni-chip>
+ *
+ * <!-- Assist chip with icon -->
+ * <moni-chip icon="directions_car">Get directions</moni-chip>
+ * ```
+ *
+ * @slot default   - The chip label text.
+ * @slot icon      - Override for the leading icon (alternative to the `icon` attribute).
+ *
+ * @csspart chip   - The inner `<button>` element.
+ * @csspart label  - The label `<span>` element.
  */
 @customElement('moni-chip')
 export class MoniChip extends MoniElement {

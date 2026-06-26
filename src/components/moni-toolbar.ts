@@ -1,26 +1,55 @@
+/**
+ * @file components/moni-toolbar.ts
+ * @package @moni-labs/moni-ui
+ * @license MIT
+ * @contributors Moni Labs & Contributors
+ */
+
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material 3 Toolbar (`m3-docs/components/top-app-bar/specs.md`).
+ * Material Design 3 Top App Bar (Toolbar) component.
  *
- * This is the larger/top-level variant. If you need the compact
- * Navigation Bar at the bottom of the screen, use `<moni-app-bar>`.
+ * Top app bars display information and actions at the top of a screen.
+ * They are used for branding, screen titles, navigation, and actions.
  *
- * Supported M3 types:
- *  - **standard** (default): 64dp height, flat surface color, bottom shadow.
- *  - **floating**: 4dp margin, rounded 8dp corners, elevated.
+ * **M3 spec reference:** `m3-docs/components/top-app-bar/specs.md`
  *
- * Slots:
- *  - default:       title / center content.
- *  - leading:       navigation icon/button.
- *  - trailing:      action icons/buttons.
- *  - action-button: floating action button (moni-fab) anchored right.
+ * **Note:** This is the standard top-level toolbar. For bottom navigation
+ * bars (often used on mobile), use `<moni-app-bar>`.
  *
- * Attributes:
- *  - type:   standard (default) | floating
- *  - scroll: true | false (default). When true, elevation increases on scroll.
+ * **Variants:**
+ * - `standard` (default): A full-width bar (64dp height) that sits flush
+ *   against the top of the screen.
+ * - `floating`: A detached bar with a 4dp margin and rounded 8dp corners,
+ *   appearing to float above the content.
+ *
+ * **Scroll behavior:**
+ * When the `scroll` attribute is present, the toolbar visually responds to
+ * scrolling by increasing its elevation (shadow) and dynamically shifting
+ * its surface color to indicate depth over the scrolling content.
+ *
+ * @example
+ * ```html
+ * <!-- Standard toolbar with navigation and actions -->
+ * <moni-toolbar title="Inbox">
+ *   <moni-icon-button slot="leading" icon="menu"></moni-icon-button>
+ *   <moni-icon-button slot="trailing" icon="search"></moni-icon-button>
+ *   <moni-icon-button slot="trailing" icon="more_vert"></moni-icon-button>
+ * </moni-toolbar>
+ *
+ * <!-- Floating toolbar with an attached FAB -->
+ * <moni-toolbar type="floating" title="Notes">
+ *   <moni-fab slot="action-button" icon="add"></moni-fab>
+ * </moni-toolbar>
+ * ```
+ *
+ * @slot default       - The title text or center content.
+ * @slot leading       - Navigation icon/button placed on the far left.
+ * @slot trailing      - Action icons/buttons placed on the far right.
+ * @slot action-button - A floating action button (FAB) anchored to the right side.
  */
 @customElement('moni-toolbar')
 export class MoniToolbar extends MoniElement {
