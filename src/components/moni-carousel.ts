@@ -96,6 +96,9 @@ export class MoniCarousel extends MoniElement {
 	@property({ attribute: 'show-all-text' }) showAllText = 'Show all';
 	@property({ attribute: 'header-text' }) headerText = '';
 	@property({ type: Boolean, attribute: 'hide-nav' }) hideNav = false;
+	@property({ type: Boolean, reflect: true }) infinite = false;
+	@property({ type: Boolean, reflect: true }) autoplay = false;
+	@property({ type: Number, attribute: 'autoplay-interval' }) autoplayInterval = 3000;
 
 	@state() private _containerWidth = 0;
 	@state() private _slottedItems: CarouselItem[] = [];
@@ -123,6 +126,11 @@ export class MoniCarousel extends MoniElement {
 	private _tickerTarget = 0;
 	private _tickerCurrent = 0;
 	private _isTicking = false;
+
+	// Infinite & Autoplay state
+	private _infiniteInitialized = false;
+	private _autoplayTimer: any = null;
+	private _isInteracting = false;
 
 	// quickSetter caches — avoid gsap.set() overhead per frame
 	private _cardSetX: ((value: number) => void)[] = [];
@@ -412,6 +420,10 @@ export class MoniCarousel extends MoniElement {
 		}
 		this._buildQuickSetters();
 		this.updateLayout(true);
+		
+		if (this.autoplay) {
+			this._startAutoplay();
+		}
 	}
 
 	override updated(changedProperties: Map<string, any>) {
@@ -425,16 +437,32 @@ export class MoniCarousel extends MoniElement {
 			changedProperties.has('padding') ||
 			changedProperties.has('items') ||
 			changedProperties.has('hideNav') ||
+			changedProperties.has('infinite') ||
+			changedProperties.has('autoplay') ||
+			changedProperties.has('autoplayInterval') ||
 			changedProperties.has('_containerWidth') ||
 			changedProperties.has('_slottedItems') ||
 			changedProperties.has('_hasSlottedShowAll')
 		) {
+			if (changedProperties.has('infinite') || changedProperties.has('items') || changedProperties.has('_slottedItems')) {
+				this._infiniteInitialized = false;
+			}
+
 			if (changedProperties.has('layout') && this._scrollContainer) {
 				this._scrollContainer.scrollLeft = 0;
+				this._infiniteInitialized = false;
 				this._scrollContainer.style.scrollSnapType =
 					this.layout === 'uncontained' ? 'none' : 'x mandatory';
 			}
 			this.updateLayout(true);
+
+			if (changedProperties.has('autoplay') || changedProperties.has('autoplayInterval') || changedProperties.has('items') || changedProperties.has('_slottedItems')) {
+				if (this.autoplay) {
+					this._startAutoplay();
+				} else {
+					this._stopAutoplay();
+				}
+			}
 		}
 	}
 
@@ -637,6 +665,7 @@ export class MoniCarousel extends MoniElement {
 			this._tickerCurrent = this._tickerTarget;
 			gsap.ticker.remove(this._tick);
 			this._isTicking = false;
+			this._checkInfiniteWrap();
 		}
 
 		this._applyLayout(this._tickerCurrent);
@@ -659,6 +688,34 @@ export class MoniCarousel extends MoniElement {
 			this._buildQuickSetters();
 		}
 
+		if (this.infinite && !this._infiniteInitialized && this.effectiveItems.length > 0) {
+			const C = this.effectiveItems.length;
+			const V = C * this._visualCardsMultiplier;
+			const K = this._snapSetsCount;
+			const centerSetIndex = Math.floor(K / 2);
+			
+			// Wait for the browser to render the new items so scrollWidth is updated
+			// A double-rAF or setTimeout ensures the layout engine has processed the new snap-items
+			requestAnimationFrame(() => {
+				setTimeout(() => {
+					if (this._scrollContainer) {
+						// Force layout calculation
+						const sw = this._scrollContainer.scrollWidth;
+						this._scrollContainer.scrollLeft = centerSetIndex * V * this.itemSize;
+						
+						// If the browser still clamped it, it means it's not ready. 
+						// But with setTimeout it should be fully ready.
+						
+						// Force the visual ticker to match instantly to avoid an animation zoom from 0
+						this._tickerTarget = this._scrollContainer.scrollLeft / this.itemSize;
+						this._tickerCurrent = this._tickerTarget;
+						this._applyLayout(this._tickerCurrent);
+					}
+				}, 20);
+			});
+			this._infiniteInitialized = true;
+		}
+
 		this._tickerTarget = this._scrollContainer.scrollLeft / this.itemSize;
 
 		if (instant || (!this._isTicking && this._tickerCurrent === 0)) {
@@ -676,7 +733,21 @@ export class MoniCarousel extends MoniElement {
 		const isMobile = this._isMobile;
 		const cardCount = this._cards.length;
 		for (let i = 0; i < cardCount; i++) {
-			const p = i - t;
+			let p = i - t;
+			if (this.infinite) {
+				// Modulo wrap so the cards perfectly loop around the center
+				p = i - (t % cardCount);
+				if (p > cardCount / 2) p -= cardCount;
+				if (p < -cardCount / 2) p += cardCount;
+			}
+
+			// Optimization: if the card is far off-screen, hide it to save rendering work
+			if (p < -15 || p > 15) {
+				this._cardSetX[i](-9999);
+				this._titleSetOpacity[i](0);
+				continue;
+			}
+
 			const layout = this._getCardLayout(p);
 
 			// Use quickSetters — ~3x faster than gsap.set() per call
@@ -693,8 +764,115 @@ export class MoniCarousel extends MoniElement {
 		}
 	}
 
+	private get _visualCardsMultiplier() {
+		if (!this.infinite || this.effectiveItems.length === 0) return 1;
+		const C = this.effectiveItems.length;
+		// We need at least ~15 cards to fill the screen seamlessly for small datasets
+		return Math.max(1, Math.ceil(15 / C));
+	}
+
+	private get _snapSetsCount() {
+		if (!this.infinite || this.effectiveItems.length === 0) return 1;
+		const C = this.effectiveItems.length;
+		const V = C * this._visualCardsMultiplier;
+		// We want enough snap items so the user NEVER reaches the end in a single fast swipe.
+		// A total of ~1000 items is extremely cheap as empty divs, and provides a massive buffer.
+		let K = Math.ceil(1000 / V);
+		if (K % 2 === 0) K += 1; // Keep it odd for a perfect center
+		return Math.max(3, K);
+	}
+
+	private get _snapItemsCount() {
+		if (this.infinite) {
+			const C = this.effectiveItems.length;
+			const V_mult = this._visualCardsMultiplier;
+			const K = this._snapSetsCount;
+			return K * (C * V_mult);
+		}
+		return this.effectiveItems.length;
+	}
+
+	private _checkInfiniteWrap() {
+		if (!this.infinite || this.effectiveItems.length === 0 || !this._scrollContainer) return;
+		
+		const C = this.effectiveItems.length;
+		const V = C * this._visualCardsMultiplier;
+		const K = this._snapSetsCount;
+		const centerSetIndex = Math.floor(K / 2);
+		
+		// The scroll track is divided into K sets, each containing V items.
+		const setWidth = V * this.itemSize;
+		
+		const currentScroll = this._scrollContainer.scrollLeft;
+		const currentSet = Math.floor(currentScroll / setWidth);
+		
+		if (currentSet !== centerSetIndex) {
+			const delta = (centerSetIndex - currentSet) * setWidth;
+			
+			const oldSnap = this._scrollContainer.style.scrollSnapType;
+			const oldBehavior = this._scrollContainer.style.scrollBehavior;
+			
+			// Temporarily disable snap and smooth behavior so the wrap is instantaneous
+			this._scrollContainer.style.scrollSnapType = 'none';
+			this._scrollContainer.style.scrollBehavior = 'auto';
+			
+			this._scrollContainer.scrollLeft += delta;
+			
+			// INSTANTLY update the GSAP visual ticker so it doesn't animate the jump
+			this._tickerTarget = this._scrollContainer.scrollLeft / this.itemSize;
+			this._tickerCurrent = this._tickerTarget;
+			this._applyLayout(this._tickerCurrent);
+			
+			// Restore original scroll behavior
+			this._scrollContainer.style.scrollBehavior = oldBehavior;
+			
+			if (this._isDown) {
+				this._scrollLeftStart += delta;
+			}
+			
+			if (oldSnap && oldSnap !== 'none') {
+				// Re-enable snap on the next frame to avoid jumping
+				requestAnimationFrame(() => {
+					if (this._scrollContainer && !this._isDown) {
+						this._scrollContainer.style.scrollSnapType = oldSnap;
+					}
+				});
+			}
+		}
+	}
+
+	private _startAutoplay() {
+		this._stopAutoplay();
+		if (this.autoplay && this.effectiveItems.length > 0) {
+			this._autoplayTimer = setInterval(() => {
+				// We removed _isInteracting to make autoplay more robust. It only pauses on active drag.
+				if (!this._isDown) {
+					this._scrollNext();
+				}
+			}, this.autoplayInterval) as unknown as number;
+		}
+	}
+
+	private _stopAutoplay() {
+		if (this._autoplayTimer) {
+			clearInterval(this._autoplayTimer);
+			this._autoplayTimer = null;
+		}
+	}
+
+	private _handleMouseEnter() {
+		this._isInteracting = true;
+	}
+
+	private _handleMouseLeave() {
+		this._isInteracting = false;
+		this._handleMouseUp();
+	}
+
 	private _handleMouseDown(e: MouseEvent) {
+		this._isInteracting = true;
 		gsap.killTweensOf(this._scrollContainer);
+		this._checkInfiniteWrap();
 		this._isDown = true;
 		this._draggedDistance = 0;
 		this._scrollContainer.style.scrollBehavior = 'auto';
@@ -726,6 +904,7 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleMouseUp() {
+		this._isInteracting = false;
 		if (!this._isDown) return;
 		this._isDown = false;
 
@@ -736,13 +915,22 @@ export class MoniCarousel extends MoniElement {
 
 		// Dynamic momentum: stronger swipes have a much higher multiplier
 		const momentumMultiplier = 350 + Math.abs(this._velocity) * 300;
-		const projectedScrollLeft = this._scrollContainer.scrollLeft - this._velocity * momentumMultiplier;
+		let projectedScrollLeft = this._scrollContainer.scrollLeft - this._velocity * momentumMultiplier;
+
+		// Cap momentum throw to prevent hitting infinite wrap edges on fast swipes
+		const maxThrowDist = 15 * this.itemSize;
+		if (projectedScrollLeft < this._scrollContainer.scrollLeft - maxThrowDist) {
+			projectedScrollLeft = this._scrollContainer.scrollLeft - maxThrowDist;
+		} else if (projectedScrollLeft > this._scrollContainer.scrollLeft + maxThrowDist) {
+			projectedScrollLeft = this._scrollContainer.scrollLeft + maxThrowDist;
+		}
 
 		if (this.layout !== 'uncontained') {
 			this._scrollContainer.style.scrollSnapType = 'none';
 
 			let targetIndex = Math.round(projectedScrollLeft / this.itemSize);
-			targetIndex = Math.max(0, Math.min(this.effectiveItems.length - 1, targetIndex));
+			const maxIndex = this.effectiveItems.length > 0 ? this._snapItemsCount - 1 : 0;
+			targetIndex = Math.max(0, Math.min(maxIndex, targetIndex));
 			const snapPoint = targetIndex * this.itemSize;
 
 			// Dynamic duration: longer distance = more time, max 0.85s for faster feeling
@@ -766,7 +954,9 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleTouchStart(e: TouchEvent) {
+		this._isInteracting = true;
 		gsap.killTweensOf(this._scrollContainer);
+		this._checkInfiniteWrap();
 		this._isDown = true;
 		this._draggedDistance = 0;
 		this._scrollContainer.style.scrollBehavior = 'auto';
@@ -799,6 +989,7 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleTouchEnd() {
+		this._isInteracting = false;
 		this._handleMouseUp();
 	}
 
@@ -831,7 +1022,7 @@ export class MoniCarousel extends MoniElement {
 			// Restablecer el snap después de un pequeño retraso
 			if ((this as any)._wheelTimeout) clearTimeout((this as any)._wheelTimeout);
 			(this as any)._wheelTimeout = setTimeout(() => {
-				if (this.layout !== 'uncontained') {
+				if (this.layout !== 'uncontained' && !this._isDown) {
 					this._scrollContainer.style.scrollSnapType = 'x mandatory';
 				}
 			}, 150);
@@ -845,9 +1036,10 @@ export class MoniCarousel extends MoniElement {
 			return;
 		}
 
+		const originalIndex = index % this.effectiveItems.length;
 		this.dispatchEvent(
 			new CustomEvent('item-click', {
-				detail: { item, index },
+				detail: { item, index: originalIndex },
 				bubbles: true,
 				composed: true
 			})
@@ -855,14 +1047,13 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _scrollPrevious() {
-		const target = Math.max(0, this._scrollContainer.scrollLeft - this.itemSize);
+		const target = this._scrollContainer.scrollLeft - this.itemSize;
 		this._scrollContainer.style.scrollBehavior = 'smooth';
 		this._scrollContainer.scrollTo({ left: target, behavior: 'smooth' });
 	}
 
 	private _scrollNext() {
-		const maxScroll = this._scrollContainer.scrollWidth - this._scrollContainer.clientWidth;
-		const target = Math.min(maxScroll, this._scrollContainer.scrollLeft + this.itemSize);
+		const target = this._scrollContainer.scrollLeft + this.itemSize;
 		this._scrollContainer.style.scrollBehavior = 'smooth';
 		this._scrollContainer.scrollTo({ left: target, behavior: 'smooth' });
 	}
@@ -959,15 +1150,27 @@ export class MoniCarousel extends MoniElement {
 			rightPadding = minRightPaddingNeeded;
 		}
 
+		let snapItemsCount = hasItems ? this._snapItemsCount : 0;
+		let visualItems = this.effectiveItems;
+		
+		if (this.infinite && hasItems) {
+			const V_mult = this._visualCardsMultiplier;
+			
+			visualItems = [];
+			for (let i = 0; i < V_mult; i++) {
+				visualItems = visualItems.concat(this.effectiveItems);
+			}
+		}
+
 		const trackWidth = hasItems
-			? this.effectiveItems.length * L + (this.effectiveItems.length - 1) * this.gap
+			? snapItemsCount * L + (snapItemsCount - 1) * this.gap
 			: 0;
 
 		const isScrollable = hasItems && this._scrollContainer && 
 			(this._scrollContainer.scrollWidth > this._scrollContainer.clientWidth);
-		const showPrevArrow = isScrollable && this._scrollContainer.scrollLeft > 5;
-		const showNextArrow = isScrollable && 
-			(this._scrollContainer.scrollWidth - this._scrollContainer.scrollLeft - this._scrollContainer.clientWidth > 5);
+		const showPrevArrow = this.infinite || (isScrollable && this._scrollContainer.scrollLeft > 5);
+		const showNextArrow = this.infinite || (isScrollable && 
+			(this._scrollContainer.scrollWidth - this._scrollContainer.scrollLeft - this._scrollContainer.clientWidth > 5));
 
 		return html`
 			<div class="carousel-container" style="
@@ -1015,18 +1218,19 @@ export class MoniCarousel extends MoniElement {
 						@mousedown=${this._handleMouseDown}
 						@mousemove=${this._handleMouseMove}
 						@mouseup=${this._handleMouseUp}
-						@mouseleave=${this._handleMouseUp}
+						@mouseenter=${this._handleMouseEnter}
+						@mouseleave=${this._handleMouseLeave}
 						@touchstart=${this._handleTouchStart}
 						@touchmove=${this._handleTouchMove}
 						@touchend=${this._handleTouchEnd}
 						@wheel=${this._handleWheel}
 					>
 						<div class="snap-track">
-							${hasItems ? this.effectiveItems.map(() => html`<div class="snap-item"></div>`) : ''}
+							${hasItems ? Array.from({ length: snapItemsCount }).map(() => html`<div class="snap-item"></div>`) : ''}
 						</div>
 						<div class="visual-track">
 							${hasItems
-								? this.effectiveItems.map(
+								? visualItems.map(
 										(item, idx) => html`
 											<div 
 												class="card" 
@@ -1034,16 +1238,16 @@ export class MoniCarousel extends MoniElement {
 											>
 												${item.href
 													? html`
-															<a href="${item.href}" target="${item.target || '_self'}" style="text-decoration:none; color:inherit;">
+															<a href="${item.href}" target="${item.target || '_self'}" style="text-decoration:none; color:inherit;" draggable="false">
 																<div class="img-parallax-container">
-																	<img src="${item.img}" alt="${item.title}" draggable="false" />
+																	<img src="${item.img}" alt="${item.title}" draggable="false" loading="lazy" />
 																</div>
 																<h2 class="card-title">${item.title}</h2>
 															</a>
 														`
 													: html`
 															<div class="img-parallax-container">
-																<img src="${item.img}" alt="${item.title}" draggable="false" />
+																<img src="${item.img}" alt="${item.title}" draggable="false" loading="lazy" />
 															</div>
 															<h2 class="card-title">${item.title}</h2>
 														`}
