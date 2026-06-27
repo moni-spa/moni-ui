@@ -130,7 +130,6 @@ export class MoniCarousel extends MoniElement {
 	// Infinite & Autoplay state
 	private _infiniteInitialized = false;
 	private _autoplayTimer: any = null;
-	private _isInteracting = false;
 
 	// quickSetter caches — avoid gsap.set() overhead per frame
 	private _cardSetX: ((value: number) => void)[] = [];
@@ -700,7 +699,7 @@ export class MoniCarousel extends MoniElement {
 				setTimeout(() => {
 					if (this._scrollContainer) {
 						// Force layout calculation
-						const sw = this._scrollContainer.scrollWidth;
+						this._scrollContainer.scrollWidth;
 						this._scrollContainer.scrollLeft = centerSetIndex * V * this.itemSize;
 						
 						// If the browser still clamped it, it means it's not ready. 
@@ -861,16 +860,13 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleMouseEnter() {
-		this._isInteracting = true;
 	}
-
+ 
 	private _handleMouseLeave() {
-		this._isInteracting = false;
 		this._handleMouseUp();
 	}
 
 	private _handleMouseDown(e: MouseEvent) {
-		this._isInteracting = true;
 		gsap.killTweensOf(this._scrollContainer);
 		this._checkInfiniteWrap();
 		this._isDown = true;
@@ -904,7 +900,6 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleMouseUp() {
-		this._isInteracting = false;
 		if (!this._isDown) return;
 		this._isDown = false;
 
@@ -954,7 +949,6 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleTouchStart(e: TouchEvent) {
-		this._isInteracting = true;
 		gsap.killTweensOf(this._scrollContainer);
 		this._checkInfiniteWrap();
 		this._isDown = true;
@@ -989,7 +983,6 @@ export class MoniCarousel extends MoniElement {
 	}
 
 	private _handleTouchEnd() {
-		this._isInteracting = false;
 		this._handleMouseUp();
 	}
 
