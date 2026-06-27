@@ -1,6 +1,6 @@
 {
   "name": "@moni-labs/moni-ui",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": false,
   "type": "module",
   "description": "Design system unificado para Moni — Material Design 3 Expressive, mobile-first.",
