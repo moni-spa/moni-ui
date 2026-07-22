@@ -14,7 +14,7 @@ describe('moni-switch', () => {
 		el.remove();
 	});
 
-	it('renders an input and a span containing track/thumb pseudo-elements', async () => {
+	it('renderiza un input y un span que contiene pseudo-elementos track/thumb', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input');
 		const span = el.shadowRoot?.querySelector('span');
@@ -22,7 +22,7 @@ describe('moni-switch', () => {
 		expect(span).toBeTruthy();
 	});
 
-	it('input has role=switch', async () => {
+	it('el input tiene role=switch', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
 			'input'
@@ -30,7 +30,7 @@ describe('moni-switch', () => {
 		expect(input.getAttribute('role')).toBe('switch');
 	});
 
-	it('input is contained in the label (for click handling)', async () => {
+	it('el input está contenido en el label (para el manejo de clics)', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
 			'input'
@@ -39,7 +39,7 @@ describe('moni-switch', () => {
 		expect(label?.contains(input)).toBe(true);
 	});
 
-	it('forwards checked state to the input', async () => {
+	it('reenvía el estado checked al input', async () => {
 		el.checked = true;
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -52,14 +52,14 @@ describe('moni-switch', () => {
 		expect(input.checked).toBe(false);
 	});
 
-	it('renders a label span when label attribute is set', async () => {
+	it('renderiza un span de label cuando se establece el atributo label', async () => {
 		el.label = 'Wi-Fi';
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('.label');
 		expect(label?.textContent?.trim()).toBe('Wi-Fi');
 	});
 
-	it('forwards disabled to the input', async () => {
+	it('reenvía disabled al input', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -68,13 +68,13 @@ describe('moni-switch', () => {
 		expect(input.disabled).toBe(true);
 	});
 
-	it('reflects the checked attribute', async () => {
+	it('refleja el atributo checked', async () => {
 		el.checked = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('checked')).toBe(true);
 	});
 
-	it('renders close and check icons when icon=true', async () => {
+	it('renderiza iconos de cierre y verificación cuando icon=true', async () => {
 		el.icon = true;
 		await el.updateComplete;
 		const icons = el.shadowRoot?.querySelectorAll('span > i');
@@ -84,14 +84,14 @@ describe('moni-switch', () => {
 		expect(icons?.[1].textContent).toBe('check');
 	});
 
-	it('does not render a thumb icon when icon=false', async () => {
+	it('no renderiza un icono de pulgar cuando icon=false', async () => {
 		el.icon = false;
 		await el.updateComplete;
 		const icons = el.shadowRoot?.querySelectorAll('span > i');
 		expect(icons?.length).toBe(0);
 	});
 
-	it('forwards name to the input', async () => {
+	it('reenvía name al input', async () => {
 		el.name = 'wifi';
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -100,7 +100,7 @@ describe('moni-switch', () => {
 		expect(input.name).toBe('wifi');
 	});
 
-	it('forwards value to the input', async () => {
+	it('reenvía value al input', async () => {
 		el.value = 'on';
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -109,7 +109,7 @@ describe('moni-switch', () => {
 		expect(input.value).toBe('on');
 	});
 
-	it('input is rendered inside the switch label', async () => {
+	it('el input se renderiza dentro del label del switch', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input');
 		expect(input).toBeTruthy();

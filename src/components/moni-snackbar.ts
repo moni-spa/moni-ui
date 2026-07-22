@@ -11,76 +11,76 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Snackbar component.
+ * Componente Material Design 3 Snackbar (Barra de notificaciones).
  *
- * Snackbars provide brief messages about app processes at the bottom of the
- * screen. They disappear automatically and do not require user action,
- * but may contain a single optional action.
+ * Los snackbars proporcionan mensajes breves sobre los procesos de la aplicación en la parte
+ * inferior de la pantalla. Desaparecen automáticamente y no requieren acción del usuario,
+ * pero pueden contener una única acción opcional.
  *
- * **M3 spec reference:** `m3-docs/components/snackbar/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/snackbar/specs.md`
  *
- * **Positioning model:**
- * The snackbar uses `position: fixed` so it renders in the viewport
- * regardless of which element it is placed in the DOM. The host element
- * displays as `block` rather than `contents` to ensure `position: fixed`
- * inside the shadow root anchors to the viewport (not to a stacking context
- * created by a transformed ancestor).
+ * **Modelo de posicionamiento:**
+ * El snackbar utiliza `position: fixed` para que se renderice en la ventana gráfica (viewport)
+ * independientemente del elemento en el que esté ubicado en el DOM. El elemento host
+ * se muestra como `block` en lugar de `contents` para asegurar que `position: fixed`
+ * dentro del shadow root se ancle a la ventana gráfica (no a un contexto de apilamiento
+ * creado por un ancestro transformado).
  *
- * **Show/hide mechanism:**
- * Visibility is controlled by `:host([active]) .snackbar` via CSS
- * `opacity`, `visibility`, and `transform`. This mirrors BeerCSS's
- * `.snackbar.active` pattern and allows CSS transition animations.
+ * **Mecanismo de mostrar/ocultar:**
+ * La visibilidad es controlada por `:host([active]) .snackbar` a través de CSS
+ * `opacity`, `visibility`, y `transform`. Esto imita el patrón `.snackbar.active`
+ * de BeerCSS y permite animaciones de transición CSS.
  *
- * **M3 text truncation:**
- * The message text is clamped to `maxLines` lines with `-webkit-line-clamp`.
- * The M3 spec requires a maximum of 2 lines; consumers can override this
- * via the `max-lines` attribute.
+ * **Truncamiento de texto M3:**
+ * El texto del mensaje se limita a `maxLines` líneas con `-webkit-line-clamp`.
+ * La especificación M3 requiere un máximo de 2 líneas; los consumidores pueden
+ * anular esto a través del atributo `max-lines`.
  *
  * @example
  * ```ts
  * const snackbar = document.querySelector('moni-snackbar') as MoniSnackbar;
  *
- * // Show for 3 seconds
- * snackbar.text = 'Item deleted';
- * snackbar.action = 'Undo';
+ * // Mostrar por 3 segundos
+ * snackbar.text = 'Elemento eliminado';
+ * snackbar.action = 'Deshacer';
  * snackbar.active = true;
  * setTimeout(() => { snackbar.active = false; }, 3000);
  * ```
  *
- * @slot default - Additional content placed inside the snackbar container.
+ * @slot default - Contenido adicional colocado dentro del contenedor del snackbar.
  *
- * @csspart snackbar - The inner snackbar container element.
- * @csspart text     - The message text element.
- * @csspart action   - The action button element.
+ * @csspart snackbar - El elemento contenedor interno del snackbar.
+ * @csspart text     - El elemento del texto del mensaje.
+ * @csspart action   - El elemento del botón de acción.
  */
 @customElement('moni-snackbar')
 export class MoniSnackbar extends MoniElement {
 	/**
-	 * The main message text displayed in the snackbar.
+	 * El texto del mensaje principal mostrado en el snackbar.
 	 *
-	 * Clamped to `maxLines` lines. Long messages are truncated with `…`.
-	 * Per M3 spec, keep messages short and informative (under 60 characters).
+	 * Limitado a `maxLines` líneas. Los mensajes largos se truncan con `…`.
+	 * Según la especificación M3, mantenga los mensajes cortos e informativos (menos de 60 caracteres).
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) text = '';
 
 	/**
-	 * Label for the optional action button.
+	 * Etiqueta para el botón de acción opcional.
 	 *
-	 * When non-empty, renders a text button on the trailing edge of the snackbar.
-	 * The component dispatches a `'action'` event when the action is clicked.
-	 * This is a visual-only label — the consumer handles the action logic.
+	 * Cuando no está vacía, renderiza un botón de texto en el borde posterior (trailing) del snackbar.
+	 * El componente despacha un evento `'action'` cuando se hace clic en la acción.
+	 * Esta es una etiqueta puramente visual — el consumidor maneja la lógica de la acción.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) action = '';
 
 	/**
-	 * Vertical placement of the snackbar on the screen.
+	 * Ubicación vertical del snackbar en la pantalla.
 	 *
-	 * - `'bottom'` (default) — Fixed 6rem from the bottom, centered horizontally.
-	 * - `'top'` — Fixed 6rem from the top, centered horizontally.
+	 * - `'bottom'` (por defecto) — Fijo a 6rem desde la parte inferior, centrado horizontalmente.
+	 * - `'top'` — Fijo a 6rem desde la parte superior, centrado horizontalmente.
 	 *
 	 * @default 'bottom'
 	 */
@@ -88,21 +88,21 @@ export class MoniSnackbar extends MoniElement {
 	placement: 'bottom' | 'top' = 'bottom';
 
 	/**
-	 * When `true`, the snackbar is visible.
+	 * Cuando es `true`, el snackbar es visible.
 	 *
-	 * Toggle this attribute to show/hide the snackbar. The CSS transition
-	 * handles the fade-in/slide-up animation automatically.
-	 * Consumers are responsible for implementing the auto-dismiss timer.
+	 * Alterne este atributo para mostrar/ocultar el snackbar. La transición CSS
+	 * maneja la animación de desvanecimiento/deslizamiento hacia arriba (fade-in/slide-up) automáticamente.
+	 * Los consumidores son responsables de implementar el temporizador de cierre automático.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) active = false;
 
 	/**
-	 * Maximum number of lines of message text before it is clamped.
+	 * Número máximo de líneas del texto del mensaje antes de que sea limitado (clamped).
 	 *
-	 * Uses `-webkit-line-clamp` with `display: -webkit-box` for cross-browser
-	 * multi-line truncation. The M3 spec recommends a maximum of 2 lines.
+	 * Utiliza `-webkit-line-clamp` con `display: -webkit-box` para truncamiento multilínea
+	 * compatible en varios navegadores. La especificación M3 recomienda un máximo de 2 líneas.
 	 *
 	 * @default 2
 	 */
@@ -194,6 +194,16 @@ export class MoniSnackbar extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el snackbar con su mensaje y el botón de acción opcional.
+	 *
+	 * El contenedor del snackbar utiliza `aria-live="polite"` para que los lectores
+	 * de pantalla anuncien el mensaje sin interrumpir el flujo de lectura actual del usuario.
+	 * Cuando se establece `action`, se renderiza un `<span>` como botón de acción según
+	 * la especificación del Snackbar de M3.
+	 * El atributo `placement` se asigna a una clase CSS que controla `inset-block-end`
+	 * (snackbar inferior) vs `inset-block-start` (snackbar superior).
+	 */
 	override render() {
 		return html`<div
 			class="snackbar ${this.placement}"

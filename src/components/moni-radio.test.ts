@@ -14,7 +14,7 @@ describe('moni-radio', () => {
 		el.remove();
 	});
 
-	it('renders an input and a span for visual styling', async () => {
+	it('renderiza un input y un span para el estilo visual', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input');
 		const span = el.shadowRoot?.querySelector('span');
@@ -22,7 +22,7 @@ describe('moni-radio', () => {
 		expect(span).toBeTruthy();
 	});
 
-	it('forwards checked state to the input', async () => {
+	it('reenvía el estado checked al input', async () => {
 		el.checked = true;
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -35,7 +35,7 @@ describe('moni-radio', () => {
 		expect(input.checked).toBe(false);
 	});
 
-	it('input is contained in the label (for click handling)', async () => {
+	it('el input está contenido en el label (para el manejo de clics)', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
 			'input'
@@ -44,14 +44,14 @@ describe('moni-radio', () => {
 		expect(label?.contains(input)).toBe(true);
 	});
 
-	it('renders a label span when label attribute is set', async () => {
+	it('renderiza un span de label cuando se establece el atributo label', async () => {
 		el.label = 'Option A';
 		await el.updateComplete;
 		const span = el.shadowRoot?.querySelector('span');
 		expect(span?.textContent?.trim()).toBe('Option A');
 	});
 
-	it('forwards disabled to the input', async () => {
+	it('reenvía disabled al input', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -60,13 +60,13 @@ describe('moni-radio', () => {
 		expect(input.disabled).toBe(true);
 	});
 
-	it('reflects the checked attribute', async () => {
+	it('refleja el atributo checked', async () => {
 		el.checked = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('checked')).toBe(true);
 	});
 
-	it('forwards name to the input', async () => {
+	it('reenvía name al input', async () => {
 		el.name = 'group1';
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -75,7 +75,7 @@ describe('moni-radio', () => {
 		expect(input.name).toBe('group1');
 	});
 
-	it('forwards value to the input', async () => {
+	it('reenvía value al input', async () => {
 		el.value = 'a';
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(

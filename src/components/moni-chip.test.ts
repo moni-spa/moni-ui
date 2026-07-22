@@ -14,21 +14,21 @@ describe('moni-chip', () => {
 		el.remove();
 	});
 
-	it('renders a native <button>', async () => {
+	it('renderiza un <button> nativo', async () => {
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button).toBeTruthy();
 		expect(button?.getAttribute('type')).toBe('button');
 	});
 
-	it('defaults to variant=assist and size=small (M3 spec)', async () => {
+	it('por defecto es variant=assist y size=small (especificación M3)', async () => {
 		await el.updateComplete;
 		expect(el.variant).toBe('assist');
 		expect(el.size).toBe('small');
 		expect(el.getAttribute('variant')).toBe('assist');
 	});
 
-	it('accepts all 4 M3 variants (assist, filter, input, suggestion)', async () => {
+	it('acepta las 4 variantes M3 (assist, filter, input, suggestion)', async () => {
 		const variants: Array<'assist' | 'filter' | 'input' | 'suggestion'> = [
 			'assist',
 			'filter',
@@ -44,7 +44,7 @@ describe('moni-chip', () => {
 		}
 	});
 
-	it('aliases outlined → assist for backward compat', async () => {
+	it('crea un alias de outlined → assist para compatibilidad con versiones anteriores', async () => {
 		el.variant = 'outlined';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
@@ -52,7 +52,7 @@ describe('moni-chip', () => {
 		expect(button?.classList.contains('outlined')).toBe(false);
 	});
 
-	it('aliases fill → filter for backward compat', async () => {
+	it('crea un alias de fill → filter para compatibilidad con versiones anteriores', async () => {
 		el.variant = 'fill';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
@@ -60,14 +60,14 @@ describe('moni-chip', () => {
 		expect(button?.classList.contains('fill')).toBe(false);
 	});
 
-	it('selected chip applies the selected class', async () => {
+	it('el chip seleccionado aplica la clase selected', async () => {
 		el.selected = true;
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('selected')).toBe(true);
 	});
 
-	it('input variant always shows the trailing remove icon (M3 spec)', async () => {
+	it('la variante input siempre muestra el icono trailing de eliminar (especificación M3)', async () => {
 		el.variant = 'input';
 		el.textContent = 'Tag';
 		await el.updateComplete;
@@ -75,7 +75,7 @@ describe('moni-chip', () => {
 		expect(remove).toBeTruthy();
 	});
 
-	it('removable=true forces the trailing remove icon on any variant', async () => {
+	it('removable=true fuerza el icono trailing de eliminar en cualquier variante', async () => {
 		el.variant = 'assist';
 		el.removable = true;
 		el.textContent = 'Tag';
@@ -84,7 +84,7 @@ describe('moni-chip', () => {
 		expect(remove).toBeTruthy();
 	});
 
-	it('assist and suggestion chips do NOT show remove icon by default', async () => {
+	it('los chips assist y suggestion NO muestran el icono de eliminar por defecto', async () => {
 		for (const v of ['assist', 'suggestion'] as const) {
 			el.variant = v;
 			el.removable = false;
@@ -95,7 +95,7 @@ describe('moni-chip', () => {
 		}
 	});
 
-	it('icon attribute renders a leading moni-icon', async () => {
+	it('el atributo icon renderiza un moni-icon leading', async () => {
 		el.icon = 'add';
 		el.textContent = 'Add';
 		await el.updateComplete;
@@ -104,28 +104,28 @@ describe('moni-chip', () => {
 		expect(icon?.getAttribute('name')).toBe('add');
 	});
 
-	it('size=medium sets medium class on the button', async () => {
+	it('size=medium establece la clase medium en el botón', async () => {
 		el.size = 'medium';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('medium')).toBe(true);
 	});
 
-	it('size=large sets large class on the button', async () => {
+	it('size=large establece la clase large en el botón', async () => {
 		el.size = 'large';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('large')).toBe(true);
 	});
 
-	it('shape=square sets square class (M3 button morph target)', async () => {
+	it('shape=square establece la clase square (objetivo de transformación de botón M3)', async () => {
 		el.shape = 'square';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('square')).toBe(true);
 	});
 
-	it('disabled disables the inner button', async () => {
+	it('disabled deshabilita el botón interno', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector(
@@ -134,7 +134,7 @@ describe('moni-chip', () => {
 		expect(button.disabled).toBe(true);
 	});
 
-	it('loading shows moni-progress and sets aria-busy', async () => {
+	it('loading muestra moni-progress y establece aria-busy', async () => {
 		el.loading = true;
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('moni-progress');
@@ -143,7 +143,7 @@ describe('moni-chip', () => {
 		expect(button?.getAttribute('aria-busy')).toBe('true');
 	});
 
-	it('renders the default slot content inside [part=label]', async () => {
+	it('renderiza el contenido del slot por defecto dentro de [part=label]', async () => {
 		el.textContent = 'Hello chip';
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('[part="label"]');
@@ -154,7 +154,7 @@ describe('moni-chip', () => {
 		expect(text).toBe('Hello chip');
 	});
 
-	it('applies has-icon class only when a leading icon is present', async () => {
+	it('aplica la clase has-icon solo cuando hay un icono leading presente', async () => {
 		el.textContent = 'Filter';
 		await el.updateComplete;
 		let button = el.shadowRoot?.querySelector('button');

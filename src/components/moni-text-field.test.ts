@@ -14,7 +14,7 @@ describe('moni-text-field', () => {
 		el.remove();
 	});
 
-	it('renders a field wrapper and an input', async () => {
+	it('renderiza un contenedor de campo (field wrapper) y un input', async () => {
 		await el.updateComplete;
 		const field = el.shadowRoot?.querySelector('.field');
 		const input = el.shadowRoot?.querySelector('input');
@@ -22,49 +22,49 @@ describe('moni-text-field', () => {
 		expect(input).toBeTruthy();
 	});
 
-	it('renders a leading icon when icon attribute is set', async () => {
+	it('renderiza un icono inicial (leading) cuando se establece el atributo icon', async () => {
 		el.icon = 'search';
 		await el.updateComplete;
 		const leading = el.shadowRoot?.querySelector('.leading-icon');
 		expect(leading).toBeTruthy();
 	});
 
-	it('renders a trailing icon when trailing-icon attribute is set', async () => {
+	it('renderiza un icono final (trailing) cuando se establece el atributo trailing-icon', async () => {
 		el.setAttribute('trailing-icon', 'close');
 		await el.updateComplete;
 		const trailing = el.shadowRoot?.querySelector('.trailing-icon');
 		expect(trailing).toBeTruthy();
 	});
 
-	it('renders prefix text when prefix attribute is set', async () => {
+	it('renderiza un texto prefijo cuando se establece el atributo prefix', async () => {
 		el.prefix = 'https://';
 		await el.updateComplete;
 		const leading = el.shadowRoot?.querySelector('.leading-icon');
 		expect(leading?.textContent?.trim()).toBe('https://');
 	});
 
-	it('renders suffix text when suffix attribute is set', async () => {
+	it('renderiza un texto sufijo cuando se establece el atributo suffix', async () => {
 		el.suffix = '.com';
 		await el.updateComplete;
 		const trailing = el.shadowRoot?.querySelector('.trailing-icon');
 		expect(trailing?.textContent?.trim()).toBe('.com');
 	});
 
-	it('applies square class on the field wrapper for shape=no-round', async () => {
+	it('aplica la clase square en el contenedor de campo para shape=no-round', async () => {
 		el.shape = 'no-round';
 		await el.updateComplete;
 		const field = el.shadowRoot?.querySelector('.field');
 		expect(field?.classList.contains('square')).toBe(true);
 	});
 
-	it('applies round class on the field wrapper for shape=round', async () => {
+	it('aplica la clase round en el contenedor de campo para shape=round', async () => {
 		el.shape = 'round';
 		await el.updateComplete;
 		const field = el.shadowRoot?.querySelector('.field');
 		expect(field?.classList.contains('round')).toBe(true);
 	});
 
-	it('does not apply shape class on the field wrapper for shape=square', async () => {
+	it('no aplica la clase de forma (shape) en el contenedor de campo para shape=square', async () => {
 		el.shape = 'square';
 		await el.updateComplete;
 		const field = el.shadowRoot?.querySelector('.field');
@@ -72,7 +72,7 @@ describe('moni-text-field', () => {
 		expect(field?.classList.contains('round')).toBe(false);
 	});
 
-	it('shows the loading spinner when loading is true', async () => {
+	it('muestra el indicador de carga cuando loading es true', async () => {
 		el.loading = true;
 		await el.updateComplete;
 		const trailing = el.shadowRoot?.querySelector('.trailing-icon');
@@ -80,13 +80,13 @@ describe('moni-text-field', () => {
 		expect(progress).toBeTruthy();
 	});
 
-	it('does not render a leading icon by default', async () => {
+	it('no renderiza un icono inicial por defecto', async () => {
 		await el.updateComplete;
 		const leading = el.shadowRoot?.querySelector('.leading-icon');
 		expect(leading).toBeFalsy();
 	});
 
-	it('forwards value to the input', async () => {
+	it('reenvía value al input', async () => {
 		el.value = 'hello world';
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -95,14 +95,14 @@ describe('moni-text-field', () => {
 		expect(input.value).toBe('hello world');
 	});
 
-	it('adds active class to input when value is set', async () => {
+	it('agrega la clase active al input cuando se establece el valor', async () => {
 		el.value = 'something';
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input');
 		expect(input?.classList.contains('active')).toBe(true);
 	});
 
-	it('renders label and toggles active class based on value', async () => {
+	it('renderiza el label y alterna la clase active basándose en el valor', async () => {
 		el.label = 'Email';
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('label');

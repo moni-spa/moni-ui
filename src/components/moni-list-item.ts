@@ -11,60 +11,60 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 List Item component.
+ * Componente Material Design 3 List Item (Elemento de Lista).
  *
- * A single row within a `<moni-list>`. List items display a headline and
- * optional supporting text, metadata, icons, or avatars.
+ * Una sola fila dentro de un `<moni-list>`. Los elementos de lista muestran un titular y
+ * opcionalmente texto de soporte, metadatos, iconos o avatares.
  *
- * **M3 spec reference:** `m3-docs/components/lists/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/lists/specs.md`
  *
- * **Line configurations:**
- * The `lines` attribute configures the layout and minimum height of the item:
- * - `lines="1"` (default) — 56dp min height. Only the headline slot is shown.
- * - `lines="2"` — 72dp min height. Shows headline and supporting text.
- * - `lines="3"` — 88dp min height. Shows headline, supporting text, and meta text.
+ * **Configuraciones de línea:**
+ * El atributo `lines` configura el diseño y la altura mínima del elemento:
+ * - `lines="1"` (por defecto) — altura mínima de 56dp. Solo se muestra el slot del titular.
+ * - `lines="2"` — altura mínima de 72dp. Muestra el titular y el texto de soporte.
+ * - `lines="3"` — altura mínima de 88dp. Muestra el titular, el texto de soporte y el texto meta.
  *
- * **Interactive behavior:**
- * By default, items render as `<button>` elements, gaining the M3 state layer
- * (hover, focus, and press ripple effects).
- * If the `href` attribute is provided, the item internally renders as an `<a>`
- * element, allowing native link routing and interactions while preserving the
- * list item styling.
+ * **Comportamiento interactivo:**
+ * Por defecto, los elementos se renderizan como elementos `<button>`, adquiriendo la capa de estado de M3
+ * (efectos de ondulación de hover, focus y press).
+ * Si se proporciona el atributo `href`, el elemento se renderiza internamente como un elemento `<a>`,
+ * permitiendo enrutamiento de enlaces nativos e interacciones mientras se preserva el
+ * estilo del elemento de lista.
  *
- * **Visual elements:**
- * - `icon` (attribute) — Material Symbol name for the leading icon (24dp).
- * - `avatar` (attribute) — URL for a leading circular image (40dp).
- * - `trailing-icon` (attribute) — Material Symbol name for the trailing icon.
+ * **Elementos visuales:**
+ * - `icon` (atributo) — Nombre de Material Symbol para el icono inicial (24dp).
+ * - `avatar` (atributo) — URL para una imagen circular inicial (40dp).
+ * - `trailing-icon` (atributo) — Nombre de Material Symbol para el icono final.
  *
  * @example
  * ```html
- * <!-- 1-line item with icon -->
+ * <!-- Elemento de 1 línea con icono -->
  * <moni-list-item icon="inbox">
- *   Inbox
+ *   Bandeja de entrada
  * </moni-list-item>
  *
- * <!-- 2-line item with avatar and trailing meta -->
+ * <!-- Elemento de 2 líneas con avatar y meta final -->
  * <moni-list-item lines="2" avatar="/user.jpg">
  *   Ali Connors
- *   <span slot="supporting">Brunch this weekend?</span>
+ *   <span slot="supporting">¿Brunch este fin de semana?</span>
  *   <span slot="trailing-meta">10 min</span>
  * </moni-list-item>
  *
- * <!-- Link item -->
+ * <!-- Elemento de enlace -->
  * <moni-list-item href="/settings" icon="settings">
- *   Settings
+ *   Ajustes
  * </moni-list-item>
  * ```
  *
- * @slot default       - Headline text (Line 1).
- * @slot supporting    - Supporting text (Line 2, requires `lines>=2`).
- * @slot meta          - Additional meta text (Line 3, requires `lines=3`).
- * @slot trailing-meta - Small text displayed on the far right edge.
+ * @slot default       - Texto del titular (Línea 1).
+ * @slot supporting    - Texto de soporte (Línea 2, requiere `lines>=2`).
+ * @slot meta          - Texto meta adicional (Línea 3, requiere `lines=3`).
+ * @slot trailing-meta - Texto pequeño mostrado en el borde derecho lejano.
  *
- * @csspart item          - The outer `<button>` or `<a>` container.
- * @csspart leading-icon  - Container for the leading icon/avatar.
- * @csspart text          - Container for the multi-line text block.
- * @csspart trailing-icon - Container for the trailing icon.
+ * @csspart item          - El contenedor externo `<button>` o `<a>`.
+ * @csspart leading-icon  - Contenedor para el icono/avatar inicial.
+ * @csspart text          - Contenedor para el bloque de texto multilínea.
+ * @csspart trailing-icon - Contenedor para el icono final.
  */
 @customElement('moni-list-item')
 export class MoniListItem extends MoniElement {
@@ -82,18 +82,25 @@ export class MoniListItem extends MoniElement {
 		sharedStyles,
 		css`
 			:host {
+				display: block;
+				color: var(--on-surface);
+				background-color: transparent;
+				position: relative;
+				font-family: var(--font);
+				transition: background-color var(--speed2);
+			}
+
+			.row {
 				display: flex;
 				align-items: center;
 				gap: 1rem;
 				padding: 0.5rem 1rem;
 				min-block-size: 3.5rem;
-				color: var(--on-surface);
-				background-color: transparent;
+				box-sizing: border-box;
+				color: inherit;
 				text-decoration: none;
 				cursor: pointer;
-				position: relative;
-				font-family: var(--font);
-				transition: background-color var(--speed2);
+				width: 100%;
 			}
 
 			:host([active]) {
@@ -111,10 +118,10 @@ export class MoniListItem extends MoniElement {
 				border-block-end: 0.0625rem solid var(--outline-variant);
 			}
 
-			:host([lines='2']) {
+			:host([lines='2']) .row {
 				min-block-size: 4.5rem;
 			}
-			:host([lines='3']) {
+			:host([lines='3']) .row {
 				min-block-size: 5.5rem;
 			}
 
@@ -196,6 +203,19 @@ export class MoniListItem extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el diseño de 3 zonas del elemento de lista: medios iniciales, contenido y elemento final.
+	 *
+	 * **Anatomía del elemento de lista M3:**
+	 * - Zona inicial: avatar, icono o miniatura (`[slot="leading"]`).
+	 * - Zona de contenido: `overline` opcional (etiqueta pequeña en mayúsculas), `title` (texto primario),
+	 *   y `description` (texto secundario/de soporte). Cada uno se renderiza condicionalmente
+	 *   solo cuando el atributo correspondiente no está vacío para evitar nodos DOM vacíos.
+	 * - Zona final: metadatos, botón de icono, o radio/checkbox (`[slot="trailing"]`).
+	 *
+	 * Un `<slot>` vacío se renderiza en la zona de contenido como respaldo para que los consumidores
+	 * puedan proyectar texto sin formato o marcado complejo directamente en el elemento.
+	 */
 	override render() {
 		const leading = this.avatar
 			? html`<span
@@ -241,7 +261,7 @@ export class MoniListItem extends MoniElement {
 					href=${this.href}
 					>${inner}</a
 				>`
-			: inner;
+			: html`<div class="row" part="row">${inner}</div>`;
 	}
 }
 

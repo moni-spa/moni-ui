@@ -12,49 +12,49 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Navigation Item component.
+ * Componente Material Design 3 Navigation Item (Elemento de Navegación).
  *
- * A single destination item within a `<moni-nav>` container. Renders as an
- * accessible `<a>` element with an icon, label, and M3 state layer.
+ * Un elemento de destino individual dentro de un contenedor `<moni-nav>`. Se renderiza como un
+ * elemento `<a>` accesible con un icono, etiqueta y capa de estado M3.
  *
- * **M3 spec references:**
- * - Navigation bar item: `m3-docs/components/navigation-bar/specs.md`
- * - Navigation rail item: `m3-docs/components/navigation-rail/specs.md`
- * - Navigation drawer item: `m3-docs/components/navigation-drawer/specs.md`
+ * **Referencias a la especificación M3:**
+ * - Elemento de barra de navegación: `m3-docs/components/navigation-bar/specs.md`
+ * - Elemento de riel de navegación: `m3-docs/components/navigation-rail/specs.md`
+ * - Elemento de cajón de navegación: `m3-docs/components/navigation-drawer/specs.md`
  *
- * **Layout adaptation:**
- * The `placement`, `variant`, and `layout` properties are forwarded from
- * the parent `<moni-nav>` (typically via attribute binding in the parent's
- * render method). The nav item uses these to conditionally render:
- * - Icon + label below (navigation bar).
- * - Icon only + horizontal label (rail).
- * - Icon + full label (drawer).
+ * **Adaptación de diseño:**
+ * Las propiedades `placement`, `variant` y `layout` son retransmitidas desde
+ * el padre `<moni-nav>` (típicamente a través de vinculación de atributos en el
+ * método render del padre). El elemento de navegación las usa para renderizar condicionalmente:
+ * - Icono + etiqueta abajo (barra de navegación).
+ * - Solo icono + etiqueta horizontal (riel).
+ * - Icono + etiqueta completa (cajón).
  *
- * **Responsive behavior:**
- * Uses `window.matchMedia('(min-width: 601px)')` to detect medium screens
- * and stores the result in `_isMediumScreen`. This drives automatic layout
- * switching between bar and rail styles.
+ * **Comportamiento responsivo:**
+ * Usa `window.matchMedia('(min-width: 601px)')` para detectar pantallas medianas
+ * y almacena el resultado en `_isMediumScreen`. Esto impulsa el cambio de diseño
+ * automático entre estilos de barra y riel.
  *
- * **Active state:**
- * The `active` attribute applies the M3 active indicator: a pill-shaped
- * `secondary-container` background behind the icon and a darker label color.
+ * **Estado activo:**
+ * El atributo `active` aplica el indicador activo M3: un fondo `secondary-container`
+ * en forma de píldora detrás del icono y un color de etiqueta más oscuro.
  *
  * @example
  * ```html
  * <moni-nav placement="bottom">
- *   <moni-nav-item href="/" icon="home" label="Home" active></moni-nav-item>
- *   <moni-nav-item href="/search" icon="search" label="Search"></moni-nav-item>
- *   <moni-nav-item href="/profile" icon="person" label="Profile">
- *     <moni-badge value="3"></moni-badge>  <!-- notification badge -->
+ *   <moni-nav-item href="/" icon="home" label="Inicio" active></moni-nav-item>
+ *   <moni-nav-item href="/search" icon="search" label="Buscar"></moni-nav-item>
+ *   <moni-nav-item href="/profile" icon="person" label="Perfil">
+ *     <moni-badge value="3"></moni-badge>  <!-- insignia de notificación -->
  *   </moni-nav-item>
  * </moni-nav>
  * ```
  *
- * @slot default - Additional content slotted after the icon (e.g. `<moni-badge>`).
+ * @slot default - Contenido adicional colocado después del icono (ej. `<moni-badge>`).
  *
- * @csspart item   - The outer `<a>` element.
- * @csspart icon   - The icon container.
- * @csspart label  - The label text element.
+ * @csspart item   - El elemento exterior `<a>`.
+ * @csspart icon   - El contenedor del icono.
+ * @csspart label  - El elemento de texto de la etiqueta.
  */
 @customElement('moni-nav-item')
 export class MoniNavItem extends MoniElement {
@@ -74,6 +74,12 @@ export class MoniNavItem extends MoniElement {
 		? window.matchMedia('(min-width: 601px)')
 		: null;
 
+	/**
+	 * Hook de inicialización (Lit).
+	 * Vincula un listener de `MediaQueryList` nativo para poder reaccionar en tiempo real
+	 * cuando la pantalla cruza el breakpoint de 600px, adaptando la disposición
+	 * (horizontal vs vertical) del ícono y la etiqueta automáticamente.
+	 */
 	override connectedCallback() {
 		super.connectedCallback();
 		if (this._query) {
@@ -82,6 +88,11 @@ export class MoniNavItem extends MoniElement {
 		}
 	}
 
+	/**
+	 * Hook de destrucción (Lit).
+	 * Desvincula rigurosamente el listener del `matchMedia` para
+	 * prevenir fugas de memoria (memory leaks).
+	 */
 	override disconnectedCallback() {
 		super.disconnectedCallback();
 		if (this._query) {
@@ -89,6 +100,11 @@ export class MoniNavItem extends MoniElement {
 		}
 	}
 
+	/**
+	 * Callback asíncrono disparado nativamente por el navegador cuando
+	 * cambian las condiciones del Media Query. 
+	 * Actualiza el estado reactivo `_isMediumScreen` lo que fuerza a Lit a re-renderizar.
+	 */
 	private _handleQueryChange = (e: MediaQueryListEvent) => {
 		this._isMediumScreen = e.matches;
 	};
@@ -236,6 +252,20 @@ export class MoniNavItem extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el elemento de navegación como un `<a>` o `<button>` con ranura de icono, etiqueta y badge (insignia).
+	 *
+	 * **Indicador activo:**
+	 * La barra de navegación M3 usa un indicador en forma de píldora detrás del icono del
+	 * elemento activo. Esto se implementa como el pseudo-elemento `::before` en
+	 * `.item` que crece de `0` a `64px` de ancho usando una transición CSS.
+	 * La clase `active` en `.item` activa la transición y también establece
+	 * `aria-current="page"` para lectores de pantalla.
+	 *
+	 * **Ranura para badge (insignia):**
+	 * `[slot="badge"]` se renderiza posicionado absolutamente sobre la esquina superior final del icono.
+	 * Los consumidores colocan un `<moni-badge>` aquí para cuentas de notificaciones.
+	 */
 	override render() {
 		const isHorizontal = this.computedLayout === 'horizontal';
 

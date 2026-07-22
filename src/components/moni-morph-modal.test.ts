@@ -74,11 +74,11 @@ describe('moni-morph-modal', () => {
 		target.remove();
 	});
 
-	it('registers the custom element', () => {
+	it('registra el elemento personalizado', () => {
 		expect(customElements.get('moni-morph-modal')).toBeTruthy();
 	});
 
-	it('renders a panel and a backdrop in shadow root', async () => {
+	it('renderiza un panel y un backdrop en el shadow root', async () => {
 		await el.updateComplete;
 		const panel = el.shadowRoot?.querySelector('.panel');
 		const backdrop = el.shadowRoot?.querySelector('.backdrop');
@@ -86,18 +86,18 @@ describe('moni-morph-modal', () => {
 		expect(backdrop).toBeTruthy();
 	});
 
-	it('reflects the target attribute', async () => {
+	it('refleja el atributo target', async () => {
 		await el.updateComplete;
 		expect(el.getAttribute('target')).toBe('#test-target');
 	});
 
-	it('reflects the open attribute', async () => {
+	it('refleja el atributo open', async () => {
 		el.open = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('open')).toBe(true);
 	});
 
-	it('projects the default slot content', async () => {
+	it('proyecta el contenido del slot por defecto', async () => {
 		const content = document.createElement('p');
 		content.textContent = 'Hello';
 		el.appendChild(content);
@@ -108,7 +108,7 @@ describe('moni-morph-modal', () => {
 		expect(slot).toBeTruthy();
 	});
 
-	it('projects the header slot content', async () => {
+	it('proyecta el contenido del slot header', async () => {
 		const header = document.createElement('div');
 		header.setAttribute('slot', 'header');
 		header.textContent = 'Title';
@@ -118,7 +118,7 @@ describe('moni-morph-modal', () => {
 		expect(headerSlot).toBeTruthy();
 	});
 
-	it('projects the footer slot content', async () => {
+	it('proyecta el contenido del slot footer', async () => {
 		const footer = document.createElement('div');
 		footer.setAttribute('slot', 'footer');
 		footer.textContent = 'Actions';
@@ -128,14 +128,14 @@ describe('moni-morph-modal', () => {
 		expect(footerSlot).toBeTruthy();
 	});
 
-	it('shows the close button when show-close-button is true', async () => {
+	it('muestra el botón de cerrar cuando show-close-button es true', async () => {
 		el.showCloseButton = true;
 		await el.updateComplete;
 		const closeBtn = el.shadowRoot?.querySelector('.close-btn');
 		expect(closeBtn).toBeTruthy();
 	});
 
-	it('toggles open state when show() and hide() are called', async () => {
+	it('alterna el estado open cuando se llaman a show() y hide()', async () => {
 		expect(el.open).toBe(false);
 		el.show();
 		await waitForRaf();
@@ -145,7 +145,7 @@ describe('moni-morph-modal', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('toggles open state when toggle() is called', async () => {
+	it('alterna el estado open cuando se llama a toggle()', async () => {
 		el.toggle();
 		await waitForRaf();
 		expect(el.open).toBe(true);
@@ -154,7 +154,7 @@ describe('moni-morph-modal', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('warns when target is not found', () => {
+	it('advierte cuando no se encuentra el objetivo (target)', () => {
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		const modal = document.createElement('moni-morph-modal') as MoniMorphModal;
 		modal.target = '#missing-target';
@@ -167,7 +167,7 @@ describe('moni-morph-modal', () => {
 		warnSpy.mockRestore();
 	});
 
-	it('supports recursive declaration of nested morph modals', async () => {
+	it('soporta la declaración recursiva de modales morph anidados', async () => {
 		const innerTarget = document.createElement('button');
 		innerTarget.id = 'inner-target';
 		el.appendChild(innerTarget);
@@ -188,14 +188,14 @@ describe('moni-morph-modal', () => {
 		innerTarget.remove();
 	});
 
-	it('does not create morph elements by default', async () => {
+	it('no crea elementos morph por defecto', async () => {
 		el.show();
 		await waitForRaf();
 		expect(el.shadowRoot?.querySelector('.morph-text')).toBeFalsy();
 		expect(el.shadowRoot?.querySelector('.morph-icon')).toBeFalsy();
 	});
 
-	it('creates and cleans up morph-text when morph-label is true', async () => {
+	it('crea y limpia morph-text cuando morph-label es true', async () => {
 		(el as unknown as { _hasHeader: boolean })._hasHeader = true;
 		el.morphLabel = true;
 		await el.updateComplete;
@@ -212,7 +212,7 @@ describe('moni-morph-modal', () => {
 		createSpy.mockRestore();
 	});
 
-	it('uses trigger-label slot content when provided', async () => {
+	it('usa el contenido del slot trigger-label cuando se proporciona', async () => {
 		const triggerLabel = document.createElement('span');
 		triggerLabel.setAttribute('slot', 'trigger-label');
 		triggerLabel.textContent = 'Custom label';
@@ -237,7 +237,7 @@ describe('moni-morph-modal', () => {
 		getNodes.mockRestore();
 	});
 
-	it('runs label FLIP on close when morph-label is true', async () => {
+	it('ejecuta la animación FLIP de label al cerrar cuando morph-label es true', async () => {
 		(el as unknown as { _hasHeader: boolean })._hasHeader = true;
 		el.morphLabel = true;
 		await el.updateComplete;
@@ -257,7 +257,7 @@ describe('moni-morph-modal', () => {
 		closeSpy.mockRestore();
 	});
 
-	it('does not create morph elements when reduced motion is preferred', async () => {
+	it('no crea elementos morph cuando se prefiere movimiento reducido (reduced motion)', async () => {
 		(el as unknown as { _hasHeader: boolean })._hasHeader = true;
 		el.morphLabel = true;
 		await el.updateComplete;

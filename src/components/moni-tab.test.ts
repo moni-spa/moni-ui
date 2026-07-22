@@ -21,31 +21,31 @@ describe('moni-tab indicator-size', () => {
 		tabs.remove();
 	});
 
-	it('reflects indicatorSize on the host', async () => {
+	it('refleja indicatorSize en el host', async () => {
 		tabs.indicatorSize = 'min';
 		await tabs.updateComplete;
 		expect(tabs.getAttribute('indicator-size')).toBe('min');
 	});
 
-	it('reflects indicatorSize="max" on the host', async () => {
+	it('refleja indicatorSize="max" en el host', async () => {
 		tabs.indicatorSize = 'max';
 		await tabs.updateComplete;
 		expect(tabs.getAttribute('indicator-size')).toBe('max');
 	});
 
-	it('reflects indicatorSize="default" on the host', async () => {
+	it('refleja indicatorSize="default" en el host', async () => {
 		tabs.indicatorSize = 'default';
 		await tabs.updateComplete;
 		expect(tabs.getAttribute('indicator-size')).toBe('default');
 	});
 
-	it('vertical orientation is reflected on the tabs host', async () => {
+	it('la orientación vertical se refleja en el host de las pestañas (tabs)', async () => {
 		tabs.vertical = true;
 		await tabs.updateComplete;
 		expect(tabs.hasAttribute('vertical')).toBe(true);
 	});
 
-	it('tab active state reflects aria-selected=true', async () => {
+	it('el estado activo de la pestaña refleja aria-selected=true', async () => {
 		tab.active = true;
 		await tab.updateComplete;
 		const a = tab.shadowRoot?.querySelector('a');

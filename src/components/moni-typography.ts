@@ -11,59 +11,81 @@ import { unsafeStatic, html as staticHtml } from 'lit/static-html.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Typography component.
+ * Componente Material Design 3 Typography (Tipografía).
  *
- * A specialized text component that enforces the M3 type scale. It ensures
- * typography is consistent, accessible, and correctly styled across the
- * application without requiring manual CSS classes.
+ * Un componente de texto especializado que aplica la escala tipográfica M3. Asegura
+ * que la tipografía sea consistente, accesible y correctamente estilizada en toda la
+ * aplicación sin requerir clases CSS manuales.
  *
- * **M3 spec reference:** `m3-docs/components/typography/specs.md`
+ * **Categorías de Escala Tipográfica:**
+ * - `display`: El texto más grande en la pantalla, reservado para texto corto e importante
+ *   o números. Funciona mejor en pantallas grandes. (Renderiza `<h1>` por defecto).
+ * - `headline`: Texto de alto énfasis para encabezados primarios de página/sección.
+ *   (Renderiza `<h2>` por defecto).
+ * - `title`: Texto de énfasis medio utilizado para encabezados de diálogos o títulos
+ *   de sección más pequeños. (Renderiza `<h3>` por defecto).
+ * - `body`: Texto de párrafo estándar utilizado para contenido largo.
+ *   (Renderiza `<p>` por defecto).
+ * - `label`: Texto pequeño y utilitario usado para botones, leyendas y elementos
+ *   de formulario. (Renderiza `<label>` por defecto).
  *
- * **Type Scale Categories:**
- * - `display`: The largest text on the screen, reserved for short, important
- *   text or numerals. Works best on large screens. (Renders `<h1>` by default).
- * - `headline`: High-emphasis text for primary page/section headers.
- *   (Renders `<h2>` by default).
- * - `title`: Medium-emphasis text used for dialog headers or smaller section
- *   titles. (Renders `<h3>` by default).
- * - `body`: Standard paragraph text used for long-form content.
- *   (Renders `<p>` by default).
- * - `label`: Small, utilitarian text used for buttons, captions, and form
- *   elements. (Renders `<label>` by default).
+ * Cada categoría soporta tres tamaños: `large`, `medium` y `small`.
  *
- * Each category supports three sizes: `large`, `medium`, and `small`.
+ * **Etiquetas Semánticas:**
+ * El componente selecciona automáticamente una etiqueta semántica HTML apropiada basada en
+ * la variante. Puedes sobrescribir esto explícitamente configurando el atributo `as`
+ * (ej., para renderizar un estilo `headline` pero usando una etiqueta `<span>` por razones
+ * de SEO o estructurales).
  *
- * **Semantic Tags:**
- * The component automatically selects an appropriate HTML semantic tag based on
- * the variant. You can explicitly override this by setting the `as` attribute
- * (e.g., to render a `headline` style but using a `<span>` tag for SEO or
- * structural reasons).
+ * @element moni-typography
  *
  * @example
  * ```html
- * <!-- Renders an <h1> with display-large styles -->
- * <moni-typography variant="display" size="large">Hero Text</moni-typography>
+ * <!-- Renderiza un <h1> con estilos display-large -->
+ * <moni-typography variant="display" size="large">Texto Héroe</moni-typography>
  *
- * <!-- Renders a <p> with body-medium styles -->
- * <moni-typography variant="body">Standard paragraph text.</moni-typography>
+ * <!-- Renderiza un <p> con estilos body-medium -->
+ * <moni-typography variant="body">Texto de párrafo estándar.</moni-typography>
  *
- * <!-- Overriding the semantic tag -->
- * <moni-typography variant="title" as="span">Inline title</moni-typography>
+ * <!-- Sobrescribiendo la etiqueta semántica -->
+ * <moni-typography variant="title" as="span">Título en línea</moni-typography>
  * ```
  *
- * @slot default - The text content to display.
+ * @slot default - El contenido de texto a mostrar.
+ * @csspart text - El elemento semántico interno (ej., h1, p, span) que envuelve el texto.
  */
 @customElement('moni-typography')
 export class MoniTypography extends MoniElement {
+	/**
+	 * La categoría de la escala tipográfica M3 a aplicar.
+	 * Dicta la lógica base de font-family, line-height, weight, y letter-spacing.
+	 * @type {'display' | 'headline' | 'title' | 'body' | 'label'}
+	 */
 	@property({ reflect: true })
 	variant: 'display' | 'headline' | 'title' | 'body' | 'label' = 'body';
+
+	/**
+	 * El tamaño dentro de la categoría de variante elegida.
+	 * @type {'large' | 'medium' | 'small'}
+	 */
 	@property({ reflect: true })
 	size: 'large' | 'medium' | 'small' = 'medium';
+
+	/**
+	 * Sobrescribe la etiqueta semántica HTML por defecto (ej. 'h1', 'p', 'span') 
+	 * que se asigna automáticamente basándose en la variante (`variant`).
+	 * @type {string | null}
+	 */
 	@property({ reflect: true })
 	as: string | null = null;
+
+	/**
+	 * Contenido de texto simple opcional. Típicamente usarías el slot por defecto en su lugar.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) text = '';
 
-	/** Default semantic tag for each variant per M3 spec. */
+	/** Etiqueta semántica por defecto para cada variante según la especificación M3. */
 	private static _tagFor(
 		variant: 'display' | 'headline' | 'title' | 'body' | 'label'
 	): string {
@@ -81,11 +103,30 @@ export class MoniTypography extends MoniElement {
 		}
 	}
 
+	/**
+	 * Renderiza el elemento tipográfico con una etiqueta HTML seleccionada dinámicamente.
+	 *
+	 * **Selección dinámica de etiquetas:**
+	 * `_tagFor(variant)` infiere el elemento HTML semántico de la variante de tipografía
+	 * (ej. `'display-large'` → `<h1>`, `'body-medium'` → `<p>`).
+	 * El atributo `as` sobrescribe esta inferencia para contextos semánticos personalizados
+	 * (ej. usar `as="div"` cuando la tipografía está dentro de un `<dl>`).
+	 *
+	 * **¿Por qué `staticHtml` + `unsafeStatic`?**
+	 * Lit 3 no permite expresiones dinámicas en posiciones de nombres de etiquetas
+	 * (`<${tag}>` lanzaría un error de plantilla). `staticHtml` es un template tag
+	 * provisto por Lit que sí permite la interpolación estática de etiquetas, y `unsafeStatic`
+	 * envuelve el string para marcarlo como de confianza (sin riesgo XSS ya que `tag` proviene de
+	 * un enum controlado vía `_tagFor()`).
+	 *
+	 * El string `cls` (`variant + size`) mapea directamente a clases de utilidad
+	 * de tipografía (ej. `'display large'`).
+	 */
 	override render() {
 		const cls = `${this.variant} ${this.size}`;
 		const tag = this.as ?? MoniTypography._tagFor(this.variant);
-		// Render the dynamic tag with `unsafeStatic` so we don't hit the
-		// "Bindings in tag names are not supported" error from lit 3.
+		// Renderiza la etiqueta dinámica con `unsafeStatic` para evitar el error
+		// "Bindings in tag names are not supported" de lit 3.
 		const tagStatic = unsafeStatic(tag);
 		return staticHtml`<${tagStatic}
 			class=${cls}

@@ -16,7 +16,7 @@ describe('moni-nav / moni-nav-item', () => {
 		el.remove();
 	});
 
-	it('renders a <nav> with a slot', async () => {
+	it('renderiza un <nav> con un slot', async () => {
 		await el.updateComplete;
 		const nav = el.shadowRoot?.querySelector('nav');
 		const slot = el.shadowRoot?.querySelector('slot');
@@ -24,14 +24,14 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(slot).toBeTruthy();
 	});
 
-	it('applies the placement class to the nav', async () => {
+	it('aplica la clase de placement al nav', async () => {
 		el.placement = 'bottom';
 		await el.updateComplete;
 		const nav = el.shadowRoot?.querySelector('nav');
 		expect(nav?.classList.contains('bottom')).toBe(true);
 	});
 
-	it('applies the variant class (rail/drawer)', async () => {
+	it('aplica la clase de variante (rail/drawer)', async () => {
 		el.placement = 'left';
 		el.variant = 'drawer';
 		await el.updateComplete;
@@ -40,19 +40,19 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(nav?.classList.contains('max')).toBe(true);
 	});
 
-	it('reflects the placement attribute', async () => {
+	it('refleja el atributo placement', async () => {
 		el.placement = 'right';
 		await el.updateComplete;
 		expect(el.getAttribute('placement')).toBe('right');
 	});
 
-	it('reflects the variant attribute', async () => {
+	it('refleja el atributo variant', async () => {
 		el.variant = 'rail';
 		await el.updateComplete;
 		expect(el.getAttribute('variant')).toBe('rail');
 	});
 
-	it('forwards icon, label and active to nav-item', async () => {
+	it('reenvía icon, label y active al nav-item', async () => {
 		const item = document.createElement('moni-nav-item') as MoniNavItem;
 		item.icon = 'home';
 		item.label = 'Home';
@@ -68,7 +68,7 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(a?.querySelector('moni-icon')).toBeTruthy();
 	});
 
-	it('forwards href and target to the inner <a>', async () => {
+	it('reenvía href y target al <a> interno', async () => {
 		const item = document.createElement('moni-nav-item') as MoniNavItem;
 		item.href = '/home';
 		item.target = '_blank';
@@ -79,7 +79,7 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(a?.getAttribute('target')).toBe('_blank');
 	});
 
-	it('propagates layout property to items and sets computed layout', async () => {
+	it('propaga la propiedad layout a los ítems y establece el layout computado', async () => {
 		const item = document.createElement('moni-nav-item') as MoniNavItem;
 		el.appendChild(item);
 		el.layout = 'horizontal';
@@ -93,7 +93,7 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(a?.getAttribute('data-layout')).toBe('horizontal');
 	});
 
-	it('modal drawer renders a scrim and dialog semantics', async () => {
+	it('el modal drawer renderiza un scrim y semántica de dialog', async () => {
 		el.placement = 'left';
 		el.variant = 'drawer';
 		el.modal = true;
@@ -108,7 +108,7 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(nav?.getAttribute('aria-expanded')).toBe('true');
 	});
 
-	it('modal drawer closes when the scrim is clicked', async () => {
+	it('el modal drawer se cierra cuando se hace clic en el scrim', async () => {
 		el.placement = 'left';
 		el.variant = 'drawer';
 		el.modal = true;
@@ -124,7 +124,7 @@ describe('moni-nav / moni-nav-item', () => {
 		expect(nav?.getAttribute('aria-expanded')).toBe('false');
 	});
 
-	it('modal drawer closes on Escape key', async () => {
+	it('el modal drawer se cierra con la tecla Escape', async () => {
 		el.placement = 'left';
 		el.variant = 'drawer';
 		el.modal = true;

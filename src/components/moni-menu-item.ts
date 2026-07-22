@@ -11,31 +11,31 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Menu Item component.
+ * Componente Material Design 3 Menu Item (Elemento de Menú).
  *
- * A single interactive item within a `<moni-menu>` or `<moni-context-menu>`.
- * It provides standard M3 menu item styling, hover states, and optional
- * leading icons.
+ * Un elemento interactivo individual dentro de un `<moni-menu>` o `<moni-context-menu>`.
+ * Proporciona el estilo estándar de elemento de menú M3, estados hover, e iconos
+ * iniciales opcionales.
  *
- * **M3 spec reference:** `m3-docs/components/menus/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/menus/specs.md`
  *
- * **Interaction states:**
- * - Hover: applies an opacity layer.
- * - Active (`active=true`): applies a `tertiary-container` background highlight,
- *   useful for indicating the currently selected option in a list.
- * - Disabled (`disabled=true`): reduces opacity and disables pointer events.
+ * **Estados de interacción:**
+ * - Hover: aplica una capa de opacidad.
+ * - Activo (`active=true`): aplica un fondo resaltado `tertiary-container`,
+ *   útil para indicar la opción actualmente seleccionada en una lista.
+ * - Deshabilitado (`disabled=true`): reduce la opacidad y deshabilita los eventos del puntero.
  *
  * @example
  * ```html
- * <moni-menu-item icon="edit">Edit text</moni-menu-item>
- * <moni-menu-item icon="content_copy" disabled>Copy</moni-menu-item>
- * <moni-menu-item active>Currently selected</moni-menu-item>
+ * <moni-menu-item icon="edit">Editar texto</moni-menu-item>
+ * <moni-menu-item icon="content_copy" disabled>Copiar</moni-menu-item>
+ * <moni-menu-item active>Actualmente seleccionado</moni-menu-item>
  * ```
  *
- * @slot default - The text label for the menu item.
+ * @slot default - La etiqueta de texto para el elemento de menú.
  *
- * @csspart item - The outer `<li>` element.
- * @csspart icon - The container for the leading icon.
+ * @csspart item - El elemento exterior `<li>`.
+ * @csspart icon - El contenedor para el icono inicial.
  */
 @customElement('moni-menu-item')
 export class MoniMenuItem extends MoniElement {
@@ -90,6 +90,13 @@ export class MoniMenuItem extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el elemento de menú como un `<li>` con un icono inicial opcional y un atajo final.
+	 *
+	 * El `<moni-icon>` inicial solo se renderiza cuando se establece `icon` (evita nodos DOM vacíos).
+	 * `shortcut` se muestra como texto silenciado alineado a la derecha (ej. `Ctrl+K`) usando el estilo
+	 * de tipografía `body-small` de M3. El slot proyecta contenido personalizado junto a la etiqueta.
+	 */
 	override render() {
 		return html`<li part="item">
 			${this.icon

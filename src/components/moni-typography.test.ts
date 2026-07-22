@@ -14,13 +14,13 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		el.remove();
 	});
 
-	it('defaults to variant=body, size=medium', async () => {
+	it('variant=body, size=medium por defecto', async () => {
 		await el.updateComplete;
 		expect(el.variant).toBe('body');
 		expect(el.size).toBe('medium');
 	});
 
-	it('renders the default <p> tag for body variant', async () => {
+	it('renderiza la etiqueta <p> por defecto para la variante body', async () => {
 		el.text = 'Hello';
 		await el.updateComplete;
 		const el_tag = el.shadowRoot?.querySelector('p');
@@ -28,7 +28,7 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		expect(el_tag?.textContent?.trim()).toBe('Hello');
 	});
 
-	it('renders <h1> for display variant', async () => {
+	it('renderiza <h1> para la variante display', async () => {
 		el.variant = 'display';
 		el.text = 'Big text';
 		await el.updateComplete;
@@ -37,7 +37,7 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		expect(h1?.classList.contains('display')).toBe(true);
 	});
 
-	it('renders <h2> for headline variant', async () => {
+	it('renderiza <h2> para la variante headline', async () => {
 		el.variant = 'headline';
 		el.text = 'Section';
 		await el.updateComplete;
@@ -46,21 +46,21 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		expect(h2?.classList.contains('headline')).toBe(true);
 	});
 
-	it('renders <h3> for title variant', async () => {
+	it('renderiza <h3> para la variante title', async () => {
 		el.variant = 'title';
 		await el.updateComplete;
 		const h3 = el.shadowRoot?.querySelector('h3');
 		expect(h3).toBeTruthy();
 	});
 
-	it('renders <label> for label variant', async () => {
+	it('renderiza <label> para la variante label', async () => {
 		el.variant = 'label';
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('label');
 		expect(label).toBeTruthy();
 	});
 
-	it('overrides the tag via the as attribute', async () => {
+	it('sobrescribe la etiqueta mediante el atributo as', async () => {
 		el.variant = 'headline';
 		el.as = 'span';
 		await el.updateComplete;
@@ -69,7 +69,7 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		expect(span?.classList.contains('headline')).toBe(true);
 	});
 
-	it('reflects size variations', async () => {
+	it('refleja las variaciones de tamaño', async () => {
 		el.variant = 'title';
 		for (const size of ['large', 'medium', 'small'] as const) {
 			el.size = size;
@@ -79,7 +79,7 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		}
 	});
 
-	it('supports all 5 variants × 3 sizes', async () => {
+	it('soporta las 5 variantes × 3 tamaños', async () => {
 		const variants: Array<'display' | 'headline' | 'title' | 'body' | 'label'> = [
 			'display',
 			'headline',
@@ -106,7 +106,7 @@ describe('moni-typography (P5.2 — recreated)', () => {
 		}
 	});
 
-	it('renders slot content when text attribute is empty', async () => {
+	it('renderiza el contenido del slot cuando el atributo text está vacío', async () => {
 		el.text = '';
 		el.textContent = 'Slotted content';
 		await el.updateComplete;

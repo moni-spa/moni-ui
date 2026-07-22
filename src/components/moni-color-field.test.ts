@@ -14,7 +14,7 @@ describe('moni-color-field', () => {
 		el.remove();
 	});
 
-	it('renders a swatch and a text input', async () => {
+	it('renderiza una muestra (swatch) y un input de texto', async () => {
 		await el.updateComplete;
 		const swatch = el.shadowRoot?.querySelector('.swatch');
 		const text = el.shadowRoot?.querySelector('input[type="text"]');
@@ -22,14 +22,14 @@ describe('moni-color-field', () => {
 		expect(text).toBeTruthy();
 	});
 
-	it('adds active class to the text input when value is set', async () => {
+	it('agrega la clase active al input de texto cuando se establece el valor', async () => {
 		el.value = '#ff00aa';
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector('input[type="text"]');
 		expect(text?.classList.contains('active')).toBe(true);
 	});
 
-	it('forwards value to the text input', async () => {
+	it('reenvía el valor al input de texto', async () => {
 		el.value = '#123456';
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector(
@@ -38,7 +38,7 @@ describe('moni-color-field', () => {
 		expect(text.value).toBe('#123456');
 	});
 
-	it('keeps the text input readonly (so the label can be lifted via .active)', async () => {
+	it('mantiene el input de texto en readonly (para que la etiqueta pueda elevarse vía .active)', async () => {
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector(
 			'input[type="text"]'
@@ -46,7 +46,7 @@ describe('moni-color-field', () => {
 		expect(text.hasAttribute('readonly')).toBe(true);
 	});
 
-	it('renders label element adjacent to the text input for BeerCSS selector matching', async () => {
+	it('renderiza el elemento label adyacente al input de texto para el selector de BeerCSS', async () => {
 		el.label = 'Pick a color';
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector('input[type="text"]');

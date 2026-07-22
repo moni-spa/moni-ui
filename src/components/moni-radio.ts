@@ -12,73 +12,81 @@ import { live } from 'lit/directives/live.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Radio Button component.
+ * Componente Material Design 3 Radio Button (Botón de Opción).
  *
- * Radio buttons allow users to select exactly one item from a set of mutually
- * exclusive options. They share the same visual architecture as
- * `<moni-checkbox>` but use `type="radio"` and implement group deselection.
+ * Los botones de opción permiten a los usuarios seleccionar exactamente un elemento de un conjunto de opciones
+ * mutuamente excluyentes. Comparten la misma arquitectura visual que
+ * `<moni-checkbox>` pero usan `type="radio"` e implementan la deselección de grupo.
  *
- * **M3 spec reference:** `m3-docs/components/radio/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/radio/specs.md`
  *
- * **Visual architecture (BeerCSS pattern):**
- * Identical to the checkbox pattern: the native `<input type="radio">` occupies
- * real layout space at `--_size` × `--_size` but is hidden via `opacity: 0`.
- * A sibling `<span>` renders:
- * - `::before` — the radio icon (`radio_button_unchecked` / `radio_button_checked`).
- * - `::after`  — the hover/focus ripple ring.
+ * **Arquitectura visual (Patrón BeerCSS):**
+ * Idéntico al patrón de checkbox: el `<input type="radio">` nativo ocupa
+ * espacio de diseño real a `--_size` × `--_size` pero se oculta mediante `opacity: 0`.
+ * Un `<span>` hermano renderiza:
+ * - `::before` — el icono de radio (`radio_button_unchecked` / `radio_button_checked`).
+ * - `::after`  — el anillo de onda (ripple) de hover/foco.
  *
- * **Group deselection:**
- * When a radio is checked, `_onChange` queries the component's `getRootNode()`
- * for all `moni-radio` elements sharing the same `name` attribute and sets
- * their `checked` property to `false`. This mirrors native browser behavior
- * for radio groups across shadow DOM boundaries where `name` grouping does
- * not work natively.
+ * **Deselección de grupo:**
+ * Cuando se marca un radio, `_onChange` consulta el `getRootNode()` del componente
+ * para encontrar todos los elementos `moni-radio` que comparten el mismo atributo `name` y establece
+ * su propiedad `checked` en `false`. Esto refleja el comportamiento nativo del navegador
+ * para grupos de radio a través de los límites del shadow DOM, donde la agrupación por `name` no
+ * funciona de forma nativa.
  *
- * @fires change - Bubbles and is composed. Fired when this radio is selected.
- *                 Read `element.checked` for the new state.
+ * @fires change - Burbujea y está compuesto. Se dispara cuando este radio es seleccionado.
+ *                 Lee `element.checked` para obtener el nuevo estado.
  *
  * @example
  * ```html
- * <moni-radio name="color" value="red"   label="Red"></moni-radio>
- * <moni-radio name="color" value="green" label="Green"></moni-radio>
- * <moni-radio name="color" value="blue"  label="Blue" checked></moni-radio>
+ * <moni-radio name="color" value="red"   label="Rojo"></moni-radio>
+ * <moni-radio name="color" value="green" label="Verde"></moni-radio>
+ * <moni-radio name="color" value="blue"  label="Azul" checked></moni-radio>
  * ```
  *
- * @csspart radio - The outer `<label>` element.
+ * @csspart radio - El elemento `<label>` exterior.
  */
 @customElement('moni-radio')
 export class MoniRadio extends MoniElement {
+	static formAssociated = true;
+	private _internals: ElementInternals;
+
+	constructor() {
+		super();
+		this._internals = this.attachInternals();
+	}
+
 	/**
-	 * Text label displayed to the right of the radio icon.
+	 * Etiqueta de texto mostrada a la derecha del icono de radio.
 	 *
-	 * When non-empty, renders as a text node. When empty, the default slot
-	 * is rendered, allowing slotted HTML content as the label.
+	 * Cuando no está vacía, se renderiza como un nodo de texto. Cuando está vacía, se renderiza la ranura (slot)
+	 * por defecto, permitiendo contenido HTML en la ranura como etiqueta.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) label = '';
 
 	/**
-	 * Whether this radio button is currently selected.
+	 * Indica si este botón de opción está actualmente seleccionado.
 	 *
-	 * Reflected as an attribute so CSS selectors can target it. Synced to
-	 * the native input via `updated()`.
+	 * Se refleja como un atributo para que los selectores CSS puedan apuntarlo. Se sincroniza con
+	 * el input nativo a través de `updated()`.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) checked = false;
 
 	/**
-	 * When `true`, the radio is non-interactive and renders at 50% opacity.
+	 * Cuando es `true`, el radio no es interactivo y se renderiza a un 50% de opacidad.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
 	/**
-	 * Visual size of the radio icon and its invisible hit area.
+	 * Tamaño visual del icono de radio y su área de interacción (hit area) invisible.
 	 *
-	 * | Value      | `--_size` |
+	 * | Valor      | `--_size` |
 	 * |------------|-----------|
 	 * | `'small'`  | 1rem      |
 	 * | `'medium'` | 1.5rem    |
@@ -91,36 +99,39 @@ export class MoniRadio extends MoniElement {
 	size: 'small' | 'medium' | 'large' | 'extra' = 'medium';
 
 	/**
-	 * Radio group name. Radios with the same `name` in the same root node
-	 * are treated as a mutual-exclusion group by `_onChange`.
+	 * Nombre del grupo de radio. Los radios con el mismo `name` en el mismo nodo raíz
+	 * se tratan como un grupo de exclusión mutua por `_onChange`.
 	 *
-	 * Note: Native `<input type="radio">` groups only work within the same
-	 * document root. Since `moni-radio` uses shadow DOM, the deselection
-	 * of siblings is handled imperatively in `_onChange`.
+	 * Nota: Los grupos nativos de `<input type="radio">` solo funcionan dentro de la misma
+	 * raíz de documento. Dado que `moni-radio` usa shadow DOM, la deselección
+	 * de los hermanos se maneja imperativamente en `_onChange`.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) name = '';
 
 	/**
-	 * Forwarded to the native `<input value>` attribute.
-	 * The value submitted in a form when this radio is selected.
+	 * Se retransmite al atributo nativo `<input value>`.
+	 * El valor enviado en un formulario cuando este radio es seleccionado.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) value = '';
 
-	/** Direct reference to the native input element for programmatic access. */
+	/** Referencia directa al elemento input nativo para acceso programático. */
 	@query('input') private _input!: HTMLInputElement;
 
 	/**
-	 * Syncs `checked` and `disabled` to the native input after each render cycle.
+	 * Sincroniza `checked` y `disabled` con el input nativo después de cada ciclo de renderizado.
 	 *
-	 * @param changed - Map of changed property names to their previous values.
+	 * @param changed - Mapa de los nombres de propiedades modificadas con sus valores anteriores.
 	 */
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
-			if (changed.has('checked')) this._input.checked = this.checked;
+			if (changed.has('checked')) {
+				this._input.checked = this.checked;
+				this._internals.setFormValue(this.checked ? (this.value || 'on') : null);
+			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 		}
 	}
@@ -238,17 +249,17 @@ export class MoniRadio extends MoniElement {
 	];
 
 	/**
-	 * Handles the native input `change` event.
+	 * Maneja el evento nativo `change` del input.
 	 *
-	 * On selection, deselects all sibling `moni-radio` elements with the same
-	 * `name` in the same root node (document or shadow root). This is necessary
-	 * because native radio group exclusion only works within the same document
-	 * root and does not cross shadow DOM boundaries.
+	 * Al seleccionarse, deselecciona todos los elementos `moni-radio` hermanos con el mismo
+	 * `name` en el mismo nodo raíz (documento o raíz shadow). Esto es necesario
+	 * porque la exclusión de grupo de radio nativa solo funciona dentro de la misma raíz
+	 * de documento y no cruza los límites del shadow DOM.
 	 *
-	 * After deselection, dispatches a composed `'change'` event so it is
-	 * audible to parent elements in the light DOM.
+	 * Después de la deselección, despacha un evento `'change'` compuesto para que sea
+	 * audible para los elementos padres en el DOM ligero (light DOM).
 	 *
-	 * @param e - The native `change` event from the hidden `<input>`.
+	 * @param e - El evento nativo `change` del `<input>` oculto.
 	 */
 	private _onChange(e: Event) {
 		this.checked = (e.target as HTMLInputElement).checked;
@@ -266,6 +277,15 @@ export class MoniRadio extends MoniElement {
 		this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 	}
 
+	/**
+	 * Renderiza el radio como un `<input type="radio">` oculto + indicador visual `<span>`.
+	 *
+	 * El input oculto se mantiene en el DOM (opacity: 0) para participar en el envío nativo
+	 * de formularios y exclusión de grupo de radios. Los navegadores aplican automáticamente
+	 * exclusión mutua entre entradas de radio que comparten el mismo atributo `name`.
+	 * El círculo visual es dibujado por los pseudo-elementos `::before` / `::after` en
+	 * el `<span>` y animado mediante transiciones CSS de `scale`.
+	 */
 	override render() {
 		return html`<label part="radio">
 			<input

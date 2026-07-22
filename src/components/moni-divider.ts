@@ -10,53 +10,53 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Divider component.
+ * Componente Material Design 3 Divider (Separador).
  *
- * A thin horizontal (or vertical) rule used to visually separate content
- * sections within lists, layouts, and cards.
+ * Una regla delgada horizontal (o vertical) utilizada para separar visualmente secciones
+ * de contenido dentro de listas, diseños y tarjetas.
  *
- * **M3 spec reference:** `m3-docs/components/divider/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/divider/specs.md`
  *
- * **M3 measurements:**
- * - Thickness: 1dp (`0.0625rem`).
- * - Color: `outline-variant` — subtle on all surface backgrounds.
- * - Inset variants align the line with list content:
- *   - `leading` — 16dp margin from the leading edge (aligns with icon text).
- *   - `middle`  — 16dp margin on both edges.
- *   - `none`    — full-bleed (no margin).
+ * **Medidas M3:**
+ * - Grosor: 1dp (`0.0625rem`).
+ * - Color: `outline-variant` — sutil en todos los fondos de superficie.
+ * - Las variantes insertadas (inset) alinean la línea con el contenido de la lista:
+ *   - `leading` — margen de 16dp desde el borde inicial (se alinea con el texto del icono).
+ *   - `middle`  — margen de 16dp en ambos bordes.
+ *   - `none`    — sangría completa (sin margen).
  *
- * **Vertical usage:**
- * While not yet exposed as an attribute, the `[vertical]` CSS attribute selector
- * is supported. Set `vertical` as an HTML attribute to render a 1dp-wide
- * vertical divider that stretches to match its flex container's cross-axis.
+ * **Uso vertical:**
+ * Aunque todavía no se expone como un atributo, el selector de atributos CSS `[vertical]`
+ * está soportado. Establezca `vertical` como un atributo HTML para renderizar un separador
+ * vertical de 1dp de ancho que se estira para coincidir con el eje transversal de su contenedor flex.
  *
  * @example
  * ```html
- * <!-- Full-bleed divider between sections -->
+ * <!-- Separador de sangría completa entre secciones -->
  * <moni-divider inset="none"></moni-divider>
  *
- * <!-- Leading-inset divider in a list (aligns with list item text) -->
+ * <!-- Separador de inserción inicial en una lista (se alinea con el texto del elemento de lista) -->
  * <moni-divider></moni-divider>
  *
- * <!-- Vertical divider inside a flex container -->
+ * <!-- Separador vertical dentro de un contenedor flex -->
  * <div style="display:flex; height: 3rem; align-items:center; gap: 1rem;">
- *   <span>Section A</span>
+ *   <span>Sección A</span>
  *   <moni-divider vertical></moni-divider>
- *   <span>Section B</span>
+ *   <span>Sección B</span>
  * </div>
  * ```
  */
 @customElement('moni-divider')
 export class MoniDivider extends MoniElement {
 	/**
-	 * Controls the horizontal margin on the divider line.
+	 * Controla el margen horizontal en la línea del separador.
 	 *
-	 * - `'leading'` (default) — 16dp margin from the leading (start) edge only.
-	 *   Use in lists to align the divider with the primary text of list items.
-	 * - `'middle'`  — 16dp margin on both the leading and trailing edges.
-	 *   Use to separate sections where full-bleed would be too visually heavy.
-	 * - `'none'`    — No margin; the line spans the full parent width.
-	 *   Use as a section separator or between cards.
+	 * - `'leading'` (por defecto) — Margen de 16dp solo desde el borde inicial (inicio).
+	 *   Usar en listas para alinear el separador con el texto principal de los elementos de la lista.
+	 * - `'middle'`  — Margen de 16dp tanto en el borde inicial como en el final.
+	 *   Usar para separar secciones donde una sangría completa sería visualmente demasiado pesada.
+	 * - `'none'`    — Sin margen; la línea abarca todo el ancho del padre.
+	 *   Usar como separador de secciones o entre tarjetas.
 	 *
 	 * @default 'leading'
 	 */
@@ -69,7 +69,7 @@ export class MoniDivider extends MoniElement {
 			:host {
 				display: block;
 				font-family: var(--font);
-				/* M3 spec: 1dp thick, on-surface-variant for subtle separation. */
+				/* Especificación M3: grosor de 1dp, on-surface-variant para una separación sutil. */
 				block-size: 0.0625rem;
 				min-inline-size: 0;
 				background-color: var(--outline-variant);
@@ -77,7 +77,7 @@ export class MoniDivider extends MoniElement {
 				margin: 0;
 			}
 
-			/* Inset variants. M3 spec: 16dp from the leading edge. */
+			/* Variantes de inserción. Especificación M3: 16dp desde el borde inicial. */
 			:host([inset='leading']) {
 				margin-inline-start: 1rem;
 				margin-inline-end: 0;
@@ -89,7 +89,7 @@ export class MoniDivider extends MoniElement {
 				margin-inline: 0;
 			}
 
-			/* Vertical divider (M3 spec also defines vertical usage). */
+			/* Separador vertical (la especificación M3 también define el uso vertical). */
 			:host([vertical]) {
 				inline-size: 0.0625rem;
 				block-size: auto;
@@ -99,6 +99,18 @@ export class MoniDivider extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza un paso a través de slot transparente.
+	 *
+	 * `moni-divider` es un componente impulsado puramente por CSS — la línea visual es
+	 * renderizada por el elemento `:host` en sí (a través de `background-color` y
+	 * `block-size: 0.0625rem`). No se necesitan elementos internos.
+	 *
+	 * El `<slot>` vacío se incluye para que los consumidores puedan insertar etiquetas de texto
+	 * o iconos entre secciones (ej. `<moni-divider>O</moni-divider>`).
+	 * El contenido renderizado en el slot no tiene estilo visual de este componente; el consumidor
+	 * debe aplicar estilo a los elementos del slot directamente.
+	 */
 	override render() {
 		return html`<slot></slot>`;
 	}

@@ -5,8 +5,8 @@
  * @contributors Moni Labs & Contributors
  */
 
-// Auto-register all Moni UI Web Components.
-// Importing this file defines every <moni-*> custom element.
+// Auto-registra todos los Web Components de Moni UI.
+// Importar este archivo define cada elemento personalizado <moni-*>.
 
 export { MoniBadge } from './moni-badge.js';
 export { MoniBottomSheet } from './moni-bottom-sheet.js';

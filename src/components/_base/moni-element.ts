@@ -23,19 +23,25 @@ import { LitElement } from 'lit';
  * internal CSS class names (`.button`, `.field`, `.slider`, etc.) do not leak
  * into or collide with the consumer's global stylesheet.
  *
+ * **Global Events Architecture:**
+ * Provides base events to all components automatically:
+ * - \`moni-enter-viewport\` / \`moni-leave-viewport\` via IntersectionObserver
+ * - \`moni-resize\` via ResizeObserver
+ * - \`slot-click\` via delegated event listener on the host
+ *
  * **Extension contract:**
  * Every subclass must:
  *  1. Be decorated with `@customElement('moni-<name>')`.
- *  2. Define `static override styles = [sharedStyles, css`...`]`.
+ *  2. Define `static override styles = [sharedStyles, css\`...\`]`.
  *  3. Implement `override render(): TemplateResult`.
- *
- * Subclasses MUST NOT add behavior (event handling, timers, fetch calls) that
- * is not directly related to rendering the shadow DOM. See CONTRIBUTING.md
- * for the full component authoring guide.
  *
  * @see {@link https://lit.dev/docs/components/overview/ Lit component overview}
  */
 export class MoniElement extends LitElement {
+	private _globalIntersectionObserver?: IntersectionObserver;
+	private _globalResizeObserver?: ResizeObserver;
+	private _isBaseInViewport = false;
+
 	/**
 	 * Returns the component's render root.
 	 *
@@ -43,14 +49,68 @@ export class MoniElement extends LitElement {
 	 * shadow root (`{ mode: 'open' }`). Open mode allows external tools (browser
 	 * devtools, testing frameworks) to traverse the shadow tree.
 	 *
-	 * This override exists explicitly to document the shadow root mode and to
-	 * provide a hook for subclasses that may need to change the root in the future
-	 * (e.g. to support `adoptedStyleSheets` in a specific environment).
-	 *
 	 * @returns The shadow root that Lit will render templates into.
 	 */
 	protected override createRenderRoot() {
 		return super.createRenderRoot();
+	}
+
+	override connectedCallback() {
+		super.connectedCallback();
+		
+		// 1. Intersection Observer for all components (Visibility Events)
+		this._globalIntersectionObserver = new IntersectionObserver((entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting !== this._isBaseInViewport) {
+					this._isBaseInViewport = entry.isIntersecting;
+					this.dispatchEvent(new CustomEvent(
+						this._isBaseInViewport ? 'moni-enter-viewport' : 'moni-leave-viewport',
+						{ bubbles: true, composed: true, detail: { element: this } }
+					));
+				}
+			});
+		}, { threshold: [0, 1] });
+		this._globalIntersectionObserver.observe(this);
+
+		// 2. Resize Observer for all components (Layout Events)
+		this._globalResizeObserver = new ResizeObserver((entries) => {
+			entries.forEach((entry) => {
+				this.dispatchEvent(new CustomEvent('moni-resize', {
+					bubbles: true,
+					composed: true,
+					detail: { contentRect: entry.contentRect, element: this }
+				}));
+			});
+		});
+		this._globalResizeObserver.observe(this);
+
+		// 3. Global Slot Click Delegation
+		this.addEventListener('click', this._handleGlobalSlotClick);
+	}
+
+	override disconnectedCallback() {
+		super.disconnectedCallback();
+		// Rigorous memory leak prevention
+		this._globalIntersectionObserver?.disconnect();
+		this._globalResizeObserver?.disconnect();
+		this.removeEventListener('click', this._handleGlobalSlotClick);
+	}
+
+	/**
+	 * Manejador global para detectar clicks provenientes de cualquier slot de la librería
+	 */
+	private _handleGlobalSlotClick = (e: Event) => {
+		const path = e.composedPath();
+		const slotEl = path.find(node => node instanceof HTMLSlotElement) as HTMLSlotElement | undefined;
+		
+		if (slotEl) {
+			const slotName = slotEl.name || 'default';
+			this.dispatchEvent(new CustomEvent('slot-click', {
+				bubbles: true,
+				composed: true,
+				detail: { originalEvent: e, slotName, originalTarget: e.target }
+			}));
+		}
 	}
 }
 

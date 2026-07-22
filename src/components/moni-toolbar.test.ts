@@ -14,27 +14,27 @@ describe('moni-toolbar (P5.4 — recreated)', () => {
 		el.remove();
 	});
 
-	it('defaults to type=standard', async () => {
+	it('type=standard por defecto', async () => {
 		await el.updateComplete;
 		expect(el.type).toBe('standard');
 		expect(el.getAttribute('type')).toBe('standard');
 	});
 
-	it('renders a <header> container', async () => {
+	it('renderiza un contenedor <header>', async () => {
 		await el.updateComplete;
 		const header = el.shadowRoot?.querySelector('header');
 		expect(header).toBeTruthy();
 		expect(header?.getAttribute('part')).toBe('container');
 	});
 
-	it('renders the title attribute in the title span', async () => {
+	it('renderiza el atributo title en el span de título', async () => {
 		el.title = 'My App';
 		await el.updateComplete;
 		const title = el.shadowRoot?.querySelector('[part="title"]');
 		expect(title?.textContent?.trim()).toBe('My App');
 	});
 
-	it('supports slot fallback when title attribute is empty', async () => {
+	it('soporta slot de respaldo (fallback) cuando el atributo title está vacío', async () => {
 		const heading = document.createElement('h1');
 		heading.textContent = 'Slotted Title';
 		el.appendChild(heading);
@@ -46,7 +46,7 @@ describe('moni-toolbar (P5.4 — recreated)', () => {
 		expect(text).toBe('Slotted Title');
 	});
 
-	it('renders leading and trailing slots', async () => {
+	it('renderiza los slots leading y trailing', async () => {
 		const leading = document.createElement('button');
 		leading.setAttribute('slot', 'leading');
 		leading.textContent = 'Menu';
@@ -66,7 +66,7 @@ describe('moni-toolbar (P5.4 — recreated)', () => {
 		expect(trailingSlot?.assignedNodes({ flatten: true }).length).toBeGreaterThan(0);
 	});
 
-	it('switches to floating type', async () => {
+	it('cambia al tipo floating', async () => {
 		el.type = 'floating';
 		await el.updateComplete;
 		expect(el.getAttribute('type')).toBe('floating');
@@ -74,13 +74,13 @@ describe('moni-toolbar (P5.4 — recreated)', () => {
 		expect(header).toBeTruthy();
 	});
 
-	it('reflects scroll attribute', async () => {
+	it('refleja el atributo scroll', async () => {
 		el.scrolled = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('scroll')).toBe(true);
 	});
 
-	it('reserves a slot for the action-button', async () => {
+	it('reserva un slot para el action-button', async () => {
 		const fab = document.createElement('button');
 		fab.setAttribute('slot', 'action-button');
 		fab.textContent = '+';

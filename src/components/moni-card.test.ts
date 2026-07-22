@@ -14,7 +14,7 @@ describe('moni-card (P4.4 — recreated)', () => {
 		el.remove();
 	});
 
-	it('renders the three M3 variants: elevated (default), filled, outlined', async () => {
+	it('renderiza las tres variantes M3: elevated (por defecto), filled, outlined', async () => {
 		expect(el.variant).toBe('elevated');
 		await el.updateComplete;
 		expect(el.getAttribute('variant')).toBe('elevated');
@@ -28,7 +28,7 @@ describe('moni-card (P4.4 — recreated)', () => {
 		expect(el.getAttribute('variant')).toBe('outlined');
 	});
 
-	it('renders media, body, and actions slots', async () => {
+	it('renderiza los slots media, body y actions', async () => {
 		await el.updateComplete;
 		const media = el.shadowRoot?.querySelector('[part="media"]');
 		const body = el.shadowRoot?.querySelector('[part="body"]');
@@ -38,7 +38,7 @@ describe('moni-card (P4.4 — recreated)', () => {
 		expect(actions).toBeTruthy();
 	});
 
-	it('reflects clickable, draggable, and disabled attributes', async () => {
+	it('refleja los atributos clickable, draggable y disabled', async () => {
 		el.clickable = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('clickable')).toBe(true);
@@ -52,7 +52,7 @@ describe('moni-card (P4.4 — recreated)', () => {
 		expect(el.hasAttribute('disabled')).toBe(true);
 	});
 
-	it('supports slotted headings via the headline slot', async () => {
+	it('soporta encabezados insertados vía el slot headline', async () => {
 		const heading = document.createElement('h3');
 		heading.setAttribute('slot', 'headline');
 		heading.textContent = 'Card title';
@@ -68,10 +68,10 @@ describe('moni-card (P4.4 — recreated)', () => {
 		expect(text).toBe('Card title');
 	});
 
-	it('supports the default slot for primary content', async () => {
+	it('soporta el slot por defecto para el contenido primario', async () => {
 		el.textContent = 'Body content';
 		await el.updateComplete;
-		// The default slot is inside the headline slot wrapper.
+		// El slot por defecto está dentro del contenedor del slot headline.
 		const defaultSlot = el.shadowRoot?.querySelector(
 			'slot:not([name])'
 		) as HTMLSlotElement | null;

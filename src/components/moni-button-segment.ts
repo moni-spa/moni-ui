@@ -11,46 +11,74 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Segmented Button component (Legacy).
+ * Componente Material Design 3 Segmented Button (Heredado).
  *
- * **Deprecation Notice:** The M3 spec (`m3-docs/components/segmented-buttons/overview.md`)
- * has replaced the bespoke segmented button component with standard buttons arranged
- * in a "connected" group. Please use `<moni-button-group variant="connected">`
- * containing standard `<moni-button>` elements instead of this component.
+ * **Aviso de obsolescencia:** La especificación M3 (`m3-docs/components/segmented-buttons/overview.md`)
+ * ha reemplazado el componente a medida "segmented button" con botones estándar organizados
+ * en un grupo "conectado". Por favor usa `<moni-button-group variant="connected">`
+ * conteniendo elementos `<moni-button>` estándar en lugar de este componente.
  *
- * This component remains for backwards compatibility but will be removed in a
- * future major release. It renders a single segment within a `<moni-segmented-button>`.
+ * Este componente permanece por compatibilidad hacia atrás pero será eliminado en una
+ * futura versión mayor. Renderiza un segmento único dentro de un `<moni-segmented-button>`.
  *
- * @deprecated Use `<moni-button-group variant="connected">` instead.
+ * @deprecated Usa `<moni-button-group variant="connected">` en su lugar.
  *
  * @example
  * ```html
- * <!-- Legacy usage (not recommended) -->
+ * <!-- Uso heredado (no recomendado) -->
  * <moni-segmented-button>
- *   <moni-button-segment value="day" checked>Day</moni-button-segment>
- *   <moni-button-segment value="week">Week</moni-button-segment>
+ *   <moni-button-segment value="day" checked>Día</moni-button-segment>
+ *   <moni-button-segment value="week">Semana</moni-button-segment>
  * </moni-segmented-button>
  * ```
  *
- * @slot default - The segment label text.
+ * @slot default - El texto de la etiqueta del segmento.
  */
 @customElement('moni-button-segment')
 export class MoniButtonSegment extends MoniElement {
+	/**
+	 * Valor asociado con el segmento, usado por el grupo padre.
+	 * @type {string}
+	 * @default 'on'
+	 */
 	@property({ reflect: true })
 	value = 'on';
 
+	/**
+	 * Estado seleccionado del segmento.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true })
 	checked = false;
 
+	/**
+	 * Tamaño del segmento (usualmente heredado del botón segmentado padre).
+	 * @type {'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
 
+	/**
+	 * Deshabilita el segmento.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true })
 	disabled = false;
 
+	/**
+	 * Índice posicional del segmento dentro del grupo.
+	 * Determina la lógica de redondeo del border-radius.
+	 * @type {'first' | 'middle' | 'last' | 'solo'}
+	 * @default 'solo'
+	 */
 	@property({ reflect: true })
 	position: 'first' | 'middle' | 'last' | 'solo' = 'solo';
 
+	/**
+	 * Si es verdadero, oculta el icono de marca de verificación que normalmente reemplaza al icono inicial cuando se selecciona.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'hide-check' })
 	hideCheck = false;
 
@@ -290,6 +318,19 @@ export class MoniButtonSegment extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renders the segment as a `role="radio"` toggle button within its group.
+	 *
+	 * **`role="radio"` + `aria-checked`:**
+	 * Per the ARIA Segmented Button pattern, each segment acts as a radio button
+	 * (`role="radio"`, `aria-checked=${this.active}`) within a `role="radiogroup"`
+	 * container (the parent `<moni-segmented-button>`).
+	 *
+	 * **Checkmark icon:**
+	 * When `active=true`, a `<moni-icon name="check">` is prepended to the label
+	 * to signal the selected state visually (M3 Segmented Button spec, Figure 5).
+	 * This icon disappears with a `scale(0)` transition when `active=false`.
+	 */
 	override render() {
 		return html`
 			<button class="button ${this.size}" type="button" ?disabled=${this.disabled}>

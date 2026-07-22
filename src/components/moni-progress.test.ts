@@ -14,26 +14,26 @@ describe('moni-progress', () => {
 		el.remove();
 	});
 
-	it('renders a progress bar container', async () => {
+	it('renderiza un contenedor de barra de progreso', async () => {
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('[role="progressbar"]');
 		expect(progress).toBeTruthy();
 	});
 
-	it('applies the indeterminate class to the progress bar container', async () => {
+	it('aplica la clase indeterminate al contenedor de la barra de progreso', async () => {
 		el.indeterminate = true;
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('[role="progressbar"]');
 		expect(progress?.classList.contains('indeterminate')).toBe(true);
 	});
 
-	it('does not apply the indeterminate class by default', async () => {
+	it('no aplica la clase indeterminate por defecto', async () => {
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('[role="progressbar"]');
 		expect(progress?.classList.contains('indeterminate')).toBe(false);
 	});
 
-	it('forwards value and max via aria attributes on progressbar', async () => {
+	it('reenvía value y max a través de los atributos aria en el progressbar', async () => {
 		el.value = 42;
 		el.max = 100;
 		await el.updateComplete;
@@ -44,7 +44,7 @@ describe('moni-progress', () => {
 		expect(progress.getAttribute('aria-valuemax')).toBe('100');
 	});
 
-	it('clamps the rendered percentage between 0 and 100', async () => {
+	it('limita el porcentaje renderizado entre 0 y 100', async () => {
 		el.value = 150;
 		el.max = 100;
 		await el.updateComplete;
@@ -61,28 +61,28 @@ describe('moni-progress', () => {
 		expect(style2).toContain('--_p: 0');
 	});
 
-	it('renders the progress-circular container for circular variant', async () => {
+	it('renderiza el contenedor progress-circular para la variante circular', async () => {
 		el.variant = 'circular';
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('[role="progressbar"]');
 		expect(progress?.classList.contains('progress-circular')).toBe(true);
 	});
 
-	it('renders circle wavy for circular-wavy variant', async () => {
+	it('renderiza circle wavy para la variante circular-wavy', async () => {
 		el.variant = 'circular-wavy';
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('[role="progressbar"]');
 		expect(progress?.classList.contains('progress-circular')).toBe(true);
 	});
 
-	it('renders progress-wavy container for wavy variant', async () => {
+	it('renderiza el contenedor progress-wavy para la variante wavy', async () => {
 		el.variant = 'wavy';
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('[role="progressbar"]');
 		expect(progress?.classList.contains('progress-wavy')).toBe(true);
 	});
 
-	it('reflects the size attribute', async () => {
+	it('refleja el atributo size', async () => {
 		el.size = 'large';
 		await el.updateComplete;
 		expect(el.getAttribute('size')).toBe('large');

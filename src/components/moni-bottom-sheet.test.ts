@@ -14,21 +14,21 @@ describe('moni-bottom-sheet', () => {
 		el.remove();
 	});
 
-	it('renders dialog closed by default', async () => {
+	it('renderiza el diálogo cerrado por defecto', async () => {
 		await el.updateComplete;
 		const dialog = el.shadowRoot?.querySelector('dialog');
 		expect(dialog).toBeTruthy();
 		expect(dialog?.hasAttribute('open')).toBe(false);
 	});
 
-	it('renders open dialog when open attribute is set', async () => {
+	it('renderiza el diálogo abierto cuando el atributo open está establecido', async () => {
 		el.open = true;
 		await el.updateComplete;
 		const dialog = el.shadowRoot?.querySelector('dialog');
 		expect(dialog?.hasAttribute('open')).toBe(true);
 	});
 
-	it('emits close event and sets open to false when dragged down beyond threshold', async () => {
+	it('emite el evento close y establece open en false cuando se arrastra hacia abajo más allá del umbral', async () => {
 		el.open = true;
 		await el.updateComplete;
 
@@ -37,11 +37,11 @@ describe('moni-bottom-sheet', () => {
 		expect(dialog).toBeTruthy();
 		expect(handle).toBeTruthy();
 
-		// Mock setPointerCapture and releasePointerCapture
+		// Simular setPointerCapture y releasePointerCapture
 		handle.setPointerCapture = vi.fn();
 		handle.releasePointerCapture = vi.fn();
 
-		// Mock getBoundingClientRect for height
+		// Simular getBoundingClientRect para la altura
 		vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
 			height: 300,
 			width: 375,
@@ -57,7 +57,7 @@ describe('moni-bottom-sheet', () => {
 		const closeSpy = vi.fn();
 		el.addEventListener('close', closeSpy);
 
-		// Trigger pointerdown on handle
+		// Desencadenar pointerdown en el handle
 		handle.dispatchEvent(
 			new PointerEvent('pointerdown', {
 				bubbles: true,
@@ -67,7 +67,7 @@ describe('moni-bottom-sheet', () => {
 			})
 		);
 
-		// Trigger pointermove downwards (200px down)
+		// Desencadenar pointermove hacia abajo (200px)
 		dialog.dispatchEvent(
 			new PointerEvent('pointermove', {
 				bubbles: true,
@@ -77,7 +77,7 @@ describe('moni-bottom-sheet', () => {
 			})
 		);
 
-		// Trigger pointerup
+		// Desencadenar pointerup
 		handle.dispatchEvent(
 			new PointerEvent('pointerup', {
 				bubbles: true,
@@ -87,7 +87,7 @@ describe('moni-bottom-sheet', () => {
 			})
 		);
 
-		// Simulate transition finishing
+		// Simular la finalización de la transición
 		dialog.dispatchEvent(new Event('transitionend'));
 
 		await el.updateComplete;
@@ -96,7 +96,7 @@ describe('moni-bottom-sheet', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('does not emit close event when dragged down less than threshold', async () => {
+	it('no emite el evento close cuando se arrastra hacia abajo menos del umbral', async () => {
 		el.open = true;
 		await el.updateComplete;
 
@@ -134,7 +134,7 @@ describe('moni-bottom-sheet', () => {
 			new PointerEvent('pointermove', {
 				bubbles: true,
 				clientX: 100,
-				clientY: 420, // 20px difference (below threshold of Math.min(150, 300*0.4=120))
+				clientY: 420, // 20px de diferencia (por debajo del umbral de Math.min(150, 300*0.4=120))
 				pointerId: 1
 			})
 		);
@@ -154,7 +154,7 @@ describe('moni-bottom-sheet', () => {
 		expect(el.open).toBe(true);
 	});
 
-	it('increases the dialog height when dragged upwards', async () => {
+	it('aumenta la altura del diálogo cuando se arrastra hacia arriba', async () => {
 		el.open = true;
 		await el.updateComplete;
 
@@ -176,7 +176,7 @@ describe('moni-bottom-sheet', () => {
 			toJSON: () => {}
 		});
 
-		// Trigger pointerdown
+		// Desencadenar pointerdown
 		handle.dispatchEvent(
 			new PointerEvent('pointerdown', {
 				bubbles: true,
@@ -186,19 +186,19 @@ describe('moni-bottom-sheet', () => {
 			})
 		);
 
-		// Trigger pointermove upwards (by 50px)
+		// Desencadenar pointermove hacia arriba (por 50px)
 		dialog.dispatchEvent(
 			new PointerEvent('pointermove', {
 				bubbles: true,
 				clientX: 100,
-				clientY: 350, // clientY went from 400 to 350, so deltaY = -50
+				clientY: 350, // clientY pasó de 400 a 350, así que deltaY = -50
 				pointerId: 1
 			})
 		);
 
 		expect(dialog.style.height).toBe('350px'); // 300px + 50px
 
-		// Trigger pointerup
+		// Desencadenar pointerup
 		handle.dispatchEvent(
 			new PointerEvent('pointerup', {
 				bubbles: true,
@@ -210,12 +210,12 @@ describe('moni-bottom-sheet', () => {
 
 		await el.updateComplete;
 
-		// Height and transform style should be reset
+		// La altura y el estilo de transformación deben restablecerse
 		expect(dialog.style.height).toBe('');
 		expect(dialog.style.transform).toBe('');
 	});
 
-	it('snaps to expanded class when dragged up beyond threshold', async () => {
+	it('se ajusta a la clase expanded cuando se arrastra hacia arriba más allá del umbral', async () => {
 		el.open = true;
 		await el.updateComplete;
 
@@ -237,7 +237,7 @@ describe('moni-bottom-sheet', () => {
 			toJSON: () => {}
 		});
 
-		// Start drag
+		// Iniciar arrastre
 		handle.dispatchEvent(
 			new PointerEvent('pointerdown', {
 				bubbles: true,
@@ -247,7 +247,7 @@ describe('moni-bottom-sheet', () => {
 			})
 		);
 
-		// Drag up by 100px (greater than 80px threshold)
+		// Arrastrar hacia arriba 100px (mayor al umbral de 80px)
 		dialog.dispatchEvent(
 			new PointerEvent('pointermove', {
 				bubbles: true,
@@ -257,7 +257,7 @@ describe('moni-bottom-sheet', () => {
 			})
 		);
 
-		// Release
+		// Soltar
 		handle.dispatchEvent(
 			new PointerEvent('pointerup', {
 				bubbles: true,
@@ -269,31 +269,31 @@ describe('moni-bottom-sheet', () => {
 
 		await el.updateComplete;
 
-		// Class list should now contain 'expanded'
+		// La lista de clases ahora debería contener 'expanded'
 		expect(dialog.classList.contains('expanded')).toBe(true);
 	});
 
-	it('teleports the element to document.body when positioning=body and open=true, and restores it when closed', async () => {
+	it('teletransporta el elemento a document.body cuando positioning=body y open=true, y lo restaura al cerrarse', async () => {
 		const originalParent = el.parentNode;
 		el.positioning = 'body';
 		await el.updateComplete;
 
-		// Set open to true
+		// Establecer open en true
 		el.open = true;
 		await el.updateComplete;
 
-		// Should be child of document.body
+		// Debería ser hijo de document.body
 		expect(el.parentNode).toBe(document.body);
 
-		// Set open to false
+		// Establecer open en false
 		el.open = false;
 		await el.updateComplete;
 
-		// Should be restored to original parent
+		// Debería restaurarse al padre original
 		expect(el.parentNode).toBe(originalParent);
 	});
 
-	it('applies correct class for positioning=absolute and positioning=static', async () => {
+	it('aplica la clase correcta para positioning=absolute y positioning=static', async () => {
 		const dialog = el.shadowRoot?.querySelector('dialog');
 		
 		el.positioning = 'absolute';
@@ -307,7 +307,7 @@ describe('moni-bottom-sheet', () => {
 		expect(dialog?.classList.contains('absolute')).toBe(false);
 	});
 
-	it('sets CSS custom property for expandedHeight', async () => {
+	it('establece la propiedad personalizada CSS para expandedHeight', async () => {
 		el.expandedHeight = '75%';
 		await el.updateComplete;
 		expect(el.style.getPropertyValue('--moni-bottom-sheet-expanded-height')).toBe('75%');
@@ -317,7 +317,7 @@ describe('moni-bottom-sheet', () => {
 		expect(el.style.getPropertyValue('--moni-bottom-sheet-expanded-height')).toBe('600px');
 	});
 
-	it('closes the bottom sheet when clicking outside the dialog (backdrop click)', async () => {
+	it('cierra el bottom sheet al hacer clic fuera del diálogo (clic en el backdrop)', async () => {
 		el.open = true;
 		el.modal = true;
 		await el.updateComplete;
@@ -330,13 +330,13 @@ describe('moni-bottom-sheet', () => {
 		const closeSpy = vi.fn();
 		el.addEventListener('close', closeSpy);
 
-		// Click inside (target is handle): should not close
+		// Clic adentro (el objetivo es handle): no debería cerrarse
 		dialog.dispatchEvent(new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true
 		}));
-		// Wait, MouseEvent dispatched on dialog directly has e.target === dialog.
-		// To simulate click on handle, dispatch click event on handle, which bubbles to dialog:
+		// Espera, MouseEvent despachado directamente en dialog tiene e.target === dialog.
+		// Para simular el clic en el handle, despachar el evento click en el handle, que burbujea hasta el diálogo:
 		handle.dispatchEvent(new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true
@@ -346,13 +346,13 @@ describe('moni-bottom-sheet', () => {
 		expect(closeSpy).not.toHaveBeenCalled();
 		expect(el.open).toBe(true);
 
-		// Click outside (target is dialog itself): should close
+		// Clic afuera (el objetivo es el propio diálogo): debería cerrarse
 		dialog.dispatchEvent(new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true
 		}));
 
-		// Simulate transition finishing
+		// Simular la finalización de la transición
 		dialog.dispatchEvent(new Event('transitionend'));
 
 		await el.updateComplete;
@@ -360,7 +360,7 @@ describe('moni-bottom-sheet', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('sets CSS custom property for maxWidth', async () => {
+	it('establece la propiedad personalizada CSS para maxWidth', async () => {
 		el.maxWidth = '500px';
 		await el.updateComplete;
 		expect(el.style.getPropertyValue('--moni-bottom-sheet-max-width')).toBe('500px');
@@ -370,7 +370,7 @@ describe('moni-bottom-sheet', () => {
 		expect(el.style.getPropertyValue('--moni-bottom-sheet-max-width')).toBe('80%');
 	});
 
-	it('does not close the bottom sheet on backdrop click if it was just dragged', async () => {
+	it('no cierra el bottom sheet al hacer clic en el backdrop si acaba de ser arrastrado', async () => {
 		el.open = true;
 		el.modal = true;
 		await el.updateComplete;
@@ -380,14 +380,14 @@ describe('moni-bottom-sheet', () => {
 		expect(dialog).toBeTruthy();
 		expect(handle).toBeTruthy();
 
-		// Mock pointer methods
+		// Simular métodos de puntero
 		handle.setPointerCapture = vi.fn();
 		handle.releasePointerCapture = vi.fn();
 
 		const closeSpy = vi.fn();
 		el.addEventListener('close', closeSpy);
 
-		// Perform a drag gesture (pointerdown, pointermove, pointerup)
+		// Realizar un gesto de arrastre (pointerdown, pointermove, pointerup)
 		handle.dispatchEvent(new PointerEvent('pointerdown', {
 			bubbles: true,
 			clientX: 100,
@@ -397,7 +397,7 @@ describe('moni-bottom-sheet', () => {
 		dialog.dispatchEvent(new PointerEvent('pointermove', {
 			bubbles: true,
 			clientX: 100,
-			clientY: 350, // 50px up drag
+			clientY: 350, // arrastre hacia arriba de 50px
 			pointerId: 1
 		}));
 		handle.dispatchEvent(new PointerEvent('pointerup', {
@@ -407,7 +407,7 @@ describe('moni-bottom-sheet', () => {
 			pointerId: 1
 		}));
 
-		// A click event immediately following the drag
+		// Un evento click inmediatamente después del arrastre
 		dialog.dispatchEvent(new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true

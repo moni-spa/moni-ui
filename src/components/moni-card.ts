@@ -10,67 +10,67 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Card component.
+ * Componente Material Design 3 Card.
  *
- * Cards display content and actions about a single subject. They are
- * container surfaces that group related information together, making it
- * easy for users to scan and interact with collections of related data.
+ * Las tarjetas muestran contenido y acciones sobre un solo sujeto. Son
+ * superficies contenedoras que agrupan información relacionada junta, haciendo
+ * fácil para los usuarios escanear e interactuar con colecciones de datos relacionados.
  *
- * **M3 spec reference:** `m3-docs/components/cards/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/cards/specs.md`
  *
- * **Variants:**
- * - `elevated` (default) — `surface-container-low` background + `--elevate1` shadow.
- *   Best for collections where the card needs visual separation from a
- *   patterned or colored background. Gains shadow on hover/drag.
- * - `filled` — `surface-container-highest` background, no shadow.
- *   Lowest emphasis; use when cards sit directly on the main background surface.
- * - `outlined` — `surface` background + 1dp `outline-variant` stroke.
- *   Highest structural emphasis without casting a shadow. Best on solid backgrounds.
+ * **Variantes:**
+ * - `elevated` (por defecto) — Fondo `surface-container-low` + sombra `--elevate1`.
+ *   Mejor para colecciones donde la tarjeta necesita separación visual de un
+ *   fondo con patrones o de color. Gana sombra al pasar el ratón/arrastrar.
+ * - `filled` — Fondo `surface-container-highest`, sin sombra.
+ *   Énfasis más bajo; úsalo cuando las tarjetas se asientan directamente sobre la superficie del fondo principal.
+ * - `outlined` — Fondo `surface` + trazo `outline-variant` 1dp.
+ *   Énfasis estructural más alto sin proyectar una sombra. Mejor en fondos sólidos.
  *
- * **M3 measurements:**
- * - Container corner radius: 12dp.
- * - Horizontal content padding: 16dp.
- * - Gap between cards in a collection: max 8dp.
- * - Headline text alignment: start.
+ * **Medidas M3:**
+ * - Radio de esquina del contenedor: 12dp.
+ * - Relleno de contenido horizontal: 16dp.
+ * - Espacio entre tarjetas en una colección: máx. 8dp.
+ * - Alineación de texto del titular: inicio.
  *
- * **Interactive cards:**
- * When `clickable=true`, the card renders M3 state layer overlays on hover,
- * focus, and press via the `::before` pseudo-element. The consumer must handle
- * the `click` event to implement navigation or selection logic.
+ * **Tarjetas interactivas:**
+ * Cuando `clickable=true`, la tarjeta renderiza capas de estado M3 (hover,
+ * focus, press) a través del pseudo-elemento `::before`. El consumidor debe manejar
+ * el evento `click` para implementar la lógica de navegación o selección.
  *
  * @example
  * ```html
  * <moni-card variant="outlined" clickable>
- *   <img slot="media" src="photo.jpg" alt="Card image" />
- *   <h3 slot="headline">Card Title</h3>
- *   <p slot="supporting">Supporting text that describes the card topic.</p>
+ *   <img slot="media" src="photo.jpg" alt="Imagen de la tarjeta" />
+ *   <h3 slot="headline">Título de Tarjeta</h3>
+ *   <p slot="supporting">Texto de soporte que describe el tema de la tarjeta.</p>
  *   <div slot="actions">
- *     <moni-button variant="text">Cancel</moni-button>
- *     <moni-button>Confirm</moni-button>
+ *     <moni-button variant="text">Cancelar</moni-button>
+ *     <moni-button>Confirmar</moni-button>
  *   </div>
  * </moni-card>
  * ```
  *
- * @slot media      - An image, video, or icon at the top of the card.
- * @slot default    - Primary body content (replaces all named slots if used).
- * @slot headline   - H3-equivalent title text.
- * @slot subhead    - Secondary title below the headline.
- * @slot supporting - Descriptive supporting body text.
- * @slot actions    - Action buttons row at the bottom of the card.
+ * @slot media      - Una imagen, video, o icono en la parte superior de la tarjeta.
+ * @slot default    - Contenido del cuerpo principal (reemplaza todos los slots con nombre si se usa).
+ * @slot headline   - Texto de título equivalente a H3.
+ * @slot subhead    - Título secundario debajo del titular.
+ * @slot supporting - Texto de soporte descriptivo del cuerpo.
+ * @slot actions    - Fila de botones de acción en la parte inferior de la tarjeta.
  *
- * @csspart card    - The outer card container.
- * @csspart media   - The media area wrapper.
- * @csspart content - The content wrapper.
- * @csspart actions - The actions row wrapper.
+ * @csspart card    - El contenedor exterior de la tarjeta.
+ * @csspart media   - El contenedor del área de medios.
+ * @csspart content - El contenedor de contenido.
+ * @csspart actions - El contenedor de la fila de acciones.
  */
 @customElement('moni-card')
 export class MoniCard extends MoniElement {
 	/**
-	 * Visual variant of the card.
+	 * Variante visual de la tarjeta.
 	 *
-	 * - `'elevated'` (default) — Surface-low background + elevation shadow.
-	 * - `'filled'` — Surface-highest background, no shadow.
-	 * - `'outlined'` — Surface background + outline-variant stroke.
+	 * - `'elevated'` (por defecto) — Fondo Surface-low + sombra de elevación.
+	 * - `'filled'` — Fondo Surface-highest, sin sombra.
+	 * - `'outlined'` — Fondo Surface + trazo outline-variant.
 	 *
 	 * @default 'elevated'
 	 */
@@ -78,33 +78,35 @@ export class MoniCard extends MoniElement {
 	variant: 'elevated' | 'filled' | 'outlined' = 'elevated';
 
 	/**
-	 * When `true`, applies M3 state layer overlays (hover, focus, pressed)
-	 * to communicate interactivity. The card background shifts slightly on hover.
+	 * Cuando es `true`, aplica capas de estado M3 (hover, focus, pressed)
+	 * para comunicar interactividad. El fondo de la tarjeta cambia ligeramente en hover.
 	 *
-	 * Use when the card itself is a clickable navigation or selection target.
+	 * Úsalo cuando la tarjeta en sí es un objetivo de navegación o selección clicable.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) clickable = false;
 
 	/**
-	 * When `true`, applies `--elevate3` box-shadow to simulate the M3 "dragged"
-	 * state as specified in the M3 card interaction spec.
+	 * Cuando es `true`, aplica box-shadow `--elevate3` para simular el estado "arrastrado"
+	 * M3 según lo especificado en la especificación de interacción de tarjetas M3.
 	 *
-	 * Consumers should toggle this attribute based on the drag state of the card
-	 * (e.g. via a drag-and-drop library callback).
+	 * Los consumidores deben alternar este atributo basado en el estado de arrastre de la tarjeta
+	 * (ej. a través de un callback de biblioteca drag-and-drop).
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) draggable = false;
 
 	/**
-	 * When `true`, the card renders at 50% opacity with `cursor: not-allowed`,
-	 * signaling that the card and its actions are unavailable.
+	 * Cuando es `true`, la tarjeta se renderiza con opacidad del 50% con `cursor: not-allowed`,
+	 * indicando que la tarjeta y sus acciones no están disponibles.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+
 
 	static override styles = [
 		sharedStyles,
@@ -239,6 +241,24 @@ export class MoniCard extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el contenedor de la tarjeta como un `<section>` con envoltorio interactivo opcional.
+	 *
+	 * **¿Por qué `<section>`?**
+	 * Las tarjetas representan una unidad distintiva y cohesiva de contenido. Usar `<section>` da
+	 * a los lectores de pantalla un punto de referencia ARIA implícito para que puedan navegar entre tarjetas.
+	 *
+	 * **Tarjetas interactivas (`clickable=true`):**
+	 * Cuando es `clickable`, toda la superficie de la tarjeta se convierte en un `<button>` que envuelve
+	 * all slots, giving the card keyboard focus and `click` semantics. A
+	 * `<moni-ripple>` is rendered as the first child to provide the M3 touch feedback.
+	 *
+	 * **Slot zones:**
+	 * - `[slot="media"]` — image or video area at the card's leading edge.
+	 * - `[slot="header"]` — title and supporting text row.
+	 * - Default slot — the card's main content body.
+	 * - `[slot="footer"]` — action buttons row at the trailing edge.
+	 */
 	override render() {
 		return html`
 			<div class="media" part="media">

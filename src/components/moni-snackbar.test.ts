@@ -14,14 +14,14 @@ describe('moni-snackbar', () => {
 		el.remove();
 	});
 
-	it('renders a div with role=status and aria-live=polite (M3 spec)', async () => {
+	it('renderiza un div con role=status y aria-live=polite (especificación M3)', async () => {
 		await el.updateComplete;
 		const snack = el.shadowRoot?.querySelector('[part="snackbar"]');
 		expect(snack?.getAttribute('role')).toBe('status');
 		expect(snack?.getAttribute('aria-live')).toBe('polite');
 	});
 
-	it('reflects the active attribute on the host', async () => {
+	it('refleja el atributo active en el host', async () => {
 		el.active = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('active')).toBe(true);
@@ -31,7 +31,7 @@ describe('moni-snackbar', () => {
 		expect(el.hasAttribute('active')).toBe(false);
 	});
 
-	it('reflects placement=bottom (default) and placement=top', async () => {
+	it('refleja placement=bottom (por defecto) y placement=top', async () => {
 		await el.updateComplete;
 		const snack = el.shadowRoot?.querySelector('[part="snackbar"]');
 		expect(snack?.classList.contains('bottom')).toBe(true);
@@ -42,7 +42,7 @@ describe('moni-snackbar', () => {
 		expect(snack2?.classList.contains('top')).toBe(true);
 	});
 
-	it('renders the text in the [part=text] span', async () => {
+	it('renderiza el texto en el span [part=text]', async () => {
 		el.text = 'File saved successfully';
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector('[part="text"]');
@@ -53,7 +53,7 @@ describe('moni-snackbar', () => {
 		expect(t).toBe('File saved successfully');
 	});
 
-	it('renders the action label when set', async () => {
+	it('renderiza la etiqueta de acción cuando está establecida', async () => {
 		el.text = 'Item deleted';
 		el.action = 'Undo';
 		await el.updateComplete;
@@ -61,19 +61,19 @@ describe('moni-snackbar', () => {
 		expect(action?.textContent).toBe('Undo');
 	});
 
-	it('max-lines defaults to 2 (M3 spec)', async () => {
+	it('max-lines es 2 por defecto (especificación M3)', async () => {
 		await el.updateComplete;
 		expect(el.maxLines).toBe(2);
 		expect(el.getAttribute('max-lines')).toBe('2');
 	});
 
-	it('max-lines can be customized via attribute', async () => {
+	it('max-lines se puede personalizar mediante atributo', async () => {
 		el.maxLines = 3;
 		await el.updateComplete;
 		expect(el.getAttribute('max-lines')).toBe('3');
 	});
 
-	it('max-lines is forwarded to the inner element as a CSS custom property', async () => {
+	it('max-lines se reenvía al elemento interno como una propiedad personalizada de CSS', async () => {
 		el.maxLines = 4;
 		await el.updateComplete;
 		const snack = el.shadowRoot?.querySelector('[part="snackbar"]') as HTMLElement;

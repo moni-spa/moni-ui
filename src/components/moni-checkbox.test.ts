@@ -14,7 +14,7 @@ describe('moni-checkbox', () => {
 		el.remove();
 	});
 
-	it('renders an input and a visual span', async () => {
+	it('renderiza un input y un span visual', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input');
 		const span = el.shadowRoot?.querySelector('span');
@@ -22,7 +22,7 @@ describe('moni-checkbox', () => {
 		expect(span).toBeTruthy();
 	});
 
-	it('forwards checked state to the input', async () => {
+	it('reenvía el estado checked al input', async () => {
 		el.checked = true;
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -35,7 +35,7 @@ describe('moni-checkbox', () => {
 		expect(input.checked).toBe(false);
 	});
 
-	it('input is contained in the label (for click handling)', async () => {
+	it('el input está contenido en el label (para el manejo de clics)', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
 			'input'
@@ -44,14 +44,14 @@ describe('moni-checkbox', () => {
 		expect(label?.contains(input)).toBe(true);
 	});
 
-	it('renders a label span when label attribute is set', async () => {
+	it('renderiza un label span cuando se establece el atributo label', async () => {
 		el.label = 'Accept terms';
 		await el.updateComplete;
 		const span = el.shadowRoot?.querySelector('span');
 		expect(span?.textContent?.trim()).toBe('Accept terms');
 	});
 
-	it('forwards disabled to the input', async () => {
+	it('reenvía disabled al input', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector(
@@ -60,7 +60,7 @@ describe('moni-checkbox', () => {
 		expect(input.disabled).toBe(true);
 	});
 
-	it('reflects the checked attribute', async () => {
+	it('refleja el atributo checked', async () => {
 		el.checked = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('checked')).toBe(true);
@@ -70,7 +70,7 @@ describe('moni-checkbox', () => {
 		expect(el.hasAttribute('checked')).toBe(false);
 	});
 
-	it('reflects the disabled attribute', async () => {
+	it('refleja el atributo disabled', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('disabled')).toBe(true);

@@ -10,45 +10,45 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Expansion panel component.
+ * Componente Material Design 3 Expansion panel (Panel de expansión).
  *
- * A lightweight wrapper around the native HTML `<details>` and `<summary>`
- * elements, styled according to M3 surface and elevation guidelines.
- * Expansion panels contain creation flows and allow lightweight editing of an element.
+ * Un envoltorio ligero alrededor de los elementos HTML nativos `<details>` y `<summary>`,
+ * estilizado de acuerdo con las pautas de superficie y elevación de M3.
+ * Los paneles de expansión contienen flujos de creación y permiten la edición ligera de un elemento.
  *
- * **Visual architecture:**
- * The component renders a `<details>` element with a `<summary>` that acts
- * as the expandable header. The default slot content is placed inside the
- * `<details>` tag (but outside the `<summary>`), naturally hiding and showing
- * based on the native behavior. An M3 `expand_more` icon is added via a CSS
- * `::after` pseudo-element and rotates when the panel is open.
+ * **Arquitectura visual:**
+ * El componente renderiza un elemento `<details>` con un `<summary>` que actúa
+ * como el encabezado expandible. El contenido del slot por defecto se coloca dentro de la
+ * etiqueta `<details>` (pero fuera del `<summary>`), ocultándose y mostrándose naturalmente
+ * según el comportamiento nativo. Se añade un icono `expand_more` de M3 mediante un
+ * pseudo-elemento CSS `::after` que rota cuando el panel está abierto.
  *
- * **Usage:**
- * Set the `title` attribute for a simple text header, or use the `summary`
- * slot to project custom rich content (like icons or secondary text) into the
- * header area.
+ * **Uso:**
+ * Establezca el atributo `title` para un encabezado de texto simple, o use el slot `summary`
+ * para proyectar contenido enriquecido personalizado (como iconos o texto secundario) en el
+ * área del encabezado.
  *
  * @example
  * ```html
- * <!-- Simple text title -->
- * <moni-expansion title="Advanced Settings">
- *   <p>Enable developer mode features here.</p>
+ * <!-- Título de texto simple -->
+ * <moni-expansion title="Configuración Avanzada">
+ *   <p>Habilite las características del modo de desarrollador aquí.</p>
  * </moni-expansion>
  *
- * <!-- Rich summary content via slot -->
+ * <!-- Contenido de resumen enriquecido a través de slot -->
  * <moni-expansion open>
  *   <div slot="summary" style="display: flex; gap: 8px;">
  *     <moni-icon>person</moni-icon>
- *     <span>Personal Information</span>
+ *     <span>Información Personal</span>
  *   </div>
  *   <form>
- *     <moni-text-field label="Name"></moni-text-field>
+ *     <moni-text-field label="Nombre"></moni-text-field>
  *   </form>
  * </moni-expansion>
  * ```
  *
- * @slot default - The content of the expansion panel body.
- * @slot summary - Custom header content (overrides the `title` attribute).
+ * @slot default - El contenido del cuerpo del panel de expansión.
+ * @slot summary - Contenido personalizado del encabezado (sobrescribe el atributo `title`).
  */
 @customElement('moni-expansion')
 export class MoniExpansion extends MoniElement {
@@ -102,6 +102,16 @@ export class MoniExpansion extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el panel de expansión utilizando el elemento nativo `<details>`.
+	 *
+	 * El atributo `open` en
+	 * `:host` impulsa la rotación de la flecha indicadora CSS (`::after` en `summary`).
+	 *
+	 * **Estructura de slots:**
+	 * - `[slot="summary"]` — la fila de encabezado siempre visible (título, iconos).
+	 * - Slot por defecto — la región de contenido colapsable.
+	 */
 	override render() {
 		return html`<details ?open=${this.open} part="expansion">
 			<summary part="summary">

@@ -14,7 +14,7 @@ describe('moni-loading-indicator', () => {
 		el.remove();
 	});
 
-	it('renders a container with active indicator', async () => {
+	it('renderiza un contenedor con indicador activo', async () => {
 		await el.updateComplete;
 		const container = el.shadowRoot?.querySelector('.container');
 		const activeIndicator = el.shadowRoot?.querySelector('.active-indicator');
@@ -22,7 +22,7 @@ describe('moni-loading-indicator', () => {
 		expect(activeIndicator).toBeTruthy();
 	});
 
-	it('reflects and respects the variant attribute', async () => {
+	it('refleja y respeta el atributo variant', async () => {
 		expect(el.variant).toBe('uncontained');
 		el.variant = 'contained';
 		await el.updateComplete;
@@ -33,7 +33,7 @@ describe('moni-loading-indicator', () => {
 		expect(el.getAttribute('variant')).toBe('uncontained');
 	});
 
-	it('has progressbar role and min/max values set', () => {
+	it('tiene el rol progressbar y valores min/max establecidos', () => {
 		expect(el.getAttribute('role')).toBe('progressbar');
 		expect(el.ariaValueMin).toBe('0');
 		expect(el.ariaValueMax).toBe('100');

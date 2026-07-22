@@ -10,42 +10,41 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Select Option component.
+ * Componente Material Design 3 Select Option (Opción de Selección).
  *
- * An individual selectable item designed to be placed inside a
- * `<moni-select>` dropdown.
+ * Un elemento individual seleccionable diseñado para colocarse dentro de un
+ * menú desplegable `<moni-select>`.
  *
- * **Interaction and layout:**
- * Options are rendered as accessible `<li>` elements styled identically to
- * `<moni-menu-item>`. When slotted into a `<moni-select>`, the parent
- * component extracts their `value`, `label`, and `group` attributes to build
- * its internal data model and handles the actual selection logic, keyboard
- * navigation, and rendering within the dropdown popup.
+ * **Interacción y diseño (layout):**
+ * Las opciones se renderizan como elementos `<li>` accesibles estilizados de forma idéntica a
+ * `<moni-menu-item>`. Cuando se insertan en un `<moni-select>`, el componente
+ * padre extrae sus atributos `value`, `label` y `group` para construir
+ * su modelo de datos interno y maneja la lógica de selección real, la navegación
+ * por teclado y el renderizado dentro del popup desplegable.
  *
- * **Grouping:**
- * Options can be categorized into subcategories by providing a `group`
- * attribute. The parent `<moni-select>` uses this to automatically generate
- * group headers (`<moni-select-group>`) in the dropdown list.
+ * **Agrupación:**
+ * Las opciones se pueden clasificar en subcategorías proporcionando un atributo
+ * `group`. El `<moni-select>` padre usa esto para generar automáticamente
+ * encabezados de grupo (`<moni-select-group>`) en la lista desplegable.
  *
  * @example
  * ```html
- * <moni-select label="Favorite framework">
- *   <!-- Standard option -->
+ * <moni-select label="Framework favorito">
+ *   <!-- Opción estándar -->
  *   <moni-select-option value="lit">Lit Element</moni-select-option>
  *
- *   <!-- Disabled option -->
- *   <moni-select-option value="react" disabled>React (not allowed)</moni-select-option>
+ *   <!-- Opción deshabilitada -->
+ *   <moni-select-option value="react" disabled>React (no permitido)</moni-select-option>
  *
- *   <!-- Grouped option -->
- *   <moni-select-option value="vue" group="Other">Vue.js</moni-select-option>
+ *   <!-- Opción agrupada -->
+ *   <moni-select-option value="vue" group="Otros">Vue.js</moni-select-option>
  * </moni-select>
  * ```
  *
- * @slot default - The text label for the option. If the `label` attribute is
- *                omitted, the parent `<moni-select>` will read this slot's
- *                `textContent`.
+ * @slot default - La etiqueta de texto para la opción. Si se omite el atributo `label`,
+ *                 el `<moni-select>` padre leerá el `textContent` de esta ranura (slot).
  *
- * @csspart item - The outer `<li>` element.
+ * @csspart item - El elemento `<li>` exterior.
  */
 @customElement('moni-select-option')
 export class MoniSelectOption extends MoniElement {
@@ -101,6 +100,14 @@ export class MoniSelectOption extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza la fila de la opción como un elemento de lista accesible con `role="option"`.
+	 *
+	 * `aria-selected=${this.selected}` permite a los lectores de pantalla anunciar el estado
+	 * de selección actual cuando el usuario navega por el cuadro de lista con las teclas de flecha.
+	 * Cuando `selected=true`, se renderiza un icono de marca de verificación principal (leading checkmark) a través de `<moni-icon name="check">`
+	 * en lugar del slot del icono principal, según la especificación de opciones de Select de M3.
+	 */
 	override render() {
 		return html`<li
 			part="option"

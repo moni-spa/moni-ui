@@ -18,24 +18,24 @@ describe('moni-tooltip (P3.1)', () => {
 		parent.remove();
 	});
 
-	it('renders role="tooltip" on the inner element (M3 a11y)', async () => {
+	it('renderiza role="tooltip" en el elemento interno (accesibilidad M3)', async () => {
 		await el.updateComplete;
 		const tip = el.shadowRoot?.querySelector('[role="tooltip"]');
 		expect(tip).toBeTruthy();
 	});
 
-	it('reflects the text on the host', async () => {
+	it('refleja el texto en el host', async () => {
 		await el.updateComplete;
 		expect(el.text).toBe('Save changes');
 	});
 
-	it('reflects position (default top)', async () => {
+	it('refleja la posición (top por defecto)', async () => {
 		await el.updateComplete;
 		const tip = el.shadowRoot?.querySelector('.tooltip');
 		expect(tip?.classList.contains('top')).toBe(true);
 	});
 
-	it('accepts all 6 M3 placements (top/top-start/top-end/bottom/bottom-start/bottom-end)', async () => {
+	it('acepta los 6 posicionamientos M3 (top/top-start/top-end/bottom/bottom-start/bottom-end)', async () => {
 		const positions: Array<'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end'> = [
 			'top',
 			'top-start',
@@ -52,20 +52,20 @@ describe('moni-tooltip (P3.1)', () => {
 		}
 	});
 
-	it('defaults to plain (rich=false)', async () => {
+	it('es plano (plain) por defecto (rich=false)', async () => {
 		await el.updateComplete;
 		expect(el.rich).toBe(false);
 		expect(el.hasAttribute('rich')).toBe(false);
 	});
 
-	it('rich=true enables rich content mode (rich attribute reflected)', async () => {
+	it('rich=true habilita el modo de contenido enriquecido (atributo rich reflejado)', async () => {
 		el.rich = true;
 		await el.updateComplete;
 		expect(el.rich).toBe(true);
 		expect(el.hasAttribute('rich')).toBe(true);
 	});
 
-	it('shows the tooltip on mouseenter and hides on mouseleave', async () => {
+	it('muestra el tooltip en mouseenter y lo oculta en mouseleave', async () => {
 		await el.updateComplete;
 		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
 		expect(tip?.classList.contains('visible')).toBe(false);
@@ -79,7 +79,7 @@ describe('moni-tooltip (P3.1)', () => {
 		expect(tip?.classList.contains('visible')).toBe(false);
 	});
 
-	it('shows the tooltip on focusin and hides on focusout', async () => {
+	it('muestra el tooltip en focusin y lo oculta en focusout', async () => {
 		await el.updateComplete;
 		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
 		parent.dispatchEvent(new FocusEvent('focusin', { bubbles: true }));
@@ -91,7 +91,7 @@ describe('moni-tooltip (P3.1)', () => {
 		expect(tip?.classList.contains('visible')).toBe(false);
 	});
 
-	it('Escape key closes a visible tooltip', async () => {
+	it('la tecla Escape cierra un tooltip visible', async () => {
 		await el.updateComplete;
 		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
 		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
@@ -103,20 +103,20 @@ describe('moni-tooltip (P3.1)', () => {
 		expect(tip?.classList.contains('visible')).toBe(false);
 	});
 
-	it('applies size variants (small/medium/large)', async () => {
+	it('aplica las variantes de tamaño (small/medium/large)', async () => {
 		for (const size of ['small', 'medium', 'large'] as const) {
 			el.size = size;
 			await el.updateComplete;
 			const tip = el.shadowRoot?.querySelector('.tooltip');
-			expect(tip?.classList.contains(size), `expected class ${size}`).toBe(true);
+			expect(tip?.classList.contains(size), `esperada clase ${size}`).toBe(true);
 		}
 	});
 
-	it('cleans up listeners on disconnect', () => {
-		// Sanity: removing the parent cleans up.
+	it('limpia los listeners al desconectarse', () => {
+		// Sanidad: remover el padre limpia todo.
 		parent.remove();
-		// No assertion needed; if listeners leaked, the next beforeEach would
-		// accumulate them but vitest would still pass. Visual coverage only.
+		// No se necesita aserción; si los listeners se fugaran, el siguiente beforeEach
+		// acumularía listeners pero vitest pasaría. Solo cobertura visual.
 		expect(parent.isConnected).toBe(false);
 	});
 });

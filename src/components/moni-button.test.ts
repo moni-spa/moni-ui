@@ -14,13 +14,13 @@ describe('moni-button', () => {
 		el.remove();
 	});
 
-	it('renders a native <button> by default', async () => {
+	it('renderiza un <button> nativo por defecto', async () => {
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button).toBeTruthy();
 	});
 
-	it('renders an <a> when href is set', async () => {
+	it('renderiza un <a> cuando el href está establecido', async () => {
 		el.href = 'https://example.com';
 		await el.updateComplete;
 		const a = el.shadowRoot?.querySelector('a');
@@ -28,27 +28,27 @@ describe('moni-button', () => {
 		expect(a?.getAttribute('href')).toBe('https://example.com');
 	});
 
-	it('applies shape=circle class on the button', async () => {
+	it('aplica la clase shape=circle en el botón', async () => {
 		el.shape = 'circle';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('circle')).toBe(true);
 	});
 
-	it('hides the label part when shape=circle (verifies the :host selector)', async () => {
+	it('oculta la parte del label cuando shape=circle (verifica el selector :host)', async () => {
 		el.shape = 'circle';
 		el.textContent = 'Click me';
 		await el.updateComplete;
-		// The :host([shape='circle']) [part='label'] rule lives in shadow
-		// stylesheets. jsdom's getComputedStyle is limited so we verify the
-		// structural condition: the host has the shape attribute reflected
-		// and the [part='label'] element exists for slot content.
+		// La regla :host([shape='circle']) [part='label'] vive en las hojas de estilo
+		// shadow. getComputedStyle de jsdom está limitado, así que verificamos la
+		// condición estructural: el host tiene el atributo shape reflejado
+		// y el elemento [part='label'] existe para el contenido del slot.
 		expect(el.getAttribute('shape')).toBe('circle');
 		const label = el.shadowRoot?.querySelector('[part="label"]');
 		expect(label).toBeTruthy();
 	});
 
-	it('keeps the label rendered when shape=square', async () => {
+	it('mantiene el label renderizado cuando shape=square', async () => {
 		el.shape = 'square';
 		el.textContent = 'Square';
 		await el.updateComplete;
@@ -57,7 +57,7 @@ describe('moni-button', () => {
 		expect(el.getAttribute('shape')).toBe('square');
 	});
 
-	it('applies shape=square class on the button', async () => {
+	it('aplica la clase shape=square en el botón', async () => {
 		el.shape = 'square';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
@@ -65,7 +65,7 @@ describe('moni-button', () => {
 		expect(button?.classList.contains('circle')).toBe(false);
 	});
 
-	it('applies shape=circle class on the button', async () => {
+	it('aplica la clase shape=circle en el botón', async () => {
 		el.shape = 'circle';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
@@ -73,21 +73,21 @@ describe('moni-button', () => {
 		expect(button?.classList.contains('square')).toBe(false);
 	});
 
-	it('applies variant class for outlined', async () => {
+	it('aplica la clase de variante para outlined', async () => {
 		el.variant = 'outlined';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('border')).toBe(true);
 	});
 
-	it('applies size class for large', async () => {
+	it('aplica la clase de tamaño para large', async () => {
 		el.size = 'large';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('large')).toBe(true);
 	});
 
-	it('renders an icon when icon attribute is set', async () => {
+	it('renderiza un ícono cuando el atributo icon está establecido', async () => {
 		el.icon = 'add';
 		await el.updateComplete;
 		const icon = el.shadowRoot?.querySelector('.icon');
@@ -97,7 +97,7 @@ describe('moni-button', () => {
 		expect(moniIcon?.getAttribute('name')).toBe('add');
 	});
 
-	it('shows a loading spinner alongside icon/label when loading=true', async () => {
+	it('muestra un spinner de carga junto al ícono/label cuando loading=true', async () => {
 		el.loading = true;
 		await el.updateComplete;
 		const progress = el.shadowRoot?.querySelector('moni-progress');
@@ -108,7 +108,7 @@ describe('moni-button', () => {
 		expect(label).toBeTruthy();
 	});
 
-	it('renders an <a> with the loading spinner when href + loading are set', async () => {
+	it('renderiza un <a> con el spinner de carga cuando href + loading están establecidos', async () => {
 		el.href = '#';
 		el.loading = true;
 		await el.updateComplete;
@@ -118,14 +118,14 @@ describe('moni-button', () => {
 		expect(progress).toBeTruthy();
 	});
 
-	it('sets aria-busy on the button when loading', async () => {
+	it('establece aria-busy en el botón cuando está cargando', async () => {
 		el.loading = true;
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.getAttribute('aria-busy')).toBe('true');
 	});
 
-	it('forwards disabled to the native button', async () => {
+	it('reenvía disabled al botón nativo', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector(
@@ -134,7 +134,7 @@ describe('moni-button', () => {
 		expect(button.disabled).toBe(true);
 	});
 
-	it('logs a deprecation warning when size="extra" is used (use size="xlarge" per M3)', async () => {
+	it('registra una advertencia de obsolescencia cuando se usa size="extra" (usar size="xlarge" según M3)', async () => {
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 		el.remove();
 		el.size = 'extra';
@@ -144,13 +144,13 @@ describe('moni-button', () => {
 			String(c[0]).includes('[moni-ui]') &&
 			String(c[0]).includes('size="extra"')
 		);
-		expect(call, 'expected a deprecation warning to mention size="extra"').toBeTruthy();
+		expect(call, 'se esperaba que una advertencia de obsolescencia mencionara size="extra"').toBeTruthy();
 		warnSpy.mockRestore();
 	});
 
-	it('does not log a deprecation warning for M3-compliant size values', async () => {
+	it('no registra una advertencia de obsolescencia para los valores de tamaño compatibles con M3', async () => {
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-		// Use a fresh size to ensure no M3-stale deprecation is logged.
+		// Usar un tamaño nuevo para asegurar que no se registre una obsolescencia obsoleta de M3.
 		const fresh = document.createElement('moni-button') as MoniButton;
 		fresh.size = 'xlarge';
 		document.body.appendChild(fresh);

@@ -14,81 +14,192 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Material Design 3 Textarea component.
+ * Componente Material Design 3 Textarea (Área de texto).
  *
- * A multi-line text input field designed for collecting longer amounts of text,
- * such as comments, descriptions, or messages.
+ * Un campo de entrada de texto multilínea diseñado para recolectar cantidades mayores de texto,
+ * como comentarios, descripciones o mensajes.
  *
- * **M3 spec reference:** `m3-docs/components/text-fields/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/text-fields/specs.md`
  *
- * **Visual architecture:**
- * It shares the exact same `.field` shell and styling engine as
- * `<moni-text-field>`, but internally renders a native `<textarea>` instead
- * of an `<input>`. This ensures visual consistency across all form elements
- * regarding floating labels, helper text, error states, and icons.
+ * **Arquitectura visual:**
+ * Comparte exactamente el mismo contenedor `.field` y motor de estilos que
+ * `<moni-text-field>`, pero internamente renderiza un `<textarea>` nativo en lugar
+ * de un `<input>`. Esto asegura la consistencia visual en todos los elementos del formulario
+ * en cuanto a etiquetas flotantes, texto de ayuda, estados de error e iconos.
  *
- * **Character Counter:**
- * If the `maxlength` attribute is set, the textarea automatically displays
- * a character counter (`{current length} / {maxlength}`) positioned at the
- * trailing edge of the supporting text area (bottom right). This can be
- * suppressed by setting the `no-counter` attribute.
+ * **Contador de caracteres:**
+ * Si se establece el atributo `maxlength`, el área de texto muestra automáticamente
+ * un contador de caracteres (`{longitud actual} / {maxlength}`) ubicado en el
+ * borde final (trailing) del área de texto de soporte (abajo a la derecha). Esto puede
+ * suprimirse estableciendo el atributo `no-counter`.
  *
- * **State management:**
- * This component is purely visual and presentational. It reflects attributes
- * down to the native textarea, but it does NOT attach internal `@input` or
- * `@change` listeners. Consumers should attach standard DOM listeners directly
- * to this element to capture user input, just as they would with a native
- * textarea.
+ * **Gestión del estado:**
+ * Este componente es puramente visual y representacional. Refleja los atributos
+ * hacia el textarea nativo, pero NO adjunta listeners internos para `@input` o
+ * `@change`. Los consumidores deben adjuntar listeners estándar del DOM directamente
+ * a este elemento para capturar la entrada del usuario, tal como lo harían con un
+ * textarea nativo.
  *
  * @example
  * ```html
- * <!-- Standard filled textarea -->
- * <moni-textarea label="Description" rows="4"></moni-textarea>
+ * <!-- Textarea llenado (filled) estándar -->
+ * <moni-textarea label="Descripción" rows="4"></moni-textarea>
  *
- * <!-- Outlined textarea with character counter -->
+ * <!-- Textarea contorneado (outlined) con contador de caracteres -->
  * <moni-textarea
  *   variant="outlined"
- *   label="Bio"
+ *   label="Biografía"
  *   maxlength="160"
  * ></moni-textarea>
  * ```
  *
- * @csspart field     - The outer `.field` div container.
- * @csspart input     - The native `<textarea>` element.
- * @csspart label     - The floating `<label>` element.
- * @csspart helper    - The helper/error text area.
- * @csspart counter   - The character counter element.
+ * @csspart field     - El contenedor div `.field` exterior.
+ * @csspart input     - El elemento `<textarea>` nativo.
+ * @csspart label     - El elemento `<label>` flotante.
+ * @csspart helper    - El área de texto de ayuda/error.
+ * @csspart counter   - El elemento contador de caracteres.
  */
 @customElement('moni-textarea')
 export class MoniTextarea extends MoniElement {
+	static formAssociated = true;
+	private _internals: ElementInternals;
+
+	constructor() {
+		super();
+		this._internals = this.attachInternals();
+	}
+
+	/**
+	 * El nombre del textarea, enviado con los datos del formulario.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) name = '';
+
+	/**
+	 * El texto de la etiqueta flotante.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) label = '';
+
+	/**
+	 * Variante visual del área de texto.
+	 * @type {'filled' | 'outlined'}
+	 * @default 'filled'
+	 */
 	@property({ reflect: true }) variant: 'filled' | 'outlined' = 'filled';
+
+	/**
+	 * Define las dimensiones del área de texto.
+	 * @type {'small' | 'medium' | 'large' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' | 'extra' = 'medium';
+
+	/**
+	 * Forma del radio del borde (border-radius) del campo.
+	 * @type {'round' | 'square' | 'no-round'}
+	 * @default 'no-round'
+	 */
 	@property({ reflect: true })
 	shape: 'round' | 'square' | 'no-round' = 'no-round';
+
+	/**
+	 * Nombre del icono inicial (leading) (Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) icon = '';
+
+	/**
+	 * Nombre del icono final (trailing) (Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'trailing-icon' }) trailingIcon = '';
+
+	/**
+	 * Prefijo de texto corto mostrado antes del valor del input.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) prefix = '';
+
+	/**
+	 * Sufijo de texto corto mostrado después del valor del input.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) suffix = '';
+
+	/**
+	 * Número por defecto de líneas de texto visibles.
+	 * @type {number}
+	 * @default 3
+	 */
 	@property({ type: Number, reflect: true }) rows = 3;
+
+	/**
+	 * Número máximo de caracteres permitidos en el área de texto.
+	 * También habilita la visualización del contador de caracteres a menos que `noCounter` sea true.
+	 * @type {number | null}
+	 */
 	@property({ type: Number, reflect: true }) maxlength: number | null = null;
+
+	/**
+	 * Oculta la visualización del contador de caracteres cuando se establece `maxlength`.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'no-counter' })
 	noCounter = false;
+
+	/**
+	 * Si es true, muestra un indicador de carga (progreso circular) al final.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) loading = false;
+
+	/**
+	 * Deshabilita el área de texto.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Texto de ayuda mostrado debajo del campo.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) helper = '';
+
+	/**
+	 * Texto de error mostrado debajo del campo cuando `error` es true.
+	 * Sobrescribe el texto de ayuda.
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'error-text' }) errorText = '';
+
+	/**
+	 * Si es true, establece el campo en un estado de error.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) error = false;
+
+	/**
+	 * El valor actual del área de texto.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) value = '';
+
+	/**
+	 * Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) placeholder = '';
 
 	@query('textarea') private _input!: HTMLTextAreaElement;
 
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
-			if (changed.has('value')) this._input.value = this.value;
+			if (changed.has('value')) {
+				this._input.value = this.value;
+				this._internals.setFormValue(this.value);
+			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 			if (changed.has('maxlength') && this.maxlength != null) {
 				this._input.maxLength = this.maxlength;
@@ -98,6 +209,19 @@ export class MoniTextarea extends MoniElement {
 
 	static override styles = [sharedStyles, fieldStyles];
 
+	/**
+	 * Renderiza el campo del área de texto con etiqueta, iconos de prefijo/sufijo y contador de caracteres.
+	 *
+	 * **Composición de `fieldClasses`:**
+	 * Sigue la convención de nomenclatura field-styles. `prefix` se añade
+	 * cuando el texto de `icon` o `prefix` está presente (desplaza el inicio en línea de la etiqueta).
+	 * `suffix` se añade cuando `trailingIcon`, el texto `suffix` o `loading` es true.
+	 *
+	 * **Contador de caracteres:**
+	 * `showCounter` es true cuando `maxlength > 0` y `noCounter` no está configurado.
+	 * El contador muestra `${this.value.length} / ${this.maxlength}` y puede volverse rojo
+	 * (vía CSS `invalid`) dependiendo de la validación.
+	 */
 	override render() {
 		const hasLeading = Boolean(this.icon) || Boolean(this.prefix);
 		const hasTrailing =
@@ -152,7 +276,7 @@ export class MoniTextarea extends MoniElement {
 						>`
 					: nothing;
 
-		// M3 spec: supporting text on the left, character counter on the right.
+		// Especificación M3: texto de soporte a la izquierda, contador de caracteres a la derecha.
 		const counter = showCounter
 			? html`<output part="counter" class="counter"
 						>${this.value.length} / ${this.maxlength}</output

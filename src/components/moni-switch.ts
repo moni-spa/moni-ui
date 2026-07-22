@@ -12,125 +12,136 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Switch component.
+ * Componente Material Design 3 Switch (Interruptor).
  *
- * Switches toggle the state of a single setting on or off. They are the
- * binary on/off equivalent of a checkbox, but optimized for toggling a
- * single state rather than selecting from a list.
+ * Los switches alternan el estado de una configuración individual entre encendido y apagado.
+ * Son el equivalente binario encendido/apagado de una casilla de verificación (checkbox),
+ * pero optimizados para alternar un solo estado en lugar de seleccionar de una lista.
  *
- * **M3 spec reference:** `m3-docs/components/switch/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/switch/specs.md`
  *
- * **M3 measurements:**
- * - Track: 52dp × 32dp, 2dp border, full-radius pill shape.
- * - Handle (thumb): 16dp unselected → 24dp selected → 28dp pressed.
- * - State layer: 40dp circular ripple on hover/focus/pressed states.
- * - Icon (optional): 16dp icon rendered inside the thumb when `icon` is set.
+ * **Medidas M3:**
+ * - Pista (Track): 52dp × 32dp, borde de 2dp, forma de píldora con radio completo.
+ * - Control (Thumb): 16dp no seleccionado → 24dp seleccionado → 28dp presionado.
+ * - Capa de estado (State layer): ripple circular de 40dp en estados de hover/focus/pressed.
+ * - Icono (opcional): icono de 16dp renderizado dentro del control (thumb) cuando `icon` está activado.
  *
- * **Visual architecture:**
- * Like `<moni-checkbox>`, the native `<input type="checkbox" role="switch">`
- * occupies real layout space but is visually hidden via `opacity: 0`. Two
- * `<span>` pseudo-elements render the track (`::after`) and thumb (`::before`).
- * When `icon=true`, `<i>` elements render `close` and `check` glyphs inside
- * the thumb, with visibility toggled via CSS based on the checked state.
+ * **Arquitectura visual:**
+ * Al igual que `<moni-checkbox>`, el `<input type="checkbox" role="switch">` nativo
+ * ocupa espacio real en el diseño pero está oculto visualmente mediante `opacity: 0`. Dos
+ * pseudo-elementos de un `<span>` renderizan la pista (`::after`) y el control (`::before`).
+ * Cuando `icon=true`, los elementos `<i>` renderizan los glifos `close` y `check` dentro
+ * del control, y su visibilidad se alterna mediante CSS en base al estado verificado (checked).
  *
- * @fires change - Bubbles and is composed. Fired when the switch is toggled.
- *                 Read `element.checked` for the new state.
+ * @fires change - Burbujea y está compuesto. Se dispara cuando el switch se alterna.
+ *                 Lee `element.checked` para obtener el nuevo estado.
  *
  * @example
  * ```html
- * <moni-switch label="Dark mode" name="dark-mode"></moni-switch>
- * <moni-switch icon checked label="Notifications"></moni-switch>
+ * <moni-switch label="Modo oscuro" name="dark-mode"></moni-switch>
+ * <moni-switch icon checked label="Notificaciones"></moni-switch>
  *
  * <script>
  *   document.querySelector('moni-switch').addEventListener('change', (e) => {
- *     console.log('enabled:', e.target.checked);
+ *     console.log('activado:', e.target.checked);
  *   });
  * </script>
  * ```
  *
- * @csspart switch - The outer `<label>` element containing the switch.
+ * @csspart switch - El elemento `<label>` exterior que contiene el switch.
  */
 @customElement('moni-switch')
 export class MoniSwitch extends MoniElement {
+	static formAssociated = true;
+	private _internals: ElementInternals;
+
+	constructor() {
+		super();
+		this._internals = this.attachInternals();
+	}
+
 	/**
-	 * Text label displayed to the right of the switch.
+	 * Etiqueta de texto mostrada a la derecha del switch.
 	 *
-	 * When non-empty, renders as a padded text span after the track.
-	 * When empty, the default slot is rendered, allowing custom HTML labels.
+	 * Cuando no está vacía, se renderiza como un span de texto con padding después de la pista.
+	 * Cuando está vacía, se renderiza el slot por defecto, permitiendo etiquetas HTML personalizadas.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) label = '';
 
 	/**
-	 * Whether the switch is in the "on" (checked) state.
+	 * Indica si el switch está en el estado "encendido" (marcado/checked).
 	 *
-	 * When `true`:
-	 * - Track fills with `--primary` color.
-	 * - Thumb grows from 16dp to 24dp and slides to the trailing edge.
-	 * - Thumb color changes to `--on-primary`.
+	 * Cuando es `true`:
+	 * - La pista se llena con el color `--primary`.
+	 * - El control (thumb) crece de 16dp a 24dp y se desliza hacia el borde final (trailing).
+	 * - El color del control cambia a `--on-primary`.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) checked = false;
 
 	/**
-	 * When `true`, the switch is non-interactive and renders at 50% opacity.
+	 * Cuando es `true`, el switch no es interactivo y se renderiza al 50% de opacidad.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
 	/**
-	 * When `true`, renders icon glyphs inside the thumb.
+	 * Cuando es `true`, renderiza glifos de iconos dentro del control (thumb).
 	 *
-	 * Uses Material Symbols ligatures:
-	 * - Unchecked state: `close` icon.
-	 * - Checked state: `check` icon.
+	 * Utiliza ligaduras de Material Symbols:
+	 * - Estado desmarcado (Unchecked): icono `close`.
+	 * - Estado marcado (Checked): icono `check`.
 	 *
-	 * The icon size (16dp) is set via the `--_thumb` CSS custom property.
+	 * El tamaño del icono (16dp) se establece a través de la propiedad CSS `--_thumb`.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) icon = false;
 
 	/**
-	 * Forwarded to the native `<input name>` attribute for form participation.
+	 * Reenviado al atributo nativo `<input name>` para participar en formularios.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) name = '';
 
 	/**
-	 * Forwarded to the native `<input value>` attribute.
-	 * The value submitted in a form when this switch is checked.
+	 * Reenviado al atributo nativo `<input value>`.
+	 * El valor enviado en un formulario cuando este switch está marcado.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) value = '';
 
-	/** Direct reference to the native input element for programmatic access. */
+	/** Referencia directa al elemento input nativo para acceso programático. */
 	@query('input') private _input!: HTMLInputElement;
 
 	/**
-	 * Syncs `checked` and `disabled` imperatively to the native input after render.
+	 * Sincroniza `checked` y `disabled` de forma imperativa en el input nativo después del renderizado.
 	 *
-	 * @param changed - Map of changed property names to their previous values.
+	 * @param changed - Mapa de los nombres de las propiedades modificadas a sus valores anteriores.
 	 */
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
-			if (changed.has('checked')) this._input.checked = this.checked;
+			if (changed.has('checked')) {
+				this._input.checked = this.checked;
+				this._internals.setFormValue(this.checked ? (this.value || 'on') : null);
+			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 		}
 	}
 
 	/**
-	 * Handles the native input `change` event.
+	 * Maneja el evento nativo `change` del input.
 	 *
-	 * Updates `this.checked` and re-dispatches a composed `'change'` event
-	 * so it bubbles across shadow DOM boundaries.
+	 * Actualiza `this.checked` y vuelve a despachar un evento `'change'` compuesto
+	 * para que burbujee a través de los límites del shadow DOM.
 	 *
-	 * @param e - The native `change` event from the hidden `<input>`.
+	 * @param e - El evento nativo `change` desde el `<input>` oculto.
 	 */
 	private _onChange(e: Event) {
 		this.checked = (e.target as HTMLInputElement).checked;
@@ -300,6 +311,14 @@ export class MoniSwitch extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el switch como un `<input type="checkbox">` oculto + pista visual mediante `<span>`.
+	 *
+	 * El input oculto ocupa espacio de diseño real (para el área de clic/hit area) pero tiene opacidad 0;
+	 * el `<span>` proporciona la píldora visual y el control (thumb) (vía `::before`/`::after`).
+	 * La vinculación `.checked` asegura que el estado del input en el DOM se mantenga sincronizado con
+	 * `this.checked`.
+	 */
 	override render() {
 		return html`<label class=${this.icon ? 'switch icon' : 'switch'} part="switch">
 			<input

@@ -17,6 +17,7 @@
       "import": "./dist/web-components.js"
     },
     "./styles": "./dist/styles/index.css",
+    "./styles/*": "./dist/styles/*",
     "./components/*.ts": "./src/components/*.ts",
     "./components/*": {
       "types": "./dist/components/*.d.ts",

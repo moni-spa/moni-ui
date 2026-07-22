@@ -14,13 +14,13 @@ describe('moni-slider (P3.4 — ticks)', () => {
 		el.remove();
 	});
 
-	it('does not render a datalist by default', async () => {
+	it('no renderiza un datalist por defecto', async () => {
 		await el.updateComplete;
 		const datalist = el.shadowRoot?.querySelector('datalist');
 		expect(datalist).toBeFalsy();
 	});
 
-	it('ticks=true renders a datalist with min and max options', async () => {
+	it('ticks=true renderiza un datalist con opciones min y max', async () => {
 		el.ticks = true;
 		await el.updateComplete;
 		const datalist = el.shadowRoot?.querySelector('datalist');
@@ -31,7 +31,7 @@ describe('moni-slider (P3.4 — ticks)', () => {
 		expect(options?.[1].getAttribute('value')).toBe('100');
 	});
 
-	it('tick-interval generates datalist options at every N units', async () => {
+	it('tick-interval genera opciones de datalist cada N unidades', async () => {
 		el.min = '0';
 		el.max = '10';
 		el.tickInterval = 2;
@@ -43,7 +43,7 @@ describe('moni-slider (P3.4 — ticks)', () => {
 		expect(values).toEqual(['0', '2', '4', '6', '8', '10']);
 	});
 
-	it('tick-interval respects a non-zero min', async () => {
+	it('tick-interval respeta un min distinto de cero', async () => {
 		el.min = '5';
 		el.max = '15';
 		el.tickInterval = 5;
@@ -54,7 +54,7 @@ describe('moni-slider (P3.4 — ticks)', () => {
 		expect(values).toEqual(['5', '10', '15']);
 	});
 
-	it('tick-interval takes precedence over the ticks boolean', async () => {
+	it('tick-interval tiene precedencia sobre el booleano ticks', async () => {
 		el.ticks = true;
 		el.min = '0';
 		el.max = '4';
@@ -66,13 +66,13 @@ describe('moni-slider (P3.4 — ticks)', () => {
 		expect(options.length).toBe(5);
 	});
 
-	it('reflects the tick-interval attribute on the host', async () => {
+	it('refleja el atributo tick-interval en el host', async () => {
 		el.tickInterval = 5;
 		await el.updateComplete;
 		expect(el.getAttribute('tick-interval')).toBe('5');
 	});
 
-	it('reflects min and max on the host', async () => {
+	it('refleja min y max en el host', async () => {
 		el.min = '10';
 		el.max = '20';
 		await el.updateComplete;

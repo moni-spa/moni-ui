@@ -10,73 +10,107 @@ import { customElement, property, queryAssignedElements } from 'lit/decorators.j
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Button Group component.
+ * Componente Material Design 3 Button Group.
  *
- * Organizes multiple `<moni-button>` or `<moni-icon-button>` components
- * into a single row.
+ * Organiza múltiples componentes `<moni-button>` o `<moni-icon-button>`
+ * en una sola fila.
  *
- * **Variants:**
- * - `standard` (default) — A simple flex row with a gap between buttons.
- * - `connected` — The M3 Expressive replacement for segmented buttons. In this
- *   mode, buttons share borders and form a single continuous pill shape. The
- *   group manages the single/multi-select toggle state of its children.
+ * **Variantes:**
+ * - `standard` (por defecto) — Una fila flex simple con un espacio entre botones.
+ * - `connected` — El reemplazo de M3 Expressive para los botones segmentados. En este
+ *   modo, los botones comparten bordes y forman una sola forma de píldora continua. El
+ *   grupo gestiona el estado de selección única/múltiple de sus hijos.
  *
- * **`connected` variant details:**
- * - **Shape propagation:** The group automatically propagates M3 shape classes
- *   (`left-round-flat`, `no-round`, `right-round-flat`) to its children so
- *   they interlock seamlessly.
- * - **Toggle management:** The group listens to child clicks and toggles their
- *   `active` attributes. When `multi=false` (default), only one button can be
- *   active at a time (radio button behavior). When `multi=true`, multiple buttons
- *   can be active (checkbox behavior).
- * - **Event propagation:** Fires a `'change'` event when the selection changes.
+ * **Detalles de la variante `connected`:**
+ * - **Propagación de forma:** El grupo propaga automáticamente las clases de forma M3
+ *   (`left-round-flat`, `no-round`, `right-round-flat`) a sus hijos para
+ *   que se entrelacen sin problemas.
+ * - **Gestión del interruptor:** El grupo escucha los clics de los hijos y cambia sus
+ *   atributos `active`. Cuando `multi=false` (por defecto), solo un botón puede estar
+ *   activo a la vez (comportamiento de radio button). Cuando `multi=true`, múltiples botones
+ *   pueden estar activos (comportamiento de checkbox).
+ * - **Propagación de eventos:** Dispara un evento `'change'` cuando la selección cambia.
  *
- * **Accessibility:**
- * - Renders with `role="group"` (can be overridden to `toolbar` or `radiogroup`).
- * - Consumers should provide an `aria-label` or `aria-labelledby` attribute
- *   to identify the group's purpose to assistive technologies.
+ * **Accesibilidad:**
+ * - Renderiza con `role="group"` (puede ser sobrescrito a `toolbar` o `radiogroup`).
+ * - Los consumidores deben proporcionar un atributo `aria-label` o `aria-labelledby`
+ *   para identificar el propósito del grupo para las tecnologías de asistencia.
  *
- * @fires change - Fired when a button is clicked in `connected` mode and the
- *                 selection state updates.
+ * @fires change - Disparado cuando se hace clic en un botón en modo `connected` y el
+ *                 estado de selección se actualiza.
  *
  * @example
  * ```html
- * <!-- Connected single-select group -->
- * <moni-button-group variant="connected" label="Alignment">
+ * <!-- Grupo conectado de selección única -->
+ * <moni-button-group variant="connected" label="Alineación">
  *   <moni-button icon="format_align_left" active></moni-button>
  *   <moni-button icon="format_align_center"></moni-button>
  *   <moni-button icon="format_align_right"></moni-button>
  * </moni-button-group>
  *
- * <!-- Standard button row -->
+ * <!-- Fila estándar de botones -->
  * <moni-button-group gap="1rem">
- *   <moni-button variant="text">Cancel</moni-button>
- *   <moni-button>Save</moni-button>
+ *   <moni-button variant="text">Cancelar</moni-button>
+ *   <moni-button>Guardar</moni-button>
  * </moni-button-group>
  * ```
  *
- * @slot default - The `<moni-button>` elements that make up the group.
+ * @slot default - Los elementos `<moni-button>` que conforman el grupo.
  */
 @customElement('moni-button-group')
 export class MoniButtonGroup extends MoniElement {
+	/**
+	 * Variante visual del grupo de botones.
+	 * - `standard`: Los elementos se espacian normalmente.
+	 * - `connected`: Los elementos se unen con bordes colapsados y radios internos aplanados.
+	 * @type {'standard' | 'connected'}
+	 * @default 'standard'
+	 */
 	@property({ reflect: true })
 	variant: 'standard' | 'connected' = 'standard';
 
+	/**
+	 * Tamaño de los botones en el grupo. Si se especifica, se propaga hacia abajo a los hijos.
+	 * @type {'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
 
+	/**
+	 * Permite que múltiples botones estén activos a la vez (solo aplica a grupos seleccionables).
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true })
 	multi = false;
 
+	/**
+	 * Espacio CSS personalizado entre botones (ej., '1rem').
+	 * Solo se aplica cuando la variante es 'standard'.
+	 * @type {string}
+	 */
 	@property()
 	gap = '';
 
+	/**
+	 * Rol ARIA del contenedor del grupo.
+	 * @type {'group' | 'toolbar' | 'radiogroup'}
+	 * @default 'group'
+	 */
 	@property({ reflect: true })
 	role: 'group' | 'toolbar' | 'radiogroup' = 'group';
 
+	/**
+	 * Una etiqueta accesible para el grupo (`aria-label`).
+	 * @type {string}
+	 */
 	@property({ reflect: true })
 	label = '';
 
+	/**
+	 * ID de un elemento que etiqueta este grupo (`aria-labelledby`).
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'labelled-by' })
 	labelledBy = '';
 
@@ -124,6 +158,11 @@ export class MoniButtonGroup extends MoniElement {
 		`
 	];
 
+	/**
+	 * Hook del ciclo de vida reactivo (Lit).
+	 * Detecta alteraciones estructurales en el propio grupo (como `variant`, `size` o `gap`)
+	 * y fuerza una re-sincronización de todos los botones hijos para aplicar las físicas CSS.
+	 */
 	protected override updated(changedProperties: Map<string | number | symbol, unknown>) {
 		super.updated(changedProperties);
 		if (changedProperties.has('variant') || changedProperties.has('size') || changedProperties.has('gap')) {
@@ -131,6 +170,11 @@ export class MoniButtonGroup extends MoniElement {
 		}
 	}
 
+	/**
+	 * Manejador del slot interno (`<slot>`).
+	 * Cuando el desarrollador inyecta dinámicamente o remueve botones en runtime,
+	 * re-sincroniza las formas (shapes) y tamaños de todo el listado.
+	 */
 	private handleSlotChange() {
 		this.updateChildren();
 	}
@@ -146,6 +190,13 @@ export class MoniButtonGroup extends MoniElement {
 		return gap;
 	}
 
+	/**
+	 * Sincronizador de Propiedades (Engine interno).
+	 * Itera sobre cada botón hijo para transferirle jerárquicamente las configuraciones
+	 * del grupo. Si el grupo es del tipo `connected` (botones pegados), evalúa matemáticamente 
+	 * la posición del índice actual (primero, en medio o último) e inyecta la propiedad `shape`
+	 * correspondiente (`left-round-flat`, `inner-round`, etc.) para formar una cápsula unificada.
+	 */
 	private updateChildren() {
 		const buttons = this.slottedButtons.filter(
 			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
@@ -188,6 +239,12 @@ export class MoniButtonGroup extends MoniElement {
 		});
 	}
 
+	/**
+	 * Maneja la interacción táctil o de mouse (Pointer Down).
+	 * Genera un micro-efecto físico (Squish effect). Cuando el usuario presiona un botón
+	 * dentro de un listado estándar, empuja físicamente (`scaleX` / `translateX`) a los
+	 * botones adyacentes para simular presión material y desplazamiento.
+	 */
 	private handlePointerDown(e: PointerEvent) {
 		if (this.variant !== 'standard') return;
 		const target = e.target as HTMLElement;
@@ -215,6 +272,11 @@ export class MoniButtonGroup extends MoniElement {
 		}
 	}
 
+	/**
+	 * Conclusión de la interacción táctil (Pointer Up).
+	 * Restaura todas las transformaciones elásticas aplicadas a los botones adyacentes
+	 * a su estado nativo neutro.
+	 */
 	private handlePointerUp() {
 		const buttons = this.slottedButtons.filter(
 			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
@@ -225,6 +287,11 @@ export class MoniButtonGroup extends MoniElement {
 		});
 	}
 
+	/**
+	 * Interceptor de clics de delegación.
+	 * En grupos de tipo 'segment', garantiza que solo un botón tenga la clase activa 
+	 * o el atributo encendido de forma excluyente, actuando como un gestor de radio-buttons.
+	 */
 	private handleClick(e: Event) {
 		const target = e.target as HTMLElement;
 		const clickedButton = target.closest('moni-button, moni-icon-button');
@@ -268,6 +335,17 @@ export class MoniButtonGroup extends MoniElement {
 		);
 	}
 
+	/**
+	 * Renders the button group container with `role="group"` semantics.
+	 *
+	 * The group is a flex container that distributes its slotted `<moni-button>`
+	 * or `<moni-button-segment>` children in a row or column (based on `orientation`).
+	 * CSS handles the shared-border collapse between adjacent segments:
+	 * - Middle segments use `border-radius: 0` and `margin-inline-start: -1px`
+	 *   to prevent doubled borders.
+	 * - `_syncSegments()` in `firstUpdated()` injects `left-round` / `right-round`
+	 *   shape attributes into the first and last children for correct pill termination.
+	 */
 	override render() {
 		const resolvedGap = this.getGapValue(this.gap);
 		const inlineStyles = resolvedGap

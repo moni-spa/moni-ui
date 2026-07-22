@@ -12,99 +12,190 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Slider component.
+ * Componente Material Design 3 Slider (Control deslizante).
  *
- * Sliders allow users to select a single value or a range of values from a
- * continuous or discrete scale.
+ * Los sliders permiten a los usuarios seleccionar un solo valor o un rango de valores
+ * desde una escala continua o discreta.
  *
- * **M3 spec reference:** `m3-docs/components/sliders/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/sliders/specs.md`
  *
- * **Slider modes:**
- * - **Continuous** (default) — Smooth drag between `min` and `max`. Use when
- *   the exact value does not need to be defined by the user (e.g. volume).
- * - **Discrete** — Set `step` to snap to discrete intervals. Tick marks
- *   appear via the native `<datalist>` element in Chrome/Edge. Firefox does
- *   not render datalist ticks for range inputs.
- * - **Range** (`range` attribute) — Two thumbs that define a minimum and
- *   maximum value within the slider's extent.
- * - **Vertical** (`vertical` attribute) — 90° rotated slider.
+ * **Modos de Slider:**
+ * - **Continuo (Continuous)** (por defecto) — Arrastre suave entre `min` y `max`. Úsalo cuando
+ *   no sea necesario que el usuario defina un valor exacto (ej. volumen).
+ * - **Discreto (Discrete)** — Configura `step` para ajustarse a intervalos discretos. Las marcas
+ *   (tick marks) aparecen a través del elemento nativo `<datalist>` en Chrome/Edge. Firefox no
+ *   renderiza marcas de datalist para inputs de tipo rango.
+ * - **Rango (Range)** (atributo `range`) — Dos controles (thumbs) que definen un valor mínimo y
+ *   máximo dentro de la extensión del slider.
+ * - **Vertical** (atributo `vertical`) — Slider rotado 90°.
  *
- * **Value label tooltip:**
- * When `indicator` is set, the current value is displayed in a tooltip above
- * (or below, via `indicator-placement`) the active thumb during focus/drag.
+ * **Tooltip indicador de valor (Value label tooltip):**
+ * Cuando se configura `indicator`, el valor actual se muestra en un tooltip por encima
+ * (o por debajo, a través de `indicator-placement`) del control activo durante el foco/arrastre.
  *
- * **Tick marks:**
- * - `ticks` attribute: adds datalist with marks at `min` and `max` only.
- * - `tick-interval` attribute: generates datalist options at every N units
- *   between `min` and `max`, creating visible tick marks at those positions.
+ * **Marcas (Tick marks):**
+ * - Atributo `ticks`: agrega datalist con marcas solo en `min` y `max`.
+ * - Atributo `tick-interval`: genera opciones de datalist cada N unidades
+ *   entre `min` y `max`, creando marcas visibles en esas posiciones.
  *
- * **Internal state management:**
- * Uses `@state()` for `_value` and `_valueHigh` so the fill track width and
- * tooltip position update reactively on every drag `input` event without
- * waiting for the `change` event.
+ * **Manejo del estado interno:**
+ * Usa `@state()` para `_value` y `_valueHigh` de modo que el ancho de la pista de llenado y
+ * la posición del tooltip se actualicen de forma reactiva en cada evento `input` de arrastre sin
+ * esperar al evento `change`.
  *
- * @fires change - Bubbles and is composed. Fired when dragging ends and the
- *                 value is committed. Read `element.value` for the new value.
- * @fires input  - Fired on every drag step. Read `element.value` for the
- *                 live value during drag.
+ * @fires change - Burbujea y está compuesto. Se dispara cuando termina el arrastre y el
+ *                 valor se confirma. Lee `element.value` para el nuevo valor.
+ * @fires input  - Se dispara en cada paso del arrastre. Lee `element.value` para el
+ *                 valor en vivo durante el arrastre.
  *
  * @example
  * ```html
- * <!-- Continuous slider -->
+ * <!-- Slider continuo -->
  * <moni-slider name="volume" min="0" max="100" value="60"></moni-slider>
  *
- * <!-- Discrete slider with ticks every 10 units -->
+ * <!-- Slider discreto con marcas cada 10 unidades -->
  * <moni-slider step="10" tick-interval="10" indicator></moni-slider>
  *
- * <!-- Range slider -->
+ * <!-- Slider de rango -->
  * <moni-slider range min="0" max="100" value="20" value-high="80"></moni-slider>
  * ```
  *
- * @csspart slider    - The outer slider container.
- * @csspart track     - The track background.
- * @csspart fill      - The filled portion of the track.
- * @csspart indicator - The value label tooltip.
+ * @csspart slider    - El contenedor exterior del slider.
+ * @csspart track     - El fondo de la pista.
+ * @csspart fill      - La porción llena de la pista.
+ * @csspart indicator - El tooltip de la etiqueta de valor.
  */
 @customElement('moni-slider')
 export class MoniSlider extends MoniElement {
+	/**
+	 * Nombre del input del slider, usado en el envío de formularios.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) name = '';
+
+	/**
+	 * Valor mínimo del slider.
+	 * @type {string}
+	 * @default '0'
+	 */
 	@property({ reflect: true }) min = '0';
+
+	/**
+	 * Valor máximo del slider.
+	 * @type {string}
+	 * @default '100'
+	 */
 	@property({ reflect: true }) max = '100';
+
+	/**
+	 * Granularidad del slider. Debe ser un número positivo.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) step = '';
+
+	/**
+	 * Anula (overrides) el intervalo predeterminado de las marcas cuando `ticks` es verdadero.
+	 * @type {number | null}
+	 */
 	@property({ type: Number, reflect: true, attribute: 'tick-interval' })
 	tickInterval: number | null = null;
+
+	/**
+	 * Nombre del icono (Material Symbols) mostrado dentro del control (thumb) del slider.
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'inset-icon' }) insetIcon = '';
+
+	/**
+	 * Ubicación del tooltip indicador de valor.
+	 * @type {'top' | 'bottom'}
+	 * @default 'top'
+	 */
 	@property({ reflect: true, attribute: 'indicator-placement' })
 	indicatorPlacement: 'top' | 'bottom' = 'top';
+
+	/**
+	 * Grosor/tamaño de la pista y el control (thumb) del slider.
+	 * @type {'tiny' | 'small' | 'medium' | 'large' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'tiny' | 'small' | 'medium' | 'large' | 'extra' = 'medium';
 
-	// Boolean attributes
+	/**
+	 * Habilita el modo de rango (dos controles: `value` y `valueEnd`).
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) range = false;
+
+	/**
+	 * Deshabilita el slider.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Renderiza marcas (tick marks) a lo largo de la pista en cada intervalo de paso.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) ticks = false;
+
+	/**
+	 * Muestra un indicador de tooltip mostrando el(los) valor(es) actual(es) mientras se arrastra.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) indicator = false;
+
+	/**
+	 * Renderiza el slider de forma vertical en lugar de horizontal.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'vertical' }) isVertical = false;
 
-	/** Internal reactive state — triggers CSS var updates on every input event */
+	/** Estado reactivo interno — dispara actualizaciones de variables CSS en cada evento de input */
 	@state() private _value = '50';
 	@state() private _valueEnd = '75';
 
+	/**
+	 * El valor primario actual del slider (o el límite inferior en modo de rango).
+	 * @type {string}
+	 */
 	@property({ reflect: true })
 	get value() { return this._value; }
+	/**
+	 * Intercepta asignaciones imperativas (`element.value = "X"`) para actualizar
+	 * el estado interno de Lit, garantizando reactividad instantánea del DOM.
+	 */
 	set value(v: string) { this._value = v; }
 
+	/**
+	 * El valor límite superior actual (solo usado cuando `range` es verdadero).
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'value-end' })
 	get valueEnd() { return this._valueEnd; }
+	/**
+	 * Setter reactivo para el límite superior (usado exclusivamente en modo `range`).
+	 */
 	set valueEnd(v: string) { this._valueEnd = v; }
 
+	/**
+	 * Calcula el porcentaje de llenado de la barra (0-100) basándose en el valor actual,
+	 * el mínimo y el máximo. Se utiliza intensivamente para definir variables CSS (como `--_pct`).
+	 */
 	private _pct(v: string) {
 		const min = parseFloat(this.min) || 0;
 		const max = parseFloat(this.max) || 100;
 		const val = parseFloat(v) || 0;
+		// Math.max/min asegura que no desborde si por alguna razón val > max o val < min
 		return Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
 	}
 
+	/**
+	 * Maneja el evento nativo "input" de los inputs type="range" subyacentes.
+	 * Se dispara contínuamente mientras el usuario arrastra el slider.
+	 * Actualiza el estado reactivo inmediatamente para que la UI responda en tiempo real (60fps).
+	 */
 	private _onInput(e: Event, index: number) {
 		const target = e.target as HTMLInputElement;
 		if (index === 0) {
@@ -112,9 +203,14 @@ export class MoniSlider extends MoniElement {
 		} else {
 			this._valueEnd = target.value;
 		}
+		// Redisparamos el evento hacia afuera para que los frameworks (React/Vue/Angular) puedan atraparlo
 		this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
 	}
 
+	/**
+	 * Maneja el evento nativo "change", que se dispara solo cuando el usuario SUELTA el slider
+	 * (al terminar la interacción). Útil para peticiones HTTP pesadas o validaciones finales.
+	 */
 	private _onChange(e: Event, index: number) {
 		const target = e.target as HTMLInputElement;
 		if (index === 0) {
@@ -126,11 +222,11 @@ export class MoniSlider extends MoniElement {
 	}
 
 	/**
-	 * Render a `<datalist>` element with tick options. When `tick-interval`
-	 * is set, generates options at every N units between min and max.
-	 * Otherwise, if `ticks` is set, just min and max.
-	 * Browsers that support datalist ticks for range (Chrome, Edge) will
-	 * render visual marks; Firefox ignores them.
+	 * Renderiza un elemento `<datalist>` con opciones de marcas. Cuando se establece
+	 * `tick-interval`, genera opciones cada N unidades entre el mínimo y el máximo.
+	 * De lo contrario, si se establece `ticks`, solo mínimo y máximo.
+	 * Los navegadores que soportan marcas de datalist para inputs de rango (Chrome, Edge)
+	 * renderizarán marcas visuales; Firefox las ignora.
 	 */
 	private _renderDatalist() {
 		if (this.tickInterval != null && this.tickInterval > 0) {
@@ -358,6 +454,33 @@ export class MoniSlider extends MoniElement {
 		`
 	];
 
+	/**
+	 * Ensambla la estructura del Shadow DOM del slider.
+	 *
+	 * **Cálculo de la pista llena:**
+	 * `pct` y `pctEnd` son valores porcentuales (0–100) derivados de
+	 * `_pct(value)`. Se inyectan como propiedades CSS personalizadas `--_start` y `--_end`
+	 * en el contenedor `.slider`. El pseudo-elemento CSS `::before`
+	 * utiliza estos valores en un `clip-path: polygon(...)` para renderizar la parte
+	 * no llena de la pista, mientras que el `<span>` renderiza la parte llena.
+	 *
+	 * **Modo Rango (`range=true`):**
+	 * - Se renderizan dos elementos `<input type="range">` (uno para el límite inferior,
+	 *   otro para el límite superior).
+	 * - El CSS los superpone absolutamente para que los controles (thumbs) compartan la misma línea de pista.
+	 * - `--_start` equivale al porcentaje del control inferior; `--_end` equivale a `100 - pctEnd`.
+	 *
+	 * **Tooltip indicador:**
+	 * Los elementos tooltip `.tooltip-1` / `.tooltip-2` están posicionados absolutamente
+	 * utilizando `inset-inline-start: ${pct}%` de modo que siguen al control activo
+	 * por encima (o por debajo) a medida que el usuario arrastra. La visibilidad se controla
+	 * puramente a través de selectores CSS `:focus` — no se requiere JavaScript.
+	 *
+	 * **Datalist de marcas (Tick datalist):**
+	 * `_renderDatalist()` emite un `<datalist id="ticks">` solo cuando `ticks` o
+	 * `tick-interval` está establecido. Chrome/Edge renderizan marcas nativas en inputs de rango
+	 * que referencian un datalist a través del atributo `list`; Firefox lo ignora.
+	 */
 	override render() {
 		const pct = this._pct(this._value);
 		const pctEnd = this._pct(this._valueEnd);

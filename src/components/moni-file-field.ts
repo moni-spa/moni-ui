@@ -13,80 +13,166 @@ import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 File Field component.
+ * Componente Material Design 3 File Field (Campo de Archivo).
  *
- * A specialized field component that provides a styled, accessible alternative
- * to the native `<input type="file">`. It wraps a native file input inside
- * the M3 `.field` shell and presents a read-only text input showing the
- * selected file name(s) alongside a stylized "Choose file" action button.
+ * Un componente de campo especializado que proporciona una alternativa estilizada y accesible
+ * al `<input type="file">` nativo. Envuelve un input de archivo nativo dentro de
+ * la carcasa `.field` de M3 y presenta un input de texto de solo lectura que muestra los
+ * nombres de archivo(s) seleccionado(s) junto a un botón de acción "Seleccionar archivo" estilizado.
  *
- * **Visual architecture:**
- * The component leverages the `fieldStyles` CSS patterns. The internal DOM
- * structure is specifically ordered as:
+ * **Arquitectura visual:**
+ * El componente aprovecha los patrones CSS `fieldStyles`. La estructura interna del DOM
+ * está ordenada específicamente como:
  * `[text input] -> [label] -> [file input] -> [output]`
- * This specific ordering ensures that the CSS adjacent sibling selector
- * (`input + label`) can correctly float the label when the field is populated,
- * even though the visible field is actually the read-only text input.
+ * Este ordenamiento específico asegura que el selector CSS de hermano adyacente
+ * (`input + label`) pueda flotar correctamente la etiqueta cuando el campo está poblado,
+ * a pesar de que el campo visible sea realmente el input de texto de solo lectura.
  *
- * **State management:**
- * When the user selects files via the hidden file input, the component listens
- * for the native `change` event, reads `input.files`, and updates the read-only
- * text input with a comma-separated list of file names. The `value` property
- * is kept in sync, and a composed `'change'` event is re-dispatched.
+ * **Gestión del estado:**
+ * Cuando el usuario selecciona archivos a través del input de archivo oculto, el componente escucha
+ * el evento nativo `change`, lee `input.files`, y actualiza el input de texto
+ * de solo lectura con una lista separada por comas de los nombres de archivo. La propiedad `value`
+ * se mantiene sincronizada, y se re-despacha un evento compuesto `'change'`.
  *
- * @fires change - Bubbles and is composed. Fired when files are selected or
- *                 cleared. The consumer can read the internal input's `files`
- *                 list by querying the component.
+ * @fires change - Burbujea y está compuesto. Se dispara cuando se seleccionan o borran
+ *                 archivos. El consumidor puede leer la lista de `files` del input interno
+ *                 consultando el componente.
  *
  * @example
  * ```html
- * <!-- Single file upload -->
+ * <!-- Carga de un solo archivo -->
  * <moni-file-field
- *   label="Profile picture"
+ *   label="Foto de perfil"
  *   name="avatar"
  *   accept="image/png, image/jpeg"
- *   button-label="Browse..."
+ *   button-label="Explorar..."
  * ></moni-file-field>
  *
- * <!-- Multiple file upload with error state -->
+ * <!-- Carga de múltiples archivos con estado de error -->
  * <moni-file-field
- *   label="Documents"
+ *   label="Documentos"
  *   multiple
  *   error
- *   error-text="Files exceed maximum size limit"
+ *   error-text="Los archivos superan el límite de tamaño máximo"
  * ></moni-file-field>
  * ```
  *
- * @csspart field       - The outer `.field` div container.
- * @csspart input-text  - The visible read-only `<input type="text">`.
- * @csspart label       - The floating `<label>` element.
- * @csspart input-file  - The hidden native `<input type="file">`.
- * @csspart button      - The button element (styled via CSS `::file-selector-button`).
+ * @csspart field       - El contenedor div exterior `.field`.
+ * @csspart input-text  - El `<input type="text">` de solo lectura visible.
+ * @csspart label       - El elemento `<label>` flotante.
+ * @csspart input-file  - El `<input type="file">` nativo oculto.
+ * @csspart button      - El elemento de botón (estilizado vía CSS `::file-selector-button`).
  */
 @customElement('moni-file-field')
 export class MoniFileField extends MoniElement {
+	/**
+	 * El nombre del input, enviado con los datos del formulario.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) name = '';
+
+	/**
+	 * El texto de la etiqueta flotante.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) label = '';
+
+	/**
+	 * Variante visual del campo de texto.
+	 * @type {'filled' | 'outlined'}
+	 * @default 'outlined'
+	 */
 	@property({ reflect: true }) variant: 'filled' | 'outlined' = 'outlined';
+
+	/**
+	 * Define las dimensiones del campo de texto.
+	 * @type {'small' | 'medium' | 'large' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' | 'extra' = 'medium';
+
+	/**
+	 * Forma del radio del borde del campo.
+	 * @type {'round' | 'square' | 'no-round'}
+	 * @default 'no-round'
+	 */
 	@property({ reflect: true })
 	shape: 'round' | 'square' | 'no-round' = 'no-round';
+
+	/**
+	 * El atributo `accept` para el input de archivo (ej. `image/*, .pdf`).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) accept = '';
+
+	/**
+	 * Permite seleccionar múltiples archivos si es true.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) multiple = false;
+
+	/**
+	 * Texto para el botón de selección de archivo.
+	 * @type {string}
+	 * @default 'Choose file'
+	 */
 	@property({ reflect: true, attribute: 'button-label' })
 	buttonLabel = 'Choose file';
+
+	/**
+	 * Deshabilita el campo de archivo.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Texto de ayuda mostrado debajo del campo.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) helper = '';
+
+	/**
+	 * Texto de error mostrado debajo del campo cuando `error` es true.
+	 * Sobrescribe el texto de ayuda.
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'error-text' }) errorText = '';
+
+	/**
+	 * Si es true, establece el campo en un estado de error.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) error = false;
+
+	/**
+	 * La representación en cadena de los archivos seleccionados (solo lectura para el usuario).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) value = '';
+
+	/**
+	 * Nombre del icono inicial (Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) icon = '';
+
+	/**
+	 * Nombre del icono final (Material Symbols).
+	 * @type {string}
+	 * @default 'folder_open'
+	 */
 	@property({ reflect: true, attribute: 'trailing-icon' }) trailingIcon =
 		'folder_open';
 
 	@query('input[type="file"]') private _fileInput!: HTMLInputElement;
 
+	/**
+	 * Hook del ciclo de vida reactivo (Lit).
+	 * Transfiere de manera imperativa el estado de discapacidad (disabled) de Lit
+	 * hacia el nodo `<input type="file">` invisible en el Shadow DOM, asegurando
+	 * que el componente nativo reaccione adecuadamente a nivel navegador.
+	 */
 	override updated(changed: Map<string, unknown>) {
 		if (this._fileInput) {
 			if (changed.has('disabled'))
@@ -111,6 +197,22 @@ export class MoniFileField extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el campo de archivo como un `<input type="file">` oculto + una zona de soltar visible.
+	 *
+	 * El `<input type="file">` está oculto (pero no con `display: none`) para
+	 * aprovechar el selector de archivos nativo del navegador. Al hacer clic en la zona de soltar visible
+	 * se invoca programáticamente `_input.click()` para abrir el diálogo de archivo.
+	 *
+	 * **Arrastrar y soltar (Drag-and-drop):**
+	 * `@dragover` / `@dragleave` / `@drop` en el contenedor de la zona de soltar gestionan
+	 * el estado `dragging` que aplica una clase de resaltado CSS.
+	 *
+	 * **Visualización del nombre del archivo:**
+	 * `_fileName` (derivado del `.name` del último archivo seleccionado) se muestra
+	 * como una cadena de una sola línea truncada. Cuando no hay ningún archivo seleccionado,
+	 * se muestra en su lugar el atributo `label` o un marcador de posición genérico.
+	 */
 	override render() {
 		const isActive = Boolean(this.value);
 		const hasLeading = Boolean(this.icon);

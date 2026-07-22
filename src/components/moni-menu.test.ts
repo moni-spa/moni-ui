@@ -14,26 +14,26 @@ describe('moni-menu (P3.2 — flip attribute)', () => {
 		el.remove();
 	});
 
-	it('defaults to placement=bottom and flip=false', async () => {
+	it('por defecto es placement=bottom y flip=false', async () => {
 		await el.updateComplete;
 		expect(el.placement).toBe('bottom');
 		expect(el.flip).toBe(false);
 	});
 
-	it('reflects flip attribute on the host', async () => {
+	it('refleja el atributo flip en el host', async () => {
 		el.flip = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('flip')).toBe(true);
 	});
 
-	it('renders the placement class on the inner <menu>', async () => {
+	it('renderiza la clase de placement en el <menu> interno', async () => {
 		el.placement = 'top';
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('menu');
 		expect(menu?.classList.contains('top')).toBe(true);
 	});
 
-	it('reflects active as a class on the <menu>', async () => {
+	it('refleja active como una clase en el <menu>', async () => {
 		el.active = true;
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('menu');
@@ -44,7 +44,7 @@ describe('moni-menu (P3.2 — flip attribute)', () => {
 		expect(menu?.classList.contains('active')).toBe(false);
 	});
 
-	it('reflects all 6 placements (bottom/top/left/right/min/max)', async () => {
+	it('refleja todos los 6 placements (bottom/top/left/right/min/max)', async () => {
 		const placements: Array<'bottom' | 'top' | 'left' | 'right' | 'min' | 'max'> = [
 			'bottom',
 			'top',
@@ -61,7 +61,7 @@ describe('moni-menu (P3.2 — flip attribute)', () => {
 		}
 	});
 
-	it('space variants (no-space/space/small-space/medium-space/large-space/extra-space) apply a gap class', async () => {
+	it('las variantes de espacio (no-space/space/small-space/medium-space/large-space/extra-space) aplican una clase de gap', async () => {
 		const spaces = [
 			'no-space',
 			'space',
@@ -78,7 +78,7 @@ describe('moni-menu (P3.2 — flip attribute)', () => {
 		}
 	});
 
-	it('no-wrap attribute forwards to a no-wrap class', async () => {
+	it('el atributo no-wrap se reenvía a una clase no-wrap', async () => {
 		el.noWrap = true;
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('menu');

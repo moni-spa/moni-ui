@@ -15,14 +15,14 @@ describe('moni-select', () => {
 		el.remove();
 	});
 
-	it('renders trigger input', async () => {
+	it('renderiza el input activador (trigger)', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input');
 		expect(input).toBeTruthy();
 		expect(input?.getAttribute('readonly')).toBe('');
 	});
 
-	it('parses slotted options', async () => {
+	it('analiza las opciones insertadas en slots (slotted)', async () => {
 		const opt1 = document.createElement('moni-select-option');
 		opt1.setAttribute('value', 'v1');
 		opt1.textContent = 'Option 1';
@@ -33,7 +33,7 @@ describe('moni-select', () => {
 		el.appendChild(opt1);
 		el.appendChild(opt2);
 
-		// Wait for slotchange and update
+		// Esperar a slotchange y actualización
 		await new Promise(resolve => setTimeout(resolve, 50));
 		await el.updateComplete;
 
@@ -43,7 +43,7 @@ describe('moni-select', () => {
 		expect(items?.[1].textContent?.trim()).toBe('Option 2');
 	});
 
-	it('toggles dropdown open/close on click', async () => {
+	it('alterna abrir/cerrar el dropdown al hacer clic', async () => {
 		await el.updateComplete;
 		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
 		const menu = el.shadowRoot?.querySelector('.dropdown-menu');
@@ -59,7 +59,7 @@ describe('moni-select', () => {
 		expect(menu?.classList.contains('open')).toBe(false);
 	});
 
-	it('fires input/change event and updates value on selection', async () => {
+	it('dispara el evento input/change y actualiza el valor al seleccionar', async () => {
 		const opt1 = document.createElement('moni-select-option');
 		opt1.setAttribute('value', 'v1');
 		opt1.textContent = 'Option 1';
@@ -85,7 +85,7 @@ describe('moni-select', () => {
 		expect(eventFired).toBe(true);
 	});
 
-	it('filters options when searchable and typing', async () => {
+	it('filtra opciones al buscar y escribir (searchable)', async () => {
 		el.searchable = true;
 		
 		const opt1 = document.createElement('moni-select-option');
@@ -114,7 +114,7 @@ describe('moni-select', () => {
 		expect(items?.[0].textContent?.trim()).toBe('Apple');
 	});
 
-	it('auto-selects option when exact match is typed', async () => {
+	it('autoselecciona la opción cuando se escribe una coincidencia exacta', async () => {
 		el.searchable = true;
 		
 		const opt1 = document.createElement('moni-select-option');
@@ -141,7 +141,7 @@ describe('moni-select', () => {
 		expect(el.value).toBe('banana');
 	});
 
-	it('renders group subcategory headers', async () => {
+	it('renderiza encabezados de subcategoría de grupo', async () => {
 		const opt1 = document.createElement('moni-select-option');
 		opt1.setAttribute('value', 'v1');
 		opt1.setAttribute('group', 'Fruits');
@@ -164,7 +164,7 @@ describe('moni-select', () => {
 		expect(headers?.[1].querySelector('span')?.textContent?.trim()).toBe('Vegetables');
 	});
 
-	it('clears selection when input is emptied and clearable is true', async () => {
+	it('limpia la selección cuando el input se vacía y clearable es true', async () => {
 		el.searchable = true;
 		el.clearable = true;
 		el.value = 'apple';
@@ -188,7 +188,7 @@ describe('moni-select', () => {
 		expect(el.value).toBe('');
 	});
 
-	it('renders bottom sheet drawer when sheet is true', async () => {
+	it('renderiza el cajón bottom sheet cuando sheet es true', async () => {
 		el.sheet = true;
 		await el.updateComplete;
 
@@ -196,7 +196,7 @@ describe('moni-select', () => {
 		expect(drawer).toBeTruthy();
 	});
 
-	it('applies fixed positioning styles when positioning is fixed', async () => {
+	it('aplica estilos de posicionamiento fijo cuando positioning es fixed', async () => {
 		el.positioning = 'fixed';
 		await el.updateComplete;
 

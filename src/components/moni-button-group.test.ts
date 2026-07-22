@@ -16,7 +16,7 @@ describe('moni-button-group', () => {
 		group.remove();
 	});
 
-	it('propagates size to children buttons', async () => {
+	it('propaga el tamaño a los botones hijos', async () => {
 		group.size = 'large';
 		const btn1 = document.createElement('moni-button') as MoniButton;
 		const btn2 = document.createElement('moni-button') as MoniButton;
@@ -31,7 +31,7 @@ describe('moni-button-group', () => {
 		expect(btn2.getAttribute('size')).toBe('large');
 	});
 
-	it('sets appropriate shapes for connected variant', async () => {
+	it('establece las formas apropiadas para la variante connected', async () => {
 		group.variant = 'connected';
 		const btn1 = document.createElement('moni-button') as MoniButton;
 		const btn2 = document.createElement('moni-button') as MoniButton;
@@ -50,7 +50,7 @@ describe('moni-button-group', () => {
 		expect(btn3.getAttribute('shape')).toBe('right-round-flat');
 	});
 
-	it('uses round shapes for connected variant when gap is set', async () => {
+	it('usa formas redondeadas para la variante connected cuando se establece un gap', async () => {
 		group.variant = 'connected';
 		group.gap = '8px';
 		const btn1 = document.createElement('moni-button') as MoniButton;
@@ -66,7 +66,7 @@ describe('moni-button-group', () => {
 		expect(btn2.getAttribute('shape')).toBe('right-round');
 	});
 
-	it('manages active toggles in single-select mode (multi=false)', async () => {
+	it('gestiona los toggles activos en modo de selección única (multi=false)', async () => {
 		const btn1 = document.createElement('moni-button') as MoniButton;
 		const btn2 = document.createElement('moni-button') as MoniButton;
 		group.appendChild(btn1);
@@ -76,14 +76,14 @@ describe('moni-button-group', () => {
 		await btn1.updateComplete;
 		await btn2.updateComplete;
 
-		// Click btn1
+		// Clic en btn1
 		btn1.click();
 		await btn1.updateComplete;
 		await btn2.updateComplete;
 		expect(btn1.active).toBe(true);
 		expect(btn2.active).toBe(false);
 
-		// Click btn2
+		// Clic en btn2
 		btn2.click();
 		await btn1.updateComplete;
 		await btn2.updateComplete;
@@ -91,7 +91,7 @@ describe('moni-button-group', () => {
 		expect(btn2.active).toBe(true);
 	});
 
-	it('manages active toggles in multi-select mode (multi=true)', async () => {
+	it('gestiona los toggles activos en modo de selección múltiple (multi=true)', async () => {
 		group.multi = true;
 		const btn1 = document.createElement('moni-button') as MoniButton;
 		const btn2 = document.createElement('moni-button') as MoniButton;
@@ -110,38 +110,38 @@ describe('moni-button-group', () => {
 		expect(btn2.active).toBe(true);
 	});
 
-	it('renders role="group" on the container by default (M3 a11y)', async () => {
+	it('renderiza role="group" en el contenedor por defecto (accesibilidad M3)', async () => {
 		await group.updateComplete;
 		const container = group.shadowRoot?.querySelector('[part="container"]');
 		expect(container?.getAttribute('role')).toBe('group');
 	});
 
-	it('supports role="toolbar" override for app-action groups', async () => {
+	it('soporta la sobrescritura de role="toolbar" para grupos de acciones de la aplicación', async () => {
 		group.role = 'toolbar';
 		await group.updateComplete;
 		const container = group.shadowRoot?.querySelector('[part="container"]');
 		expect(container?.getAttribute('role')).toBe('toolbar');
 	});
 
-	it('forwards aria-label to the container', async () => {
+	it('reenvía aria-label al contenedor', async () => {
 		group.label = 'Text formatting';
 		await group.updateComplete;
 		const container = group.shadowRoot?.querySelector('[part="container"]');
 		expect(container?.getAttribute('aria-label')).toBe('Text formatting');
 	});
 
-	it('forwards aria-labelledby to the container', async () => {
+	it('reenvía aria-labelledby al contenedor', async () => {
 		group.labelledBy = 'group-title';
 		await group.updateComplete;
 		const container = group.shadowRoot?.querySelector('[part="container"]');
 		expect(container?.getAttribute('aria-labelledby')).toBe('group-title');
 	});
 
-	it('does not emit aria-label when label is empty (M3 a11y cleanliness)', async () => {
+	it('no emite aria-label cuando la etiqueta está vacía (limpieza de accesibilidad M3)', async () => {
 		await group.updateComplete;
 		const container = group.shadowRoot?.querySelector('[part="container"]');
-		// aria-label attribute should be either absent or empty string;
-		// using `nothing` in lit removes the attribute entirely.
+		// el atributo aria-label debería estar ausente o ser una cadena vacía;
+		// usar nothing en lit elimina el atributo por completo.
 		const aria = container?.getAttribute('aria-label');
 		expect(aria === null || aria === '').toBe(true);
 	});

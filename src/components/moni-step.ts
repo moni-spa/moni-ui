@@ -11,42 +11,42 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Step component.
+ * Componente Material Design 3 Step (Paso).
  *
- * An individual step within a `<moni-stepper>`. Steps display progress through
- * a sequence of logical and numbered operations.
+ * Un paso individual dentro de un `<moni-stepper>`. Los pasos muestran el progreso a través
+ * de una secuencia de operaciones lógicas y numeradas.
  *
- * **M3 spec reference:** `m3-docs/components/progress-indicators/specs.md` (Stepper pattern)
+ * **Referencia a la especificación M3:** `m3-docs/components/progress-indicators/specs.md` (Patrón Stepper)
  *
- * **Anatomy & Visuals:**
- * A step renders a circular indicator containing either its sequence number
- * (automatically injected by the parent stepper) or a custom icon. Below or
- * beside the indicator (depending on the parent's `orientation`), it renders
- * the `title` and an optional `description`.
+ * **Anatomía y aspecto visual:**
+ * Un paso renderiza un indicador circular que contiene ya sea su número de secuencia
+ * (inyectado automáticamente por el stepper padre) o un icono personalizado. Debajo o
+ * al lado del indicador (dependiendo de la `orientation` del padre), renderiza
+ * el `title` (título) y un `description` (descripción) opcional.
  *
- * **State management:**
- * The parent `<moni-stepper>` automatically calculates and injects the `index`,
- * `active`, and `completed` properties based on its current state.
- * - **Active:** Highlighted with the primary color, indicating the current step.
- * - **Completed:** Displayed with a solid primary background and a checkmark
- *   icon (`completed` state overrides the numeric index).
+ * **Gestión del estado:**
+ * El `<moni-stepper>` padre calcula e inyecta automáticamente las propiedades `index`,
+ * `active` y `completed` basándose en su estado actual.
+ * - **Activo (Active):** Resaltado con el color primario, indicando el paso actual.
+ * - **Completado (Completed):** Se muestra con un fondo primario sólido y un icono de
+ *   marca de verificación (el estado `completed` anula el índice numérico).
  *
  * @example
  * ```html
- * <!-- Typically used inside a stepper -->
+ * <!-- Típicamente usado dentro de un stepper -->
  * <moni-stepper current="1">
- *   <moni-step title="Shipping" description="Enter address"></moni-step>
- *   <moni-step title="Payment" description="Credit card details"></moni-step>
- *   <moni-step title="Review" description="Confirm order"></moni-step>
+ *   <moni-step title="Envío" description="Ingresar dirección"></moni-step>
+ *   <moni-step title="Pago" description="Detalles de tarjeta de crédito"></moni-step>
+ *   <moni-step title="Revisión" description="Confirmar pedido"></moni-step>
  * </moni-stepper>
  *
- * <!-- Overriding the icon -->
- * <moni-step title="Done" icon="celebration"></moni-step>
+ * <!-- Anulando el icono -->
+ * <moni-step title="Hecho" icon="celebration"></moni-step>
  * ```
  *
- * @csspart step-indicator - The circular badge containing the number/icon.
- * @csspart title          - The main title text.
- * @csspart description    - The secondary description text.
+ * @csspart step-indicator - La insignia circular que contiene el número/icono.
+ * @csspart title          - El texto principal del título.
+ * @csspart description    - El texto secundario de la descripción.
  */
 @customElement('moni-step')
 export class MoniStep extends MoniElement {
@@ -91,11 +91,11 @@ export class MoniStep extends MoniElement {
 				min-block-size: 4rem;
 			}
 
-			/* Vertical connector. Geometry: the dot occupies y=0 to y=2rem at
-			   the top of the step (host is column flex with min-block-size 4rem).
-			   The connector runs from the BOTTOM of the current dot (y=2rem) to
-			   the BOTTOM of the current step (y=100%). This formula stays
-			   calibrated regardless of step height. */
+			/* Conector vertical. Geometría: el punto (dot) ocupa y=0 a y=2rem en
+			   la parte superior del paso (el host es flex de columna con min-block-size 4rem).
+			   El conector va desde la parte INFERIOR del punto actual (y=2rem) hasta
+			   la parte INFERIOR del paso actual (y=100%). Esta fórmula se mantiene
+			   calibrada independientemente de la altura del paso. */
 			:host-context(moni-stepper[orientation='vertical']):host(:not(:last-child))::after {
 				position: absolute;
 				inset-inline-start: calc(1rem - 0.03125rem);
@@ -160,6 +160,18 @@ export class MoniStep extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el indicador del paso y la etiqueta (el conector se hace vía CSS ::after).
+	 *
+	 * **Indicador de paso (Step indicator):**
+	 * - `completed=true` — muestra un icono de marca de verificación.
+	 * - `active=true` — muestra el número de paso en un contenedor resaltado (vía CSS).
+	 * - De lo contrario — muestra el número de paso en un estilo tenue.
+	 *
+	 * **Contenido del Slot:**
+	 * El slot por defecto permite a los consumidores proyectar contenido personalizado
+	 * dentro del cuerpo del paso.
+	 */
 	override render() {
 		const dot = this.completed
 			? html`<moni-icon name="check"></moni-icon>`

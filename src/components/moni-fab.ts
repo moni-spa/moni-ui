@@ -11,64 +11,116 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Floating Action Button (FAB) component.
+ * Componente Material Design 3 Floating Action Button (FAB).
  *
- * FABs represent the primary, or most common, action on a screen. They appear
- * in front of all screen content, typically as a circular shape with an icon in
- * its center.
+ * Los FABs representan la acción principal, o más común, en una pantalla. Aparecen
+ * frente a todo el contenido de la pantalla, típicamente como una forma circular con un icono en
+ * su centro.
  *
- * **M3 spec reference:** `m3-docs/components/floating-action-buttons/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/floating-action-buttons/specs.md`
  *
- * **M3 Expressive Updates & Deprecations (May 2025):**
- * - `size="small"` is **no longer recommended** by M3. Use `medium` (40dp or 56dp)
- *   or `large` (96dp). Deprecated in v0.3.1; will be removed in v1.0.
- * - `shape="circle"` is **not part of M3**. M3 FABs use a `rounded` shape with a
- *   16dp corner radius (which morphs to a `full` radius on hover/focus).
- *   Deprecated in v0.3.1; will be removed in v1.0.
- * - `color="surface"` is **no longer recommended**. Use `primary`, `secondary`,
- *   or `tertiary` to ensure proper color mapping to the M3 theme.
+ * **Actualizaciones y Deprecaciones de M3 Expressive (Mayo 2025):**
+ * - `size="small"` **ya no es recomendado** por M3. Use `medium` (40dp o 56dp)
+ *   o `large` (96dp). Deprecado en v0.3.1; se eliminará en v1.0.
+ * - `shape="circle"` **no es parte de M3**. Los FABs M3 usan una forma `rounded` (redondeada) con un
+ *   radio de esquina de 16dp (que se transforma a un radio `full` al pasar el cursor/enfocar).
+ *   Deprecado en v0.3.1; se eliminará en v1.0.
+ * - `color="surface"` **ya no es recomendado**. Use `primary`, `secondary`,
+ *   o `tertiary` para asegurar un mapeo de color adecuado al tema M3.
  *
- * **Extended FABs:**
- * When `extended` is true, the FAB displays a text label next to the icon.
- * Extended FABs are wider and are typically used when the action needs explicit
- * text to be clear. The `expanded` attribute forces the FAB to its full extended
- * width, useful for animating between standard and extended states on scroll.
+ * **FABs Extendidos:**
+ * Cuando `extended` es true, el FAB muestra una etiqueta de texto junto al icono.
+ * Los FABs extendidos son más anchos y se usan típicamente cuando la acción necesita texto explícito
+ * para ser clara. El atributo `expanded` fuerza al FAB a su ancho extendido completo,
+ * útil para animar entre los estados estándar y extendido al desplazarse.
  *
- * **Positioning:**
- * The `position` attribute applies predefined absolute/fixed positioning
- * (e.g. `bottom-trailing`), snapping the FAB to standard screen corners.
+ * **Posicionamiento:**
+ * El atributo `position` aplica un posicionamiento absoluto/fijo predefinido
+ * (ej. `bottom-trailing`), encajando el FAB en las esquinas estándar de la pantalla.
  *
  * @example
  * ```html
- * <!-- Standard primary FAB -->
+ * <!-- FAB primario estándar -->
  * <moni-fab icon="edit"></moni-fab>
  *
- * <!-- Extended tertiary FAB -->
- * <moni-fab color="tertiary" extended icon="add" label="New task"></moni-fab>
+ * <!-- FAB terciario extendido -->
+ * <moni-fab color="tertiary" extended icon="add" label="Nueva tarea"></moni-fab>
  *
- * <!-- Positioned FAB -->
+ * <!-- FAB posicionado -->
  * <moni-fab position="bottom-trailing" icon="navigation"></moni-fab>
  * ```
  *
- * @csspart button - The internal `<button>` element.
- * @csspart icon   - The container for the icon.
- * @csspart label  - The text label (only visible when extended).
+ * @csspart button - El elemento `<button>` interno.
+ * @csspart icon   - El contenedor para el icono.
+ * @csspart label  - La etiqueta de texto (solo visible cuando está extendido).
  */
 @customElement('moni-fab')
 export class MoniFab extends MoniElement {
 	private static _deprecationWarned = false;
 
+	/**
+	 * Define las dimensiones del FAB.
+	 * `small` está deprecado en M3 Expressive.
+	 * @type {'small' | 'medium' | 'large'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' = 'medium';
+
+	/**
+	 * Mapeo de color semántico del FAB.
+	 * `surface` está deprecado en M3.
+	 * @type {'primary' | 'secondary' | 'tertiary' | 'surface'}
+	 * @default 'primary'
+	 */
 	@property({ reflect: true })
 	color: 'primary' | 'secondary' | 'tertiary' | 'surface' = 'primary';
+
+	/**
+	 * Forma de las esquinas del FAB.
+	 * `circle` está deprecado en M3 (los FABs deben ser cuadrados redondeados).
+	 * @type {'rounded' | 'circle'}
+	 * @default 'rounded'
+	 */
 	@property({ reflect: true })
 	shape: 'rounded' | 'circle' = 'rounded';
+
+	/**
+	 * Alias heredado de `expanded`. Indica si el FAB muestra una etiqueta de texto.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) extended = false;
+
+	/**
+	 * Si es true, expande el FAB para mostrar su etiqueta de texto junto al icono.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) expanded = false;
+
+	/**
+	 * Deshabilita el FAB.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Nombre del icono (Material Symbols) mostrado dentro del FAB.
+	 * @type {string}
+	 * @default 'add'
+	 */
 	@property({ reflect: true }) icon = 'add';
+
+	/**
+	 * Etiqueta de texto mostrada cuando el FAB se expande/extiende.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) label = '';
+
+	/**
+	 * Fija la posición del FAB relativa a los bordes de la pantalla.
+	 * @type {'bottom-trailing' | 'bottom-leading' | 'top-trailing' | 'top-leading'}
+	 * @default 'bottom-trailing'
+	 */
 	@property({ reflect: true })
 	position:
 		| 'bottom-trailing'
@@ -128,7 +180,7 @@ export class MoniFab extends MoniElement {
 				font-size: 1rem;
 				font-weight: 500;
 				color: var(--on-primary);
-				/* Default: no padding so icon is centered; padding added when label exists */
+				/* Por defecto: sin relleno para que el icono se centre; el relleno se añade cuando existe etiqueta */
 				padding: 0 1.5rem;
 				background-color: var(--primary);
 				border: 0.0625rem solid transparent;
@@ -158,7 +210,7 @@ export class MoniFab extends MoniElement {
 				box-shadow: var(--elevate1);
 			}
 
-			/* When no label: icon-only, remove horizontal padding so icon centers */
+			/* Cuando no hay etiqueta: solo icono, eliminar relleno horizontal para que el icono se centre */
 			.button:not(:has(> .label:not(:empty))) {
 				padding-inline: 0;
 			}
@@ -227,8 +279,8 @@ export class MoniFab extends MoniElement {
 				color: inherit;
 			}
 
-			/* Label is always rendered but empty string hides via overflow.
-			   When label prop is set, it appears. */
+			/* La etiqueta siempre se renderiza pero la cadena vacía se oculta mediante overflow.
+			   Cuando se establece la propiedad label, aparece. */
 			.label {
 				white-space: nowrap;
 				max-inline-size: 16rem;
@@ -241,18 +293,32 @@ export class MoniFab extends MoniElement {
 				display: none;
 			}
 
-			/* Circle shape: hide label completely */
+			/* Forma circular: ocultar etiqueta completamente */
 			:host([shape='circle']) .label,
 			:host([shape='circle']) slot {
 				display: none !important;
 			}
-			/* Circle: remove padding, make it a perfect circle */
+			/* Círculo: eliminar relleno, hacerlo un círculo perfecto */
 			:host([shape='circle']) .button {
 				padding: 0 !important;
 			}
 		`
 	];
 
+	/**
+	 * Renderiza el botón FAB con su icono, etiqueta extendida opcional, y estado de carga.
+	 *
+	 * **Composición de clases:**
+	 * - `'fab'` — estilos base del FAB (redondo, 56dp, elevado).
+	 * - `this.size` (`'small'` = 40dp, `'large'` = 96dp, por defecto = 56dp).
+	 * - `this.variant` — esquema de color (`'primary'`, `'secondary'`, `'tertiary'`, `'surface'`).
+	 * - `'extended'` — se añade cuando se establece `label`; ensancha el FAB en forma de píldora
+	 *   y revela el texto de la etiqueta con una transición CSS `max-width`.
+	 *
+	 * **Estado de carga:**
+	 * Cuando `loading=true`, un spinner `<moni-progress>` reemplaza el icono. La etiqueta
+	 * permanece visible para mantener el ancho del FAB extendido y prevenir saltos de diseño.
+	 */
 	override render() {
 		const classes = [
 			'button',

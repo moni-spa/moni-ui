@@ -14,7 +14,7 @@ describe('moni-side-sheet', () => {
 		el.remove();
 	});
 
-	it('initializes with default values', async () => {
+	it('se inicializa con valores por defecto', async () => {
 		await el.updateComplete;
 		expect(el.open).toBe(false);
 		expect(el.modal).toBe(false);
@@ -25,7 +25,7 @@ describe('moni-side-sheet', () => {
 		expect(el.showBack).toBe(false);
 	});
 
-	it('reflects open state to underlaying dialog', async () => {
+	it('refleja el estado open al dialog subyacente', async () => {
 		await el.updateComplete;
 		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
 		expect(dialog.open).toBe(false);
@@ -35,7 +35,7 @@ describe('moni-side-sheet', () => {
 		expect(dialog.open).toBe(true);
 	});
 
-	it('renders title and handles close click', async () => {
+	it('renderiza el título y maneja el clic de cerrar', async () => {
 		el.title = 'Configuración';
 		el.open = true;
 		await el.updateComplete;
@@ -57,7 +57,7 @@ describe('moni-side-sheet', () => {
 		expect(eventFired).toBe(true);
 	});
 
-	it('fires back event when back button clicked', async () => {
+	it('dispara el evento back cuando se hace clic en el botón de volver', async () => {
 		el.showBack = true;
 		await el.updateComplete;
 
@@ -73,7 +73,7 @@ describe('moni-side-sheet', () => {
 		expect(backFired).toBe(true);
 	});
 
-	it('applies correct class for noBorder', async () => {
+	it('aplica la clase correcta para noBorder', async () => {
 		const dialog = el.shadowRoot?.querySelector('dialog');
 		expect(dialog?.classList.contains('no-border')).toBe(false);
 
@@ -82,7 +82,7 @@ describe('moni-side-sheet', () => {
 		expect(dialog?.classList.contains('no-border')).toBe(true);
 	});
 
-	it('renders handle and supports drag dismissal when withHandle is true', async () => {
+	it('renderiza el tirador (handle) y soporta el cierre por arrastre cuando withHandle es true', async () => {
 		el.withHandle = true;
 		el.open = true;
 		await el.updateComplete;
@@ -113,7 +113,7 @@ describe('moni-side-sheet', () => {
 			closeFired = true;
 		});
 
-		// Trigger pointer drag to the right on a right aligned sheet
+		// Activar el arrastre del puntero hacia la derecha en una hoja alineada a la derecha
 		handle.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: 300, pointerId: 1 }));
 		dialog.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: 550, pointerId: 1 })); // 250px right (greater than 400 * 0.4 = 160px)
 		handle.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: 550, pointerId: 1 }));

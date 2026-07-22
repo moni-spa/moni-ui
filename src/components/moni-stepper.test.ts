@@ -16,7 +16,7 @@ describe('moni-stepper / moni-step', () => {
 		el.remove();
 	});
 
-	it('renders an <ol> with a slot', async () => {
+	it('renderiza un <ol> con un slot', async () => {
 		await el.updateComplete;
 		const ol = el.shadowRoot?.querySelector('ol');
 		const slot = el.shadowRoot?.querySelector('slot');
@@ -24,19 +24,19 @@ describe('moni-stepper / moni-step', () => {
 		expect(slot).toBeTruthy();
 	});
 
-	it('reflects the orientation attribute', async () => {
+	it('refleja el atributo orientation', async () => {
 		el.orientation = 'vertical';
 		await el.updateComplete;
 		expect(el.getAttribute('orientation')).toBe('vertical');
 	});
 
-	it('reflects the current attribute as a number', async () => {
+	it('refleja el atributo current como un número', async () => {
 		el.current = 2;
 		await el.updateComplete;
 		expect(el.getAttribute('current')).toBe('2');
 	});
 
-	it('propagates current to children: sets active on the matching step', async () => {
+	it('propaga current a los hijos: establece active en el paso coincidente', async () => {
 		const step1 = document.createElement('moni-step') as MoniStep;
 		step1.title = 'One';
 		const step2 = document.createElement('moni-step') as MoniStep;
@@ -61,7 +61,7 @@ describe('moni-stepper / moni-step', () => {
 		expect(step3.completed).toBe(false);
 	});
 
-	it('sets index on each child from its position', async () => {
+	it('establece el índice en cada hijo según su posición', async () => {
 		const s1 = document.createElement('moni-step') as MoniStep;
 		const s2 = document.createElement('moni-step') as MoniStep;
 		const s3 = document.createElement('moni-step') as MoniStep;
@@ -77,7 +77,7 @@ describe('moni-stepper / moni-step', () => {
 		expect(s3.index).toBe(2);
 	});
 
-	it('marks all previous steps as completed', async () => {
+	it('marca todos los pasos anteriores como completados (completed)', async () => {
 		const s1 = document.createElement('moni-step') as MoniStep;
 		const s2 = document.createElement('moni-step') as MoniStep;
 		const s3 = document.createElement('moni-step') as MoniStep;
@@ -103,7 +103,7 @@ describe('moni-stepper / moni-step', () => {
 		expect(s4.active).toBe(false);
 	});
 
-	it('re-syncs when a step is added dynamically (slotchange)', async () => {
+	it('se resincroniza cuando se agrega un paso dinámicamente (slotchange)', async () => {
 		el.current = 0;
 		await el.updateComplete;
 		const s1 = document.createElement('moni-step') as MoniStep;

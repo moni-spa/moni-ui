@@ -14,7 +14,7 @@ describe('moni-file-field', () => {
 		el.remove();
 	});
 
-	it('renders a text input and a file input', async () => {
+	it('renderiza un input de texto y un input de archivo', async () => {
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector('input[type="text"]');
 		const file = el.shadowRoot?.querySelector('input[type="file"]');
@@ -22,7 +22,7 @@ describe('moni-file-field', () => {
 		expect(file).toBeTruthy();
 	});
 
-	it('keeps the text input readonly', async () => {
+	it('mantiene el input de texto en solo lectura (readonly)', async () => {
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector(
 			'input[type="text"]'
@@ -30,7 +30,7 @@ describe('moni-file-field', () => {
 		expect(text.hasAttribute('readonly')).toBe(true);
 	});
 
-	it('places the label between the text input and the file input for label-lift', async () => {
+	it('coloca el label entre el input de texto y el input de archivo para la elevación del label', async () => {
 		el.label = 'Upload';
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector('input[type="text"]');
@@ -40,14 +40,14 @@ describe('moni-file-field', () => {
 		expect(label?.nextElementSibling).toBe(file);
 	});
 
-	it('adds active class to text input when value is set', async () => {
+	it('agrega la clase active al input de texto cuando se establece el valor', async () => {
 		el.value = 'report.pdf';
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector('input[type="text"]');
 		expect(text?.classList.contains('active')).toBe(true);
 	});
 
-	it('forwards accept attribute to the file input', async () => {
+	it('reenvía el atributo accept al input de archivo', async () => {
 		el.accept = 'image/*';
 		await el.updateComplete;
 		const file = el.shadowRoot?.querySelector(
@@ -56,7 +56,7 @@ describe('moni-file-field', () => {
 		expect(file.accept).toBe('image/*');
 	});
 
-	it('forwards multiple attribute to the file input', async () => {
+	it('reenvía el atributo multiple al input de archivo', async () => {
 		el.multiple = true;
 		await el.updateComplete;
 		const file = el.shadowRoot?.querySelector(
@@ -65,13 +65,13 @@ describe('moni-file-field', () => {
 		expect(file.multiple).toBe(true);
 	});
 
-	it('shows a trailing folder icon by default', async () => {
+	it('muestra un icono de carpeta (trailing folder icon) por defecto', async () => {
 		await el.updateComplete;
 		const trailing = el.shadowRoot?.querySelector('.trailing-icon');
 		expect(trailing).toBeTruthy();
 	});
 
-	it('uses button-label as placeholder when no value', async () => {
+	it('usa button-label como placeholder cuando no hay valor', async () => {
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector(
 			'input[type="text"]'

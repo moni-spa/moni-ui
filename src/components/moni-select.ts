@@ -10,125 +10,244 @@ import { customElement, property, state, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
+import { emitMoniEvent } from '../utils/event-emitter.js';
 import './moni-icon.js';
 import './moni-progress.js';
 import './moni-select-option.js';
 
 /**
- * Internal representation of a single option within the select dropdown.
+ * Representación interna de una opción individual dentro del menú desplegable del select.
  *
  * @internal
  */
 interface OptionNode {
-	/** Discriminant property that identifies this node as an option. */
+	/** Propiedad discriminante que identifica este nodo como una opción. */
 	type: 'option';
-	/** The value submitted when this option is selected. */
+	/** El valor enviado cuando se selecciona esta opción. */
 	value: string;
-	/** The display label shown in the dropdown list. */
+	/** La etiqueta mostrada en la lista desplegable. */
 	label: string;
-	/** When `true`, the option is non-interactive and grayed out. */
+	/** Cuando es `true`, la opción no es interactiva y aparece atenuada (gris). */
 	disabled?: boolean;
-	/** Reference to the original slotted `<moni-select-option>` element, if any. */
+	/** Referencia al elemento original `<moni-select-option>` de la ranura (slot), si lo hay. */
 	element?: HTMLElement;
-	/** Optional group name for organizing options under a `<moni-select-group>`. */
+	/** Nombre de grupo opcional para organizar opciones bajo un `<moni-select-group>`. */
 	group?: string;
 }
 
 /**
- * Internal representation of an option group within the select dropdown.
+ * Representación interna de un grupo de opciones dentro del menú desplegable del select.
  *
  * @internal
  */
 interface GroupNode {
-	/** Discriminant property that identifies this node as a group. */
+	/** Propiedad discriminante que identifica este nodo como un grupo. */
 	type: 'group';
-	/** The group header label displayed above the group's options. */
+	/** La etiqueta de encabezado del grupo mostrada sobre las opciones del grupo. */
 	label: string;
-	/** The options nested within this group. */
+	/** Las opciones anidadas dentro de este grupo. */
 	children: DropdownNode[];
 }
 
-/** Union type for any node in the dropdown tree. @internal */
+/** Tipo de unión para cualquier nodo en el árbol del menú desplegable. @internal */
 type DropdownNode = OptionNode | GroupNode;
 
 /**
- * Material Design 3 Select (Dropdown) component.
+ * Componente Material Design 3 Select (Menú Desplegable).
  *
- * A fully-featured custom select dropdown with searchability, option groups,
- * keyboard navigation, animation, and optional mobile drawer/sheet mode.
- * Replaces the native `<select>` element with a fully styled, accessible
- * M3-compliant alternative.
+ * Un menú desplegable select personalizado completo con capacidad de búsqueda, grupos de opciones,
+ * navegación por teclado, animación y un modo de cajón/hoja (drawer/sheet) móvil opcional.
+ * Reemplaza el elemento nativo `<select>` con una alternativa completamente estilizada y accesible
+ * que cumple con M3.
  *
- * **M3 spec reference:** `m3-docs/components/menus/specs.md` (dropdown menus)
+ * **Referencia a la especificación M3:** `m3-docs/components/menus/specs.md` (menús desplegables)
  *
- * **Feature summary:**
- * - Filled and outlined variants matching the M3 text field styles.
- * - Floating label with the standard field-styles floating label animation.
- * - Searchable mode: `searchable` attribute adds an inline filter input.
- * - Option groups: slot `<moni-select-group>` elements for hierarchical options.
- * - Mobile drawer: `drawer` attribute opens options in a `<moni-bottom-sheet>`
- *   instead of a dropdown popup, ideal for touch UIs.
- * - Keyboard navigation: Arrow keys, Enter, Escape, and Tab per ARIA combobox.
- * - Loading state: `loading` shows an indeterminate circular progress.
- * - Multi-value support: `multiple` enables multiple selection.
+ * **Resumen de características:**
+ * - Variantes Filled y Outlined que coinciden con los estilos de campo de texto de M3.
+ * - Etiqueta flotante (floating label) con la animación estándar de etiqueta flotante de estilos de campo.
+ * - Modo de búsqueda: el atributo `searchable` agrega un campo de entrada de filtro en línea.
+ * - Grupos de opciones: elementos `<moni-select-group>` en el slot para opciones jerárquicas.
+ * - Cajón móvil: el atributo `drawer` abre las opciones en un `<moni-bottom-sheet>`
+ *   en lugar de un popup desplegable, ideal para interfaces táctiles (touch UIs).
+ * - Navegación por teclado: Teclas de flecha, Enter, Escape y Tab según combobox de ARIA.
+ * - Estado de carga: `loading` muestra un progreso circular indeterminado.
+ * - Soporte multi-valor: `multiple` permite selección múltiple.
  *
- * **Option sources:**
- * Options can be provided in two ways:
- * 1. **Slotted `<moni-select-option>` elements** (default, recommended for SSR).
- * 2. **`options` property** — a `DropdownNode[]` array for fully programmatic control.
+ * **Fuentes de opciones:**
+ * Las opciones se pueden proporcionar de dos maneras:
+ * 1. **Elementos `<moni-select-option>` en la ranura (slot)** (por defecto, recomendado para SSR).
+ * 2. **Propiedad `options`** — un array de `DropdownNode[]` para un control completamente programático.
  *
- * **Value binding:**
- * The `value` property holds the currently selected option's value string.
- * For multiple selection, `values` holds `string[]`. On change, a composed
- * `'change'` event is fired.
+ * **Vinculación de valores (Value binding):**
+ * La propiedad `value` contiene la cadena de valor de la opción actualmente seleccionada.
+ * Para selección múltiple, `values` contiene `string[]`. Al cambiar, se dispara un
+ * evento compuesto `'moni-change'`.
  *
- * @fires change - Bubbles and is composed. Fired when the selected value changes.
- *                 Read `element.value` (or `element.values` for `multiple`).
+ * @fires moni-change - Burbujea y está compuesto. Se dispara cuando el valor seleccionado cambia.
+ *                      Lee `element.value` (o `element.values` para `multiple`).
  *
  * @example
  * ```html
- * <moni-select label="Country" name="country" variant="outlined">
- *   <moni-select-option value="us">United States</moni-select-option>
- *   <moni-select-option value="gb">United Kingdom</moni-select-option>
- *   <moni-select-option value="de">Germany</moni-select-option>
+ * <moni-select label="País" name="country" variant="outlined">
+ *   <moni-select-option value="us">Estados Unidos</moni-select-option>
+ *   <moni-select-option value="gb">Reino Unido</moni-select-option>
+ *   <moni-select-option value="de">Alemania</moni-select-option>
  * </moni-select>
  *
- * <!-- Searchable select -->
- * <moni-select label="Language" searchable>
+ * <!-- Select con búsqueda -->
+ * <moni-select label="Idioma" searchable>
  *   <moni-select-option value="ts">TypeScript</moni-select-option>
  *   <moni-select-option value="py">Python</moni-select-option>
  * </moni-select>
  * ```
  *
- * @slot default - `<moni-select-option>` or `<moni-select-group>` children.
+ * @slot default - Hijos `<moni-select-option>` o `<moni-select-group>`.
  *
- * @csspart field    - The outer `.field` div container.
- * @csspart dropdown - The floating option list container.
+ * @csspart field    - El contenedor div exterior `.field`.
+ * @csspart dropdown - El contenedor flotante de la lista de opciones.
  */
 @customElement('moni-select')
 export class MoniSelect extends MoniElement {
+	static formAssociated = true;
+	private _internals: ElementInternals;
+
+	constructor() {
+		super();
+		this._internals = this.attachInternals();
+	}
+
+	/**
+	 * Nombre del campo select, usado para el envío del formulario.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) name = '';
+
+	/**
+	 * Texto de la etiqueta flotante.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) label = '';
+
+	/**
+	 * Variante visual del campo select.
+	 * @type {'filled' | 'outlined'}
+	 * @default 'filled'
+	 */
 	@property({ reflect: true }) variant: 'filled' | 'outlined' = 'filled';
+
+	/**
+	 * Define las dimensiones del campo select.
+	 * @type {'small' | 'medium' | 'large' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' | 'extra' = 'medium';
+
+	/**
+	 * Forma (radio de borde) del campo.
+	 * @type {'round' | 'square' | 'no-round'}
+	 * @default 'no-round'
+	 */
 	@property({ reflect: true })
 	shape: 'round' | 'square' | 'no-round' = 'no-round';
+
+	/**
+	 * Deshabilita el campo select.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Si es verdadero, muestra un indicador de carga (progreso lineal).
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) loading = false;
+
+	/**
+	 * Texto de ayuda mostrado debajo del campo.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) helper = '';
+
+	/**
+	 * Texto de error mostrado debajo del campo cuando `error` es true.
+	 * Reemplaza al texto de ayuda.
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'error-text' }) errorText = '';
+
+	/**
+	 * Si es verdadero, establece el campo en un estado de error.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) error = false;
+
+	/**
+	 * El valor actual del select.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) value = '';
+
+	/**
+	 * Nombre del icono principal (leading icon, Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) icon = '';
+
+	/**
+	 * Nombre del icono final (trailing icon, Material Symbols) que indica el estado del menú desplegable.
+	 * @type {string}
+	 * @default 'arrow_drop_down'
+	 */
 	@property({ reflect: true, attribute: 'trailing-icon' }) trailingIcon =
 		'arrow_drop_down';
+
+	/**
+	 * Habilita un campo de búsqueda en la parte superior del menú desplegable para filtrar opciones.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) searchable = false;
+
+	/**
+	 * Muestra un botón de limpieza cuando se selecciona un valor para restablecer fácilmente el campo.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) clearable = false;
+
+	/**
+	 * Renderiza las opciones como una hoja inferior (bottom sheet, ideal para dispositivos móviles) en lugar de un menú desplegable.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) sheet = false;
+
+	/**
+	 * Texto de marcador de posición (placeholder) mostrado cuando no hay ningún valor seleccionado.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) placeholder = '';
+
+	/**
+	 * Estrategia de posicionamiento para el menú desplegable.
+	 * @type {'absolute' | 'fixed'}
+	 * @default 'absolute'
+	 */
 	@property({ reflect: true }) positioning: 'absolute' | 'fixed' = 'absolute';
+
+	/**
+	 * Ubicación preferida del menú desplegable con respecto al disparador (trigger).
+	 * @type {'top' | 'bottom' | 'left' | 'right' | 'auto'}
+	 * @default 'auto'
+	 */
 	@property({ reflect: true }) placement: 'top' | 'bottom' | 'left' | 'right' | 'auto' = 'auto';
+
+	/**
+	 * Restricción de ancho del menú desplegable.
+	 * - `'trigger'`: Coincide con el ancho del campo de entrada.
+	 * - `'auto'`: Coincide con el ancho del contenido del menú desplegable.
+	 * - O cualquier valor CSS de ancho válido (ej. '200px').
+	 * @type {string}
+	 * @default 'trigger'
+	 */
 	@property({ reflect: true, attribute: 'dropdown-width' }) dropdownWidth = 'trigger';
 
 	@state() private _open = false;
@@ -468,6 +587,12 @@ export class MoniSelect extends MoniElement {
 		`
 	];
 
+	/**
+	 * Hook del ciclo de vida (Lit).
+	 * Vincula event listeners globales necesarios para la lógica del dropdown.
+	 * Se usa `capture: true` en el evento de scroll para poder reaccionar
+	 * al desplazamiento de cualquier contenedor padre y reposicionar el menú a tiempo.
+	 */
 	override connectedCallback() {
 		super.connectedCallback();
 		document.addEventListener('click', this._handleOutsideClick);
@@ -475,6 +600,11 @@ export class MoniSelect extends MoniElement {
 		window.addEventListener('resize', this._handleResize);
 	}
 
+	/**
+	 * Hook del ciclo de vida (Lit).
+	 * Desmonta rigurosamente todos los listeners globales para prevenir memory leaks
+	 * o llamadas accidentales cuando el select ya fue destruido del DOM.
+	 */
 	override disconnectedCallback() {
 		super.disconnectedCallback();
 		document.removeEventListener('click', this._handleOutsideClick);
@@ -482,8 +612,17 @@ export class MoniSelect extends MoniElement {
 		window.removeEventListener('resize', this._handleResize);
 	}
 
+	/**
+	 * Hook de actualización reactiva (Lit).
+	 * Verifica si alguna propiedad relacionada con el tamaño del contenido (como la búsqueda,
+	 * la ruta de anidación o el estado abierto) ha cambiado, para forzar un recálculo
+	 * de la altura animada del contenedor `drilldown-wrapper`.
+	 */
 	override updated(changedProperties: Map<string | number | symbol, unknown>) {
 		super.updated(changedProperties);
+		if (changedProperties.has('value')) {
+			this._internals.setFormValue(this.value);
+		}
 		if (
 			changedProperties.has('_open') ||
 			changedProperties.has('_drilldownPath') ||
@@ -495,6 +634,12 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Lógica de animación de altura (Height Animation).
+	 * Cuando se navega entre categorías anidadas (`_drilldownPath`), las listas hijas pueden 
+	 * tener diferentes tamaños. Este método lee el `scrollHeight` del panel activo y lo aplica 
+	 * imperativamente al `wrapper` para disparar una transición CSS suave en la altura del dropdown.
+	 */
 	private _updateWrapperHeight() {
 		const wrapper = this.shadowRoot?.querySelector('.drilldown-wrapper') as HTMLElement;
 		if (!wrapper) return;
@@ -515,12 +660,28 @@ export class MoniSelect extends MoniElement {
 		});
 	}
 
+	/**
+	 * Cierra el Dropdown cuando el usuario hace clic fuera de las dimensiones del componente.
+	 * Utiliza `e.composedPath()` para poder atravesar barreras de Shadow DOM si el select 
+	 * está dentro de un contenedor web-component externo.
+	 */
 	private _handleOutsideClick = (e: MouseEvent) => {
 		if (this._open && !e.composedPath().includes(this)) {
 			this._closeDropdown();
 		}
 	};
 
+	/**
+	 * Motor de Cálculo de Colisiones de la Interfaz (Collision Detection).
+	 * 
+	 * @logic
+	 * 1. Calcula las coordenadas espaciales (`getBoundingClientRect`) del select base.
+	 * 2. Compara el espacio disponible (`spaceAbove`, `spaceBelow`, `spaceRight`, `spaceLeft`)
+	 *    respecto al viewport (`window.innerHeight`, `window.innerWidth`).
+	 * 3. Si el dropdown no cabe en la posición preferida (`placement`), revierte lógicamente
+	 *    la posición (ej: si `bottom` desborda, lo abre hacia `top`).
+	 * 4. Actualiza `_actualPlacement` con la dirección segura calculada.
+	 */
 	private _determineActualPlacement() {
 		if (this.sheet) {
 			this._actualPlacement = 'bottom';
@@ -569,6 +730,11 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Handler de Scroll global.
+	 * Fuerza un recálculo de la posición y dimensiones del dropdown si el usuario
+	 * hace scroll en la página mientras el select permanece abierto.
+	 */
 	private _handleScroll = () => {
 		if (this._open) {
 			this._determineActualPlacement();
@@ -576,6 +742,11 @@ export class MoniSelect extends MoniElement {
 		}
 	};
 
+	/**
+	 * Handler de Resize global.
+	 * Asegura que el popover del select no quede fuera del viewport cuando
+	 * se cambia el tamaño de la ventana o se rota la pantalla en dispositivos móviles.
+	 */
 	private _handleResize = () => {
 		if (this._open) {
 			this._determineActualPlacement();
@@ -583,6 +754,12 @@ export class MoniSelect extends MoniElement {
 		}
 	};
 
+	/**
+	 * Aplica las coordenadas y dimensiones absolutas o fijas al menú desplegable.
+	 * Este método es fundamental cuando `positioning === 'fixed'`, ya que el dropdown
+	 * se saca del flujo normal del documento para evitar `overflow: hidden` de los padres.
+	 * Mapea el `width` para coincidir opcionalmente con el gatillo (`dropdownWidth="trigger"`).
+	 */
 	private _updateMenuPosition() {
 		if (!this._open || this.sheet) return;
 		
@@ -639,6 +816,12 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Devuelve un string de estilos inline para el menú desplegable.
+	 * Si la posición es `fixed` (calculada dinámicamente para evadir overflow),
+	 * retorna el bloque de coordenadas generado por `_updateMenuPosition`.
+	 * Si no, asigna anchos basados en la propiedad `dropdownWidth` (auto, trigger, custom).
+	 */
 	private _getMenuStyle() {
 		if (this.positioning === 'fixed') {
 			return this._menuStyle;
@@ -652,6 +835,18 @@ export class MoniSelect extends MoniElement {
 		return '';
 	}
 
+	/**
+	 * Parseador del Shadow DOM (Slot Change Handler).
+	 * 
+	 * @logic
+	 * 1. Cuando los hijos proyectados cambian (ej. se agregan nuevos `<option>`),
+	 *    lee iterativamente todos los nodos del Light DOM.
+	 * 2. Si encuentra `<optgroup>` o `<moni-select-option group="A/B">`, construye dinámicamente
+	 *    un árbol estructural de `GroupNode` anidados.
+	 * 3. Si encuentra opciones, las inyecta en el grupo correspondiente del árbol.
+	 * 4. Almacena el árbol resultante en `_parsedOptions` para que el componente
+	 *    pueda renderizar sus propios submenús nativos independientemente del markup inicial.
+	 */
 	private _onSlotChange() {
 		if (!this._slot) return;
 		const assigned = this._slot.assignedElements({ flatten: true });
@@ -705,6 +900,10 @@ export class MoniSelect extends MoniElement {
 		this.requestUpdate();
 	}
 
+	/**
+	 * Alterna el estado de apertura/cierre del dropdown, previniendo
+	 * la acción si el componente está deshabilitado.
+	 */
 	private _toggleDropdown(e?: Event) {
 		if (e) {
 			e.stopPropagation();
@@ -717,6 +916,11 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Manejador de clics en el campo de texto (Trigger).
+	 * Si el componente es `searchable` (permite escribir para buscar), un clic
+	 * sólo abrirá el menú (no lo cerrará si ya estaba abierto, para permitir al usuario seguir escribiendo).
+	 */
 	private _onInputClick(e: MouseEvent) {
 		if (this.disabled) return;
 		if (this.searchable && !this.sheet) {
@@ -728,30 +932,43 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Despliega el menú del select y coordina la accesibilidad, posicionamiento y foco inicial.
+	 */
 	private _openDropdown() {
 		this._open = true;
 		this._activeIndex = -1;
 		this._drilldownPath = [];
 
+		// Calculamos la dirección del menú emergente en base al espacio disponible en la pantalla
 		this._determineActualPlacement();
 
-		// Measure viewport to determine if we should fall back to inline categories
+		// Medimos dinámicamente si hay espacio suficiente para renderizar submenús laterales (Desktop).
+		// Si es móvil (<600px) o no hay 160px de espacio libre a los lados, forzamos un diseño plano ("inline categories")
+		// para evitar que los submenús se salgan del viewport.
 		const rect = this.getBoundingClientRect();
 		const spaceOnRight = window.innerWidth - rect.right;
 		const spaceOnLeft = rect.left;
 		this._useInlineCategories = window.innerWidth < 600 || (spaceOnRight < 160 && spaceOnLeft < 160);
 
+		// Si el menú tiene position="fixed", necesitamos computar y aplicar las coordenadas absolutas en pixels
 		if (this.positioning === 'fixed') {
 			this._updateMenuPosition();
 		}
+		
+		// Lógica especial si el componente está configurado como "searchable" (Input filtrable)
 		if (this.searchable) {
 			const selectedOpt = this._findOptionByValue(this.value);
 			this._searchQuery = selectedOpt ? selectedOpt.label : '';
+			
+			// Esperamos un tick para que el input o bottom-sheet sea renderizado antes de solicitar el foco
 			setTimeout(() => {
 				if (this._input && !this.sheet) {
+					// Foco en el input principal (Desktop) y seleccionamos todo el texto para fácil reemplazo
 					this._input.focus();
 					this._input.select();
 				} else if (this.sheet) {
+					// Foco en la caja de búsqueda inyectada dentro del bottom-sheet (Mobile)
 					const sheetInput = this.shadowRoot?.querySelector('.sheet-search-input') as HTMLInputElement;
 					if (sheetInput) {
 						sheetInput.focus();
@@ -762,6 +979,10 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Cierra el dropdown y purga la consulta de búsqueda (`_searchQuery`) 
+	 * para que la próxima vez que se abra, la lista muestre todas las opciones por defecto.
+	 */
 	private _closeDropdown() {
 		this._open = false;
 		this._searchQuery = '';
@@ -772,6 +993,15 @@ export class MoniSelect extends MoniElement {
 		return this._getFlatOptions(this._parsedOptions).find(opt => opt.value === value);
 	}
 
+	/**
+	 * Evento de input (tecleo) en la barra de búsqueda.
+	 * 
+	 * @logic
+	 * 1. Actualiza `_searchQuery` y fuerza la apertura del dropdown.
+	 * 2. Si es `clearable` y el usuario borró todo, emite eventos vacíos.
+	 * 3. Busca coincidencias exactas en el texto. Si el usuario teclea exactamente el
+	 *    label de una opción existente, la selecciona automáticamente (auto-completado nativo).
+	 */
 	private _onSearchInput(e: Event) {
 		const query = (e.target as HTMLInputElement).value;
 		this._searchQuery = query;
@@ -780,8 +1010,7 @@ export class MoniSelect extends MoniElement {
 
 		if (this.clearable && query.trim() === '') {
 			this.value = '';
-			this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-			this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+			emitMoniEvent(this, 'moni-change', { detail: { value: this.value, originalEvent: e } });
 			return;
 		}
 
@@ -794,15 +1023,25 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Confirma la selección de una opción específica.
+	 * Actualiza el valor (estado reactivo), cierra el dropdown y despacha los eventos
+	 * estándar HTML `input` y `change` para integrarse fluidamente con formularios nativos o frameworks.
+	 */
 	private _selectOption(option: OptionNode) {
 		if (option.disabled) return;
 		this.value = option.value;
 		this._closeDropdown();
 
-		this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-		this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+		emitMoniEvent(this, 'moni-change', { detail: { value: this.value } });
 	}
 
+	/**
+	 * Maneja el Hover sobre categorías en modo Desktop (Submenús emergentes).
+	 * Detecta dinámicamente si el submenú se saldrá del lado derecho de la pantalla.
+	 * Si es así, altera las clases de CSS (`open-left` vs `open-right`) para que 
+	 * el menú flote en la dirección opuesta, evitando desbordamientos de viewport (Overflow prevention).
+	 */
 	private _onSubmenuMouseEnter(e: MouseEvent) {
 		const headerEl = e.currentTarget as HTMLElement;
 		const submenu = headerEl.querySelector(':scope > .submenu') as HTMLElement;
@@ -822,41 +1061,56 @@ export class MoniSelect extends MoniElement {
 		}
 	}
 
+	/**
+	 * Gestiona la navegación completa por teclado siguiendo el patrón WAI-ARIA Combobox.
+	 * Soporta flechas direccionales, selección (Enter), y cierre (Escape).
+	 */
 	private _onKeyDown(e: KeyboardEvent) {
 		if (this.disabled) return;
 
+		// Obtenemos solo las opciones que están visualmente disponibles en la jerarquía actual
 		const visible = this._getVisibleOptions();
 
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			if (!this._open) {
+				// Si está cerrado, ArrowDown lo abre (comportamiento estándar nativo)
 				this._openDropdown();
 			} else if (visible.length > 0) {
+				// Navegamos circularmente hacia abajo
 				this._activeIndex = (this._activeIndex + 1) % visible.length;
 				this._scrollToActive();
 			}
 		} else if (e.key === 'ArrowUp') {
 			e.preventDefault();
 			if (this._open && visible.length > 0) {
+				// Navegamos circularmente hacia arriba (+visible.length evita valores negativos en JS)
 				this._activeIndex = (this._activeIndex - 1 + visible.length) % visible.length;
 				this._scrollToActive();
 			}
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			if (this._open) {
+				// Si está abierto y hay una opción resaltada, simulamos el click para seleccionarla
 				if (this._activeIndex >= 0 && this._activeIndex < visible.length) {
 					this._selectOption(visible[this._activeIndex]);
 				}
 			} else {
+				// Enter cuando está cerrado simplemente abre el menú
 				this._openDropdown();
 			}
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
+			// Escapa el menú sin hacer ninguna selección
 			this._closeDropdown();
 		}
 	}
 
+	/**
+	 * Asegura que el elemento resaltado por teclado sea visible dentro del contenedor scrolleable.
+	 */
 	private _scrollToActive() {
+		// Se requiere setTimeout para darle tiempo a Lit a renderizar la clase 'active-nav'
 		setTimeout(() => {
 			const activeEl = this.shadowRoot?.querySelector('.option-item.active-nav');
 			if (activeEl) {
@@ -865,6 +1119,10 @@ export class MoniSelect extends MoniElement {
 		}, 0);
 	}
 
+	/**
+	 * Aplana el árbol jerárquico recursivo de <moni-select-group> a un array unidimensional de opciones puras.
+	 * Esencial para que la búsqueda por texto funcione globalmente ignorando las categorías.
+	 */
 	private _getFlatOptions(nodes: DropdownNode[]): OptionNode[] {
 		const flat: OptionNode[] = [];
 		const traverse = (n: DropdownNode) => {
@@ -902,6 +1160,13 @@ export class MoniSelect extends MoniElement {
 		return filtered;
 	}
 
+	/**
+	 * Motor de Renderizado: Lista Raíz (Modo Móvil / Drilldown).
+	 * 
+	 * Renderiza las opciones iniciales y los grupos base de la categoría actual (`_drilldownPath`).
+	 * Asigna clases dinámicas (`selected`, `active-nav`) para la retroalimentación visual
+	 * del teclado y el valor actualmente seleccionado.
+	 */
 	private _renderRootList() {
 		let visibleIndex = 0;
 		return this._parsedOptions.map(node => {
@@ -928,6 +1193,13 @@ export class MoniSelect extends MoniElement {
 		});
 	}
 
+	/**
+	 * Motor de Renderizado: Subcategorías (Modo Móvil / Drilldown).
+	 * 
+	 * A diferencia de desktop (donde los submenús flotan a los lados), en dispositivos
+	 * móviles o espacios constreñidos, el menú transiciona in-situ. Este método renderiza
+	 * el header del grupo activo, un botón de "Regresar" (Arrow Back) y las opciones hijas.
+	 */
 	private _renderSubcategoryList() {
 		if (this._drilldownPath.length === 0) return nothing;
 		const activeGroup = this._drilldownPath[this._drilldownPath.length - 1];
@@ -995,6 +1267,14 @@ export class MoniSelect extends MoniElement {
 		`;
 	}
 
+	/**
+	 * Orquestador principal de renderizado de la lista de opciones.
+	 * 
+	 * Si el usuario introdujo texto (`_searchQuery`), renderiza los resultados filtrados.
+	 * Si la lista original está vacía, muestra un mensaje amigable (Empty State).
+	 * Determina condicionalmente si usar el modo plano/Drilldown (Móviles) o 
+	 * el modo Desktop con submenús flotantes (`_renderDesktopNode`).
+	 */
 	private _renderOptionsList(filtered: OptionNode[]) {
 		if (this._parsedOptions.length === 0) {
 			return html`<li class="no-options">No options found</li>`;
@@ -1049,6 +1329,35 @@ export class MoniSelect extends MoniElement {
 		return this._parsedOptions.map(node => this._renderDesktopNode(node, flatIndexRef));
 	}
 
+	/**
+	 * Ensambla el Shadow DOM del campo select, coordinando dos modos de interfaz de usuario distintos.
+	 *
+	 * **Resolución del valor a mostrar (Display value):**
+	 * El contenido de texto visible en el input está determinado por prioridad:
+	 * 1. Mientras el menú desplegable está abierto Y `searchable=true` Y NO es modo sheet:
+	 *    muestra `_searchQuery` (el texto del filtro en vivo que el usuario está escribiendo).
+	 * 2. De lo contrario: muestra `selectedOpt.label` (la etiqueta de la opción actualmente
+	 *    seleccionada) o vuelve a la cadena vacía.
+	 *
+	 * **Dos rutas de renderizado:**
+	 * - **Modo Sheet (`sheet=true`):** Renderiza un `<moni-bottom-sheet>` como un
+	 *   cajón (drawer) superpuesto a pantalla completa, ideal para IU táctiles móviles. La lista de opciones
+	 *   se renderiza dentro de la hoja en lugar del menú desplegable.
+	 * - **Modo desplegable (por defecto):** Renderiza un `.dropdown-menu` flotante que
+	 *   se abre debajo o arriba del campo. La cadena `_menuStyle` (calculada por
+	 *   `_computeMenuStyle()`) inyecta los `top`, `left`, `width`, y
+	 *   sobreescrituras `position: fixed` correctas para contenedores con scroll (scroll-contained) y parents con overflow cortado (overflow-clipping).
+	 *
+	 * **Patrón combobox ARIA:**
+	 * El input de texto lleva `role="combobox"`, `aria-haspopup="listbox"` y
+	 * `aria-expanded` para satisfacer los requisitos del combobox WCAG 2.1 para lectores de pantalla.
+	 * `aria-activedescendant` se establece al ID de la opción actualmente enfocada por teclado
+	 * para habilitar el movimiento del cursor virtual sin gestión del foco.
+	 *
+	 * **Composición de `fieldClasses`:**
+	 * Sigue la convención de nomenclatura de clases de estilos de campo de BeerCSS. `prefix` se agrega
+	 * cuando `icon` está establecido (para desplazar el relleno -padding- inline-start del input de texto para el icono).
+	 */
 	override render() {
 		const hasLeading = Boolean(this.icon);
 		const filtered = this._getFilteredOptions();

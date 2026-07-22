@@ -14,7 +14,7 @@ describe('moni-icon', () => {
 		el.remove();
 	});
 
-	it('renders the icon name as text content', async () => {
+	it('renderiza el nombre del icono como contenido de texto', async () => {
 		el.name = 'add';
 		await el.updateComplete;
 		const slot = el.shadowRoot?.querySelector('slot') as HTMLSlotElement;
@@ -24,7 +24,7 @@ describe('moni-icon', () => {
 		expect(assigned.join('')).toContain('add');
 	});
 
-	it('renders slot fallback when no name is set', async () => {
+	it('renderiza el respaldo del slot (fallback) cuando no se establece nombre', async () => {
 		el.name = '';
 		el.textContent = 'FALLBACK';
 		await el.updateComplete;
@@ -35,35 +35,35 @@ describe('moni-icon', () => {
 		expect(assigned.join('')).toContain('FALLBACK');
 	});
 
-	it('reflects the name attribute', async () => {
+	it('refleja el atributo name', async () => {
 		el.name = 'close';
 		await el.updateComplete;
 		expect(el.getAttribute('name')).toBe('close');
 	});
 
-	it('applies the filled attribute', async () => {
+	it('aplica el atributo filled', async () => {
 		el.filled = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('filled')).toBe(true);
 	});
 
-	it('reflects the size attribute', async () => {
+	it('refleja el atributo size', async () => {
 		el.size = 'large';
 		await el.updateComplete;
 		expect(el.getAttribute('size')).toBe('large');
 	});
 
-	it('inherits color from its parent (host color: inherit)', async () => {
+	it('hereda el color de su padre (host color: inherit)', async () => {
 		const parent = document.createElement('div');
 		parent.style.color = 'rgb(255, 0, 128)';
 		parent.appendChild(el);
 		document.body.appendChild(parent);
 		await el.updateComplete;
-		// The host declaration `color: inherit` should be present in the
-		// shadow stylesheet so the Material Symbols glyph takes the parent
-		// text color. jsdom does not fully resolve custom-property-driven
-		// styles, so we just assert that the element renders inside the
-		// colored wrapper without throwing.
+		// La declaración del host color: inherit debería estar presente en la
+		// hoja de estilo shadow para que el glifo de Material Symbols tome el color
+		// de texto del padre. jsdom no resuelve completamente los estilos dirigidos
+		// por propiedades personalizadas, así que solo afirmamos que el elemento se
+		// renderiza dentro del contenedor coloreado sin lanzar errores.
 		expect(parent.contains(el)).toBe(true);
 		parent.remove();
 	});

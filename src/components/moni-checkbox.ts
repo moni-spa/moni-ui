@@ -10,84 +10,93 @@ import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { live } from 'lit/directives/live.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
+import { emitMoniEvent } from '../utils/event-emitter.js';
 
 /**
- * Material Design 3 Checkbox component.
+ * Componente Material Design 3 Checkbox.
  *
- * Checkboxes allow users to select one or more items from a set, or toggle
- * a single binary option. They are visual-only shells — the consumer is
- * responsible for wiring up form submission and validation logic.
+ * Los checkboxes permiten a los usuarios seleccionar uno o más elementos de un conjunto, o alternar
+ * una sola opción binaria. Son envolturas solo visuales — el consumidor es
+ * responsable de conectar la lógica de envío y validación del formulario.
  *
- * **Visual architecture (BeerCSS pattern):**
- * The native `<input type="checkbox">` occupies real layout space (16×16 minimum)
- * but is visually hidden via `opacity: 0`. A `<span>` sibling rendered after
- * the input holds two pseudo-elements:
- * - `::before` — the visible checkbox icon (Material Symbols ligature).
- * - `::after`  — the hover/focus state layer ripple ring.
+ * **Arquitectura visual (Patrón BeerCSS):**
+ * El `<input type="checkbox">` nativo ocupa espacio real en el diseño (mínimo 16×16)
+ * pero está oculto visualmente con `opacity: 0`. Un hermano `<span>` renderizado después
+ * del input contiene dos pseudo-elementos:
+ * - `::before` — el icono visible del checkbox (ligadura de Material Symbols).
+ * - `::after`  — el anillo de onda (ripple) de la capa de estado hover/focus.
  *
- * The `::before` content switches between:
- * - `'check_box_outline_blank'` (unchecked)
- * - `'check_box'` (checked)
- * - `'indeterminate_check_box'` (native indeterminate state)
+ * El contenido de `::before` cambia entre:
+ * - `'check_box_outline_blank'` (desmarcado)
+ * - `'check_box'` (marcado)
+ * - `'indeterminate_check_box'` (estado nativo indeterminado)
  *
- * **Form integration:**
- * Setting `name` and `value` passes them to the native `<input>` element,
- * enabling participation in HTML form submissions.
+ * **Integración de formulario:**
+ * Establecer `name` y `value` los pasa al elemento `<input>` nativo,
+ * permitiendo la participación en envíos de formularios HTML.
  *
- * @fires change - Bubbles and is composed. Fired when the checkbox is toggled.
- *                 The consumer can read `element.checked` for the new state.
+ * @fires moni-change - Burbujea y está compuesto. Se dispara cuando se alterna el checkbox.
+ *                      El consumidor puede leer `element.checked` para el nuevo estado.
  *
  * @example
  * ```html
- * <moni-checkbox label="Accept terms" name="terms" value="yes"></moni-checkbox>
+ * <moni-checkbox label="Aceptar términos" name="terms" value="yes"></moni-checkbox>
  *
  * <script>
- *   document.querySelector('moni-checkbox').addEventListener('change', (e) => {
+ *   document.querySelector('moni-checkbox').addEventListener('moni-change', (e) => {
  *     console.log('checked:', e.target.checked);
  *   });
  * </script>
  * ```
  *
- * @csspart checkbox - The outer `<label>` element.
+ * @csspart checkbox - El elemento exterior `<label>`.
  */
 @customElement('moni-checkbox')
 export class MoniCheckbox extends MoniElement {
+	static formAssociated = true;
+	private _internals: ElementInternals;
+
+	constructor() {
+		super();
+		this._internals = this.attachInternals();
+	}
+
 	/**
-	 * Text label displayed to the right of the checkbox icon.
+	 * Texto de la etiqueta mostrado a la derecha del icono del checkbox.
 	 *
-	 * When non-empty, the label is rendered as a text node inside the `<span>`.
-	 * When empty, the default slot is rendered instead, allowing slotted HTML.
+	 * Cuando no está vacío, la etiqueta se renderiza como un nodo de texto dentro del `<span>`.
+	 * Cuando está vacío, el slot por defecto se renderiza en su lugar, permitiendo HTML en el slot.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) label = '';
 
 	/**
-	 * Whether the checkbox is currently checked.
+	 * Si el checkbox está actualmente marcado.
 	 *
-	 * Reflected as an attribute so CSS attribute selectors and external state
-	 * readers can observe the checked state without accessing the JS property.
-	 * Synced to the native input via `updated()`.
+	 * Reflejado como un atributo para que los selectores de atributos CSS y los lectores
+	 * de estado externos puedan observar el estado marcado sin acceder a la propiedad JS.
+	 * Sincronizado con el input nativo a través de `updated()`.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) checked = false;
 
 	/**
-	 * When `true`, the native input is disabled: the checkbox is not interactive
-	 * and renders at 50% opacity.
+	 * Cuando es `true`, el input nativo se deshabilita: el checkbox no es interactivo
+	 * y se renderiza con opacidad del 50%.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
 	/**
-	 * Visual size of the checkbox icon.
+	 * Tamaño visual del icono del checkbox.
 	 *
-	 * Maps to the `--_size` custom property which controls both the invisible
-	 * input's hit area and the visible `::before` icon size.
+	 * Se mapea a la propiedad personalizada `--_size` que controla tanto el área de impacto
+	 * del input invisible como el tamaño del icono visible `::before`.
 	 *
-	 * | Value      | `--_size` |
+	 * | Valor      | `--_size` |
 	 * |------------|-----------|
 	 * | `'small'`  | 1rem      |
 	 * | `'medium'` | 1.5rem    |
@@ -100,37 +109,40 @@ export class MoniCheckbox extends MoniElement {
 	size: 'small' | 'medium' | 'large' | 'extra' = 'medium';
 
 	/**
-	 * Forwarded to the native `<input name>` attribute.
-	 * Required for grouping checkboxes within a form.
+	 * Reenviado al atributo `<input name>` nativo.
+	 * Requerido para agrupar checkboxes dentro de un formulario.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) name = '';
 
 	/**
-	 * Forwarded to the native `<input value>` attribute.
-	 * The value submitted in a form when this checkbox is checked.
+	 * Reenviado al atributo `<input value>` nativo.
+	 * El valor enviado en un formulario cuando este checkbox está marcado.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) value = '';
 
-	/** Direct reference to the native input element for programmatic access. */
+	/** Referencia directa al elemento input nativo para acceso programático. */
 	@query('input') private _input!: HTMLInputElement;
 
 	/**
-	 * Syncs `checked` and `disabled` back to the native input element after
-	 * Lit's render cycle, ensuring the DOM stays in sync with component state.
+	 * Sincroniza `checked` y `disabled` de vuelta al elemento input nativo después
+	 * del ciclo de renderizado de Lit, asegurando que el DOM se mantenga sincronizado con el estado del componente.
 	 *
-	 * This is necessary because Lit's `.property=${value}` binding updates the
-	 * DOM property, but the `live()` directive and direct property assignment
-	 * are more reliable for boolean inputs across browser implementations.
+	 * Esto es necesario porque el enlace `.property=${value}` de Lit actualiza la
+	 * propiedad DOM, pero la directiva `live()` y la asignación directa de propiedad
+	 * son más fiables para entradas booleanas en diferentes implementaciones de navegadores.
 	 *
-	 * @param changed - Map of changed property names to their previous values.
+	 * @param changed - Mapa de nombres de propiedades cambiadas a sus valores anteriores.
 	 */
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
-			if (changed.has('checked')) this._input.checked = this.checked;
+			if (changed.has('checked')) {
+				this._input.checked = this.checked;
+				this._internals.setFormValue(this.checked ? (this.value || 'on') : null);
+			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 		}
 	}
@@ -264,7 +276,9 @@ export class MoniCheckbox extends MoniElement {
 	 */
 	private _onChange(e: Event) {
 		this.checked = (e.target as HTMLInputElement).checked;
-		this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+		emitMoniEvent(this, 'moni-change', {
+			detail: { value: this.checked, originalEvent: e }
+		});
 	}
 
 	/**

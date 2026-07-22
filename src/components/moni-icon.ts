@@ -10,66 +10,66 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only icon component using Material Symbols variable font.
+ * Componente de icono solo visual que utiliza la fuente variable Material Symbols.
  *
- * Renders a Material Symbols glyph by its ligature name. The icon font
- * must be loaded globally by the host document — it is not bundled with
- * the component. Add the font via the `@moni-labs/moni-ui/styles` stylesheet
- * or by including the Google Fonts CDN link.
+ * Renderiza un glifo de Material Symbols por el nombre de su ligadura. La fuente de iconos
+ * debe cargarse globalmente en el documento host — no viene empaquetada con
+ * el componente. Añada la fuente a través de la hoja de estilos `@moni-labs/moni-ui/styles`
+ * o incluyendo el enlace CDN de Google Fonts.
  *
- * **Font rendering:**
- * The icon uses `font-family: var(--font-icon)` which defaults to
- * `'Material Symbols Rounded'`. Override `--font-icon-override` in the
- * host document's `:root` to switch to a different icon set variant
- * (e.g. `'Material Symbols Outlined'` or `'Material Symbols Sharp'`).
+ * **Renderizado de fuentes:**
+ * El icono usa `font-family: var(--font-icon)` que por defecto es
+ * `'Material Symbols Rounded'`. Sobrescriba `--font-icon-override` en el
+ * `:root` del documento host para cambiar a una variante diferente del conjunto de iconos
+ * (ej. `'Material Symbols Outlined'` o `'Material Symbols Sharp'`).
  *
- * **Variable font settings:**
- * The default `font-variation-settings` is `'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24`.
- * Setting the `filled` attribute switches to `'FILL' 1` for the solid icon variant.
+ * **Ajustes de fuente variable:**
+ * El valor por defecto de `font-variation-settings` es `'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24`.
+ * Establecer el atributo `filled` cambia a `'FILL' 1` para la variante de icono sólido.
  *
- * **Color inheritance:**
- * The icon always inherits color from its parent via `color: inherit`, making it
- * automatically adapt to button variants, chip selected states, list item active
- * states, and other color-context containers.
+ * **Herencia de color:**
+ * El icono siempre hereda el color de su padre a través de `color: inherit`, haciéndolo
+ * adaptarse automáticamente a las variantes de botones, estados seleccionados de chips, estados
+ * activos de elementos de lista y otros contenedores de contexto de color.
  *
  * @example
  * ```html
- * <!-- Basic icon -->
+ * <!-- Icono básico -->
  * <moni-icon name="home"></moni-icon>
  *
- * <!-- Filled large icon -->
+ * <!-- Icono grande rellenado -->
  * <moni-icon name="favorite" size="large" filled></moni-icon>
  *
- * <!-- Custom SVG override via slot -->
+ * <!-- Sobrescritura de SVG personalizado a través de slot -->
  * <moni-icon>
  *   <svg slot="default" viewBox="0 0 24 24">...</svg>
  * </moni-icon>
  * ```
  *
- * @slot default - Fallback content when `name` is empty. Accepts `<svg>` or `<img>`
- *                 elements which are sized to 100% of the icon box.
+ * @slot default - Contenido de respaldo cuando `name` está vacío. Acepta elementos `<svg>` o `<img>`
+ *                 que se dimensionan al 100% de la caja del icono.
  *
- * @cssproperty --font-icon-override - Overrides the icon font family at the
- *                                     document level. Set on `:root`.
+ * @cssproperty --font-icon-override - Sobrescribe la familia de fuentes de iconos a
+ *                                     nivel del documento. Establecer en `:root`.
  */
 @customElement('moni-icon')
 export class MoniIcon extends MoniElement {
 	/**
-	 * Material Symbols ligature name for the icon to render.
+	 * Nombre de la ligadura de Material Symbols para el icono a renderizar.
 	 *
-	 * Use the name exactly as shown on https://fonts.google.com/icons
-	 * (e.g. `'home'`, `'settings'`, `'arrow_forward'`).
-	 * When empty, the default slot is rendered instead.
+	 * Utilice el nombre exactamente como se muestra en https://fonts.google.com/icons
+	 * (ej. `'home'`, `'settings'`, `'arrow_forward'`).
+	 * Cuando está vacío, se renderiza el slot por defecto en su lugar.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) name = '';
 
 	/**
-	 * Size of the icon bounding box.
+	 * Tamaño de la caja delimitadora del icono.
 	 *
-	 * Maps to the `--_size` custom property:
-	 * | Value      | Size     |
+	 * Se mapea a la propiedad personalizada `--_size`:
+	 * | Valor      | Tamaño   |
 	 * |------------|----------|
 	 * | `'tiny'`   | 1rem     |
 	 * | `'small'`  | 1.25rem  |
@@ -83,12 +83,12 @@ export class MoniIcon extends MoniElement {
 	size: 'tiny' | 'small' | 'medium' | 'large' | 'extra' = 'medium';
 
 	/**
-	 * When `true`, switches to the filled variant of the icon by setting
+	 * Cuando es `true`, cambia a la variante rellenada (filled) del icono estableciendo
 	 * `font-variation-settings: 'FILL' 1`.
 	 *
-	 * This works only with variable icon fonts that include the `FILL` axis
-	 * (all Material Symbols variants do). It has no effect if a different
-	 * icon font is loaded that does not support `FILL`.
+	 * Esto funciona solo con fuentes de iconos variables que incluyen el eje `FILL`
+	 * (todas las variantes de Material Symbols lo hacen). No tiene efecto si se carga
+	 * una fuente de iconos diferente que no soporte `FILL`.
 	 *
 	 * @default false
 	 */
@@ -118,9 +118,9 @@ export class MoniIcon extends MoniElement {
 				line-height: 1;
 				inline-size: var(--_size);
 				block-size: var(--_size);
-				/* Explicit inherit so the icon glyph picks up color from
-				   whatever consumer wraps it (button variants, chip selected
-				   state, list-item active, etc.). */
+				/* Herencia explícita para que el glifo del icono tome el color de
+				   cualquier consumidor que lo envuelva (variantes de botones, estado
+				   seleccionado de chip, activo de list-item, etc.). */
 				color: inherit;
 			}
 
@@ -153,6 +153,11 @@ export class MoniIcon extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el ícono utilizando la fuente de variables Material Symbols.
+	 * Si no se provee un `name`, el `<slot>` actúa como fallback permitiendo
+	 * inyectar un SVG personalizado directamente.
+	 */
 	override render() {
 		return html`<slot>${this.name}</slot>`;
 	}

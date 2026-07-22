@@ -29,12 +29,12 @@ describe('moni-step vertical connectors (P2.2)', () => {
 		stepper.remove();
 	});
 
-	it('vertical orientation propagates to host', async () => {
+	it('la orientación vertical se propaga al host', async () => {
 		await stepper.updateComplete;
 		expect(stepper.getAttribute('orientation')).toBe('vertical');
 	});
 
-	it('three vertical steps render in document order', async () => {
+	it('tres pasos verticales se renderizan en orden de documento', async () => {
 		await stepper.updateComplete;
 		await stepA.updateComplete;
 		const steps = Array.from(stepper.querySelectorAll('moni-step'));
@@ -44,13 +44,13 @@ describe('moni-step vertical connectors (P2.2)', () => {
 		expect(steps[2]).toBe(stepC);
 	});
 
-	it('the last step has no connector (only :not(:last-child) have ::after)', async () => {
+	it('el último paso no tiene conector (solo :not(:last-child) tienen ::after)', async () => {
 		await stepper.updateComplete;
 		await stepC.updateComplete;
-		// The host :host(:not(:last-child))::after selector only applies
-		// to non-last steps. The last step should not have a visible connector
-		// pseudo-element. We can't easily read ::after in jsdom but we verify
-		// the last step exists and renders.
+		// El selector :host(:not(:last-child))::after del host solo se aplica
+		// a los pasos que no son el último. El último paso no debería tener un
+		// pseudo-elemento conector visible. No podemos leer fácilmente ::after en jsdom
+		// pero verificamos que el último paso exista y se renderice.
 		const lastDot = stepC.shadowRoot?.querySelector('.dot');
 		expect(lastDot).toBeTruthy();
 	});

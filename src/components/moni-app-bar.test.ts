@@ -14,14 +14,14 @@ describe('moni-app-bar (P4.5 — recreated)', () => {
 		el.remove();
 	});
 
-	it('defaults to placement=top, variant=standard, size=default', async () => {
+	it('por defecto es placement=top, variant=standard, size=default', async () => {
 		await el.updateComplete;
 		expect(el.placement).toBe('top');
 		expect(el.variant).toBe('standard');
 		expect(el.size).toBe('default');
 	});
 
-	it('reflects the title attribute', async () => {
+	it('refleja el atributo title', async () => {
 		el.title = 'My App';
 		await el.updateComplete;
 		expect(el.title).toBe('My App');
@@ -29,10 +29,10 @@ describe('moni-app-bar (P4.5 — recreated)', () => {
 		expect(title?.textContent?.trim()).toBe('My App');
 	});
 
-	it('reflects the subtitle (visible only with size=prominent)', async () => {
+	it('refleja el subtitle (visible solo con size=prominent)', async () => {
 		el.subtitle = 'Subtitle here';
 		await el.updateComplete;
-		// Without prominent size, subtitle is hidden.
+		// Sin el tamaño prominent, el subtítulo está oculto.
 		let subtitle = el.shadowRoot?.querySelector('[part="subtitle"]');
 		expect(subtitle).toBeFalsy();
 
@@ -42,25 +42,25 @@ describe('moni-app-bar (P4.5 — recreated)', () => {
 		expect(subtitle?.textContent?.trim()).toBe('Subtitle here');
 	});
 
-	it('switches between top and bottom placement', async () => {
+	it('cambia entre la ubicación top y bottom', async () => {
 		el.placement = 'bottom';
 		await el.updateComplete;
 		expect(el.getAttribute('placement')).toBe('bottom');
 	});
 
-	it('switches between standard and floating variant', async () => {
+	it('cambia entre la variante standard y floating', async () => {
 		el.variant = 'floating';
 		await el.updateComplete;
 		expect(el.getAttribute('variant')).toBe('floating');
 	});
 
-	it('reflects elevated attribute (used when content scrolls under it)', async () => {
+	it('refleja el atributo elevated (usado cuando el contenido se desplaza debajo)', async () => {
 		el.elevated = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('elevated')).toBe(true);
 	});
 
-	it('renders leading, trailing, fab, and actions slots', async () => {
+	it('renderiza los slots leading, trailing, fab y actions', async () => {
 		await el.updateComplete;
 		const leadingSlot = el.shadowRoot?.querySelector(
 			'slot[name="leading"]'
@@ -76,11 +76,11 @@ describe('moni-app-bar (P4.5 — recreated)', () => {
 		expect(fabSlot).toBeTruthy();
 	});
 
-	it('renders a default slot for extra content (e.g. tabs)', async () => {
+	it('renderiza un slot por defecto para contenido extra (ej. tabs)', async () => {
 		await el.updateComplete;
 		const defaultSlot = el.shadowRoot?.querySelector(
 			'slot:not([name])'
 		) as HTMLSlotElement | null;
-		expect(defaultSlot).toBeFalsy(); // No default slot currently
+		expect(defaultSlot).toBeFalsy(); // Actualmente no hay slot por defecto
 	});
 });

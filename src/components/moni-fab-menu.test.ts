@@ -15,7 +15,7 @@ describe('moni-fab-menu', () => {
 		el.remove();
 	});
 
-	it('renders a .fab-menu and a <moni-fab> trigger', async () => {
+	it('renderiza un .fab-menu y un <moni-fab> como activador', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('.fab-menu');
 		const trigger = el.shadowRoot?.querySelector('moni-fab');
@@ -23,7 +23,7 @@ describe('moni-fab-menu', () => {
 		expect(trigger).toBeTruthy();
 	});
 
-	it('passes icon, size, color, shape, position to the trigger', async () => {
+	it('pasa icon, size, color, shape, position al activador', async () => {
 		el.icon = 'menu';
 		el.size = 'large';
 		el.color = 'secondary';
@@ -36,7 +36,7 @@ describe('moni-fab-menu', () => {
 		expect(trigger?.getAttribute('shape')).toBe('circle');
 	});
 
-	it('reflects the open attribute', async () => {
+	it('refleja el atributo open', async () => {
 		el.open = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('open')).toBe(true);
@@ -46,13 +46,13 @@ describe('moni-fab-menu', () => {
 		expect(el.hasAttribute('open')).toBe(false);
 	});
 
-	it('reflects the direction attribute', async () => {
+	it('refleja el atributo direction', async () => {
 		el.direction = 'down';
 		await el.updateComplete;
 		expect(el.getAttribute('direction')).toBe('down');
 	});
 
-	it('toggles open when the trigger is clicked', async () => {
+	it('cambia el estado open cuando se hace clic en el activador', async () => {
 		await el.updateComplete;
 		expect(el.open).toBe(false);
 
@@ -73,13 +73,13 @@ describe('moni-fab-menu', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('menu has role="menu" for screen reader semantics', async () => {
+	it('el menú tiene role="menu" para la semántica del lector de pantalla', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('.fab-menu');
 		expect(menu?.getAttribute('role')).toBe('menu');
 	});
 
-	it('Escape key closes an open menu', async () => {
+	it('la tecla Escape cierra un menú abierto', async () => {
 		el.open = true;
 		await el.updateComplete;
 		expect(el.open).toBe(true);
@@ -89,7 +89,7 @@ describe('moni-fab-menu', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('Escape on a closed menu is a no-op', async () => {
+	it('presionar Escape en un menú cerrado no hace nada', async () => {
 		await el.updateComplete;
 		expect(el.open).toBe(false);
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
@@ -97,17 +97,17 @@ describe('moni-fab-menu', () => {
 		expect(el.open).toBe(false);
 	});
 
-	it('click outside the menu closes it', async () => {
+	it('hacer clic fuera del menú lo cierra', async () => {
 		el.open = true;
 		await el.updateComplete;
 
-		// Dispatch a click on the document body (outside the menu).
+		// Despachar un clic en el body del documento (fuera del menú).
 		document.body.dispatchEvent(new MouseEvent('click', { bubbles: true }));
 		await el.updateComplete;
 		expect(el.open).toBe(false);
 	});
 
-	it('click inside the menu does not close it', async () => {
+	it('hacer clic dentro del menú no lo cierra', async () => {
 		el.open = true;
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('.fab-menu') as HTMLElement;

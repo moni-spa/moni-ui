@@ -10,83 +10,83 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Visual-only ripple decoration component.
+ * Componente de decoración de onda (ripple) puramente visual.
  *
- * Provides a pointer-origin ripple animation — the expanding circle starts
- * at the exact pointer-down coordinates rather than the element's center.
- * This is the full-fidelity M3 ripple; for a simpler CSS-only center-ripple,
- * use the `interactionStyles` `.interactive::after` pseudo-element instead.
+ * Proporciona una animación de onda con origen en el puntero: el círculo expansivo comienza
+ * en las coordenadas exactas donde se pulsó (pointer-down) en lugar de en el centro del elemento.
+ * Esta es la onda M3 de alta fidelidad; para una onda central más simple solo con CSS,
+ * usa el pseudo-elemento `.interactive::after` de `interactionStyles` en su lugar.
  *
- * **Usage:**
- * Drop `<moni-ripple>` as a **child** of any interactive element. The component
- * automatically attaches a `pointerdown` listener to its `parentElement` and
- * calculates the ripple origin in percentage coordinates relative to the parent.
+ * **Uso:**
+ * Coloca `<moni-ripple>` como **hijo** de cualquier elemento interactivo. El componente
+ * adjunta automáticamente un listener de `pointerdown` a su `parentElement` y
+ * calcula el origen de la onda en coordenadas porcentuales relativas al padre.
  *
- * The parent element must NOT have `position: static` (the ripple applies
- * `position: relative` automatically in `connectedCallback`).
+ * El elemento padre NO debe tener `position: static` (la onda aplica
+ * `position: relative` automáticamente en `connectedCallback`).
  *
- * **Timing model:**
- * On `pointerdown`:
- * 1. `active = false` is set (cancels any in-progress ripple).
- * 2. A `requestAnimationFrame` tick ensures the browser has processed the reset.
- * 3. `active = true` triggers the CSS scale animation.
- * 4. A `setTimeout` of `duration` ms (based on `speed`) resets `active = false`.
+ * **Modelo de tiempo:**
+ * En `pointerdown`:
+ * 1. Se establece `active = false` (cancela cualquier onda en progreso).
+ * 2. Un tick de `requestAnimationFrame` asegura que el navegador haya procesado el reinicio.
+ * 3. `active = true` activa la animación de escala CSS.
+ * 4. Un `setTimeout` de duración `duration` ms (basado en `speed`) reinicia `active = false`.
  *
- * The duration matches the CSS transition duration so the opacity fade-out
- * completes before `active` is cleared.
+ * La duración coincide con la duración de la transición CSS para que el desvanecimiento de la opacidad
+ * se complete antes de que se limpie `active`.
  *
- * **Cleanup:**
- * `disconnectedCallback` removes the `pointerdown` listener and clears any
- * pending timeout. Always call `super.disconnectedCallback()` if subclassing.
+ * **Limpieza (Cleanup):**
+ * `disconnectedCallback` elimina el listener de `pointerdown` y borra cualquier
+ * tiempo de espera (timeout) pendiente. Llama siempre a `super.disconnectedCallback()` si usas subclases.
  *
  * @example
  * ```html
- * <!-- Ripple on a custom element -->
+ * <!-- Onda en un elemento personalizado -->
  * <div class="my-button" style="position: relative; overflow: hidden;">
- *   Click me
+ *   Haz clic
  *   <moni-ripple color="primary"></moni-ripple>
  * </div>
  * ```
  *
- * @csspart ripple - The inner `<span>` that performs the scale animation.
+ * @csspart ripple - El `<span>` interno que realiza la animación de escala.
  */
 @customElement('moni-ripple')
 export class MoniRipple extends MoniElement {
 	/**
-	 * Horizontal origin of the ripple as a percentage of the parent's width.
+	 * Origen horizontal de la onda como porcentaje del ancho del padre.
 	 *
-	 * Set automatically by `_onPointerDown` based on the pointer coordinates.
-	 * Can be set manually to trigger a ripple at a specific location.
+	 * Se establece automáticamente por `_onPointerDown` basándose en las coordenadas del puntero.
+	 * Se puede configurar manualmente para activar una onda en una ubicación específica.
 	 *
 	 * @default 50
 	 */
 	@property({ type: Number, reflect: true }) x = 50;
 
 	/**
-	 * Vertical origin of the ripple as a percentage of the parent's height.
+	 * Origen vertical de la onda como porcentaje de la altura del padre.
 	 *
-	 * Set automatically by `_onPointerDown` based on the pointer coordinates.
+	 * Se establece automáticamente por `_onPointerDown` basándose en las coordenadas del puntero.
 	 *
 	 * @default 50
 	 */
 	@property({ type: Number, reflect: true }) y = 50;
 
 	/**
-	 * When `true`, the ripple is visible and animating.
+	 * Cuando es `true`, la onda es visible y se está animando.
 	 *
-	 * Toggled automatically by `_onPointerDown`. Can be set manually for
-	 * programmatically-triggered ripple effects.
+	 * Alternado automáticamente por `_onPointerDown`. Se puede configurar manualmente para
+	 * efectos de onda disparados programáticamente.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) active = false;
 
 	/**
-	 * Animation speed of the ripple expand-and-fade sequence.
+	 * Velocidad de animación de la secuencia de expansión y desvanecimiento de la onda.
 	 *
-	 * Maps to the `--_dur` CSS custom property:
+	 * Se asigna a la propiedad personalizada CSS `--_dur`:
 	 * - `'fast'`   — 300ms
-	 * - `'normal'` — 600ms (default)
+	 * - `'normal'` — 600ms (por defecto)
 	 * - `'slow'`   — 1200ms
 	 *
 	 * @default 'normal'
@@ -95,14 +95,14 @@ export class MoniRipple extends MoniElement {
 	speed: 'fast' | 'normal' | 'slow' = 'normal';
 
 	/**
-	 * Color token for the ripple overlay.
+	 * Token de color para la superposición de la onda.
 	 *
-	 * Sets the `color` CSS property on `:host`, which the `.ripple` span
-	 * inherits via `background-color: currentColor`.
+	 * Establece la propiedad CSS `color` en `:host`, que el span `.ripple`
+	 * hereda a través de `background-color: currentColor`.
 	 *
-	 * - `'primary'`   — `--primary` (default)
+	 * - `'primary'`   — `--primary` (por defecto)
 	 * - `'secondary'` — `--secondary`
-	 * - `'surface'`   — `--surface-variant` (subtle, for surface containers)
+	 * - `'surface'`   — `--surface-variant` (sutil, para contenedores de superficie)
 	 *
 	 * @default 'primary'
 	 */
@@ -110,25 +110,25 @@ export class MoniRipple extends MoniElement {
 	color: 'primary' | 'secondary' | 'surface' = 'primary';
 
 	/**
-	 * Reference to the parent element that the ripple is anchored to.
-	 * Populated in `connectedCallback`, cleared in `disconnectedCallback`.
+	 * Referencia al elemento padre al que está anclada la onda.
+	 * Poblado en `connectedCallback`, borrado en `disconnectedCallback`.
 	 */
 	private _target: HTMLElement | null = null;
 
 	/**
-	 * ID of the pending `setTimeout` that clears `active` after the animation.
-	 * Stored so it can be cancelled if a second pointer event fires before the
-	 * first ripple finishes (rapid double-tap prevention).
+	 * ID del `setTimeout` pendiente que borra `active` después de la animación.
+	 * Almacenado para que pueda cancelarse si se dispara un segundo evento de puntero antes
+	 * de que termine la primera onda (prevención de doble toque rápido).
 	 */
 	private _timeoutId: any = null;
 
 	/**
-	 * Attaches the ripple to its parent element.
+	 * Adjunta la onda a su elemento padre.
 	 *
-	 * - Stores a reference to `parentElement` for pointer event listening.
-	 * - Ensures the parent has `position: relative` so the ripple's `position: absolute`
-	 *   stays within bounds.
-	 * - Registers the `_onPointerDown` event listener.
+	 * - Almacena una referencia a `parentElement` para la escucha de eventos del puntero.
+	 * - Asegura que el padre tenga `position: relative` para que el `position: absolute`
+	 *   de la onda se mantenga dentro de los límites.
+	 * - Registra el listener de eventos `_onPointerDown`.
 	 */
 	override connectedCallback() {
 		super.connectedCallback();
@@ -143,10 +143,10 @@ export class MoniRipple extends MoniElement {
 	}
 
 	/**
-	 * Detaches the ripple from its parent element.
+	 * Desvincula la onda de su elemento padre.
 	 *
-	 * Removes the `pointerdown` listener and clears any pending timeout to
-	 * prevent the `active` flag from being set after the element is removed.
+	 * Elimina el listener de `pointerdown` y borra cualquier timeout pendiente para
+	 * evitar que la bandera `active` se establezca después de que se elimine el elemento.
 	 */
 	override disconnectedCallback() {
 		if (this._target) {
@@ -159,13 +159,13 @@ export class MoniRipple extends MoniElement {
 	}
 
 	/**
-	 * Handles pointer-down events on the parent element.
+	 * Maneja los eventos de puntero (pointer-down) en el elemento padre.
 	 *
-	 * Computes the ripple origin as a percentage of the parent's bounding rect,
-	 * cancels any in-progress ripple, then triggers a new one after one
-	 * animation frame to guarantee the CSS transition fires from the new position.
+	 * Calcula el origen de la onda como un porcentaje del rectángulo delimitador (bounding rect) del padre,
+	 * cancela cualquier onda en curso y luego activa una nueva después de un
+	 * frame de animación para garantizar que la transición CSS se dispare desde la nueva posición.
 	 *
-	 * @param e - The `PointerEvent` from the parent's `pointerdown` listener.
+	 * @param e - El `PointerEvent` del listener `pointerdown` del padre.
 	 */
 	private _onPointerDown = (e: PointerEvent) => {
 		if (!this._target) return;
@@ -245,6 +245,21 @@ export class MoniRipple extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el elemento `<span>` de la onda con las coordenadas de origen actuales.
+	 *
+	 * Este método de renderizado intencionalmente hace muy poco: la onda es fundamentalmente
+	 * una animación CSS (`scale`, `opacity`) impulsada por la clase `.active` que es
+	 * alternada por la API de activación de JavaScript (`MoniRipple.activate()`).
+	 *
+	 * `--_x` y `--_y` inyectan el origen del toque/clic como valores porcentuales:
+	 * - `x=0%, y=0%` — la onda se origina desde la esquina superior izquierda.
+	 * - `x=50%, y=50%` — origen central (por defecto para activación por teclado).
+	 * - `x=clientX%, y=clientY%` — onda con origen en el puntero para una sensación táctil natural.
+	 *
+	 * La clase CSS `.ripple` maneja la animación de expansión `scale(0)` → `scale(1)`
+	 * y el desvanecimiento `opacity 1` → `opacity 0` a través de transiciones CSS en `.active`.
+	 */
 	override render() {
 		return html`<span
 			class="ripple"

@@ -44,7 +44,7 @@ type Placement =
 	| 'viewport-bottom-right';
 
 /**
- * Internal coordinate and styling state of the morph target before animation.
+ * Estado interno de coordenadas y estilos del objetivo de morphing antes de la animación.
  *
  * @internal
  */
@@ -56,7 +56,7 @@ interface TargetState {
 }
 
 /**
- * References to the internal icon and text elements animated during the morph.
+ * Referencias a los elementos internos de icono y texto animados durante el morphing.
  *
  * @internal
  */
@@ -66,49 +66,49 @@ interface MorphElements {
 }
 
 /**
- * Material Design 3 Morph Modal component.
+ * Componente Material Design 3 Morph Modal.
  *
- * A highly interactive dialog that uses GSAP FLIP (First, Last, Invert, Play)
- * animations to seamlessly "morph" any clicked element on the page into a full
- * modal surface, and morph it back when closed.
+ * Un diálogo altamente interactivo que usa animaciones GSAP FLIP (First, Last, Invert, Play)
+ * para "transformar" (morph) sin problemas cualquier elemento clickeado en la página en una superficie
+ * modal completa, y transformarlo de vuelta cuando se cierra.
  *
- * **Motion choreography:**
- * This component implements the complex M3 container transform pattern. When
- * triggered, the source element visually expands into the modal. The modal's
- * background color, border radius, and typography fade and cross-dissolve
- * perfectly with the origin element.
+ * **Coreografía de movimiento:**
+ * Este componente implementa el patrón complejo de transformación de contenedor de M3. Cuando
+ * se activa, el elemento origen se expande visualmente hacia el modal. El color de fondo,
+ * el radio del borde y la tipografía del modal se desvanecen y se funden
+ * perfectamente con el elemento de origen.
  *
- * **Triggering mechanism:**
- * Consumers must provide the `triggerEvent` property containing the original
- * pointer/click `Event` that initiated the open action. The component extracts
- * the `event.target` (or uses `clientX/Y` as a fallback) to determine the exact
- * origin coordinates for the GSAP FLIP animation.
+ * **Mecanismo de activación:**
+ * Los consumidores deben proporcionar la propiedad `triggerEvent` que contenga el `Event`
+ * de puntero/clic original que inició la acción de apertura. El componente extrae
+ * el `event.target` (o usa `clientX/Y` como respaldo) para determinar las coordenadas
+ * de origen exactas para la animación GSAP FLIP.
  *
- * **Dialog behavior:**
- * Internally, it uses the native `<dialog>` element. It traps focus, supports
- * `Escape` to close, and handles scrim/backdrop clicks (which trigger the
- * reverse morph animation before actually closing the native dialog).
+ * **Comportamiento del diálogo:**
+ * Internamente, utiliza el elemento nativo `<dialog>`. Atrapa el foco, soporta
+ * `Escape` para cerrar, y maneja clics en el fondo/scrim (que activan la
+ * animación de morphing inverso antes de cerrar realmente el diálogo nativo).
  *
  * @example
  * ```html
- * <moni-morph-modal id="myModal" title="Details">
- *   <p>This modal morphed from the button you just clicked.</p>
+ * <moni-morph-modal id="myModal" title="Detalles">
+ *   <p>Este modal se transformó desde el botón que acabas de clickear.</p>
  * </moni-morph-modal>
  *
- * <moni-button id="openBtn">Open Details</moni-button>
+ * <moni-button id="openBtn">Abrir Detalles</moni-button>
  *
  * <script>
  *   const modal = document.getElementById('myModal');
  *   document.getElementById('openBtn').addEventListener('click', (e) => {
- *     modal.triggerEvent = e; // Pass the event so it knows where to morph from
+ *     modal.triggerEvent = e; // Pasa el evento para que sepa desde dónde transformarse
  *     modal.open = true;
  *   });
  * </script>
  * ```
  *
- * @slot default - The main body content of the modal.
- * @slot header  - Custom header content (overrides `title` attribute).
- * @slot actions - Action buttons displayed at the bottom right.
+ * @slot default - El contenido del cuerpo principal del modal.
+ * @slot header  - Contenido de encabezado personalizado (sobrescribe el atributo `title`).
+ * @slot actions - Botones de acción mostrados en la parte inferior derecha.
  */
 
 const litBool = {
@@ -118,30 +118,122 @@ const litBool = {
 
 @customElement('moni-morph-modal')
 export class MoniMorphModal extends MoniElement {
+	/**
+	 * Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button').
+	 * Si se omite, el modal aún puede activarse programáticamente estableciendo `open = true`.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) target = '';
+
+	/**
+	 * Controla el estado abierto/cerrado del modal.
+	 * Puede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, converter: litBool }) open = false;
+
+	/**
+	 * Si es true, renderiza un fondo y atrapa el foco, actuando como un verdadero diálogo modal.
+	 * @type {boolean}
+	 * @default true
+	 */
 	@property({ type: Boolean, reflect: true, converter: litBool }) modal = true;
+
+	/**
+	 * Posición preferida del modal en relación con la ventana gráfica.
+	 * @type {Placement}
+	 * @default 'center'
+	 */
 	@property({ reflect: true }) placement: Placement = 'center';
+
+	/**
+	 * El ancho del modal cuando está completamente expandido.
+	 * @type {string}
+	 * @default '22rem'
+	 */
 	@property({ reflect: true, attribute: 'expanded-width' }) expandedWidth =
 		'22rem';
+
+	/**
+	 * La altura del modal cuando está completamente expandido.
+	 * @type {string}
+	 * @default '18rem'
+	 */
 	@property({ reflect: true, attribute: 'expanded-height' }) expandedHeight =
 		'18rem';
+
+	/**
+	 * Si es true, hacer clic fuera del modal lo cerrará.
+	 * @type {boolean}
+	 * @default true
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'close-on-click-outside', converter: litBool })
 	closeOnClickOutside = true;
+
+	/**
+	 * Si es true, presionar la tecla Escape cerrará el modal.
+	 * @type {boolean}
+	 * @default true
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'close-on-esc', converter: litBool })
 	closeOnEsc = true;
+
+	/**
+	 * Si es true, muestra un botón de icono de cierre por defecto en el encabezado.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'show-close-button', converter: litBool })
 	showCloseButton = false;
+
+	/**
+	 * Si es true, intenta fundir/transformar una etiqueta del disparador hacia el encabezado del modal.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'morph-label', converter: litBool })
 	morphLabel = false;
+
+	/**
+	 * Un selector CSS personalizado utilizado para encontrar el elemento de etiqueta específico dentro del target a transformar.
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'morph-label-selector' })
 	morphLabelSelector = '';
+
+	/**
+	 * Si es true, renderiza un fondo atenuado detrás del modal.
+	 * @type {boolean}
+	 * @default true
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'has-backdrop', converter: litBool })
 	hasBackdrop = true;
+
+	/**
+	 * Si es true, oculta el elemento disparador (target) mientras el modal está abierto.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'hide-target', converter: litBool })
 	hideTarget = false;
+
+	/**
+	 * Si es true, fuerza al modal a cubrir visualmente la ubicación original del target antes de expandirse.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'cover-target', converter: litBool })
 	coverTarget = false;
+
+	/**
+	 * Si es true, el modal calcula automáticamente su tamaño final basándose en el contenido interno (ignora expandedWidth y expandedHeight).
+	 * @type {boolean}
+	 */
+	@property({ type: Boolean, reflect: true, attribute: 'auto-size', converter: litBool })
+	autoSize = false;
+
+	/**
+	 * Si es true, aplica un efecto de desenfoque (blur) al contenido durante la animación de entrada y salida.
+	 * @type {boolean}
+	 */
+	@property({ type: Boolean, reflect: true, attribute: 'blur-content', converter: litBool })
+	blurContent = false;
 
 	@query('.panel') private _panel!: HTMLDivElement;
 	@query('.panel-inner') private _inner!: HTMLDivElement;
@@ -161,8 +253,20 @@ export class MoniMorphModal extends MoniElement {
 	private static _openStack: MoniMorphModal[] = [];
 	private _targetStylesCache = new Map<HTMLElement, { opacity: string; color: string }>();
 
+	/**
+	 * Handler encapsulado para el evento click en el trigger.
+	 * Dispara la animación de apertura.
+	 */
 	private _onTargetClick = () => this.show();
+	/**
+	 * Handler encapsulado para interceptar teclas a nivel global (ej: Escape).
+	 */
 	private _onDocKeydown = (e: KeyboardEvent) => this._handleDocKeydown(e);
+	/**
+	 * Handler de clics globales para detectar interacciones fuera del modal (Click outside).
+	 * Sólo cierra el modal si `closeOnClickOutside` es true y el usuario no hizo clic
+	 * dentro de las dimensiones del panel animado ni del botón original.
+	 */
 	private _onDocClick = (e: MouseEvent) => {
 		if (!this.open || !this._visible || !this.closeOnClickOutside) return;
 		if (e.composedPath().includes(this._panel)) return;
@@ -194,6 +298,12 @@ export class MoniMorphModal extends MoniElement {
 		super.disconnectedCallback();
 	}
 
+	/**
+	 * Hook del ciclo de vida reactivo (Lit).
+	 * Observa cambios asíncronos en el atributo `target` para re-bindear el disparador,
+	 * y reacciona a cambios programáticos de la propiedad `open` para ejecutar
+	 * imperativamente la animación de apertura (`show`) o cierre (`hide`).
+	 */
 	override updated(changed: Map<string, unknown>) {
 		super.updated(changed);
 		if (changed.has('target')) {
@@ -205,15 +315,21 @@ export class MoniMorphModal extends MoniElement {
 		}
 	}
 
+	/**
+	 * Busca en el DOM el elemento que dispara el modal (el trigger) basándose en la propiedad `target`.
+	 * Establece el listener de click que iniciará la animación de morphing.
+	 */
 	private _resolveTarget(): void {
 		if (!this.target) return;
 
 		const el = document.querySelector<HTMLElement>(this.target);
 		if (!el) {
-			console.warn(`[moni-morph-modal] target "${this.target}" not found`);
+			// Es normal que no se encuentre el target si está condicionado por un #if en Svelte
+			// Se intentará resolver nuevamente al llamar a show()
 			return;
 		}
 
+		// Si el target cambió dinámicamente, limpiamos el listener anterior para evitar memory leaks
 		if (this._targetEl && this._targetEl !== el) {
 			this._targetEl.removeEventListener('click', this._onTargetClick);
 		}
@@ -221,8 +337,16 @@ export class MoniMorphModal extends MoniElement {
 		this._targetEl.addEventListener('click', this._onTargetClick);
 	}
 
+	/**
+	 * Dispara la apertura del modal y coordina la animación de FLIP (First, Last, Invert, Play) / Morphing.
+	 * 1. Oculta visualmente el target original.
+	 * 2. Posiciona el modal colapsado exactamente sobre el target original (mismas dimensiones, color, y radios).
+	 * 3. Expande fluidamente el modal a sus dimensiones finales mediante transformaciones CSS.
+	 */
 	show(): void {
+		// Prevenimos ejecuciones concurrentes si ya se está animando o está visible
 		if (this._isAnimating || this._visible) return;
+		
 		if (!this._targetEl) this._resolveTarget();
 		if (!this._targetEl) {
 			console.warn('[moni-morph-modal] cannot show: target not found');
@@ -230,17 +354,23 @@ export class MoniMorphModal extends MoniElement {
 		}
 
 		this._isAnimating = true;
+		
+		// Flag interno para evitar loops infinitos en el hook `updated()`
 		this._handlingOpenChange = true;
 		this.open = true;
 		this._handlingOpenChange = false;
 
+		// Apilamos el modal globalmente para manejar correctamente el z-index en modales anidados
 		MoniMorphModal._openStack.push(this);
 		this._zIndex = 1000 + MoniMorphModal._openStack.length;
+		
+		// Aplicamos variables CSS inline para gestionar las transiciones del backdrop y el modal
 		this.style.zIndex = String(this._zIndex);
 		this.style.setProperty('--_z-index', String(this._zIndex));
 		this.style.setProperty('--_backdrop-duration', '0.38s');
 		this.style.setProperty('--_backdrop-ease', 'cubic-bezier(0.15, 0.85, 0.2, 1)');
 
+		// Fase "First": Ocultamos o cubrimos el trigger original según la configuración del desarrollador
 		this._hideTargetContent();
 
 		void this.updateComplete.then(async () => {
@@ -248,13 +378,20 @@ export class MoniMorphModal extends MoniElement {
 				this._isAnimating = false;
 				return;
 			}
+			
+			// Añadimos clase para prevenir interacciones durante la animación
 			this._panel.classList.add('is-animating');
 
+			// Esperamos un frame para asegurar que el navegador aplicó el `display: block`
+			// necesario antes de poder leer las dimensiones.
 			await new Promise((resolve) => requestAnimationFrame(resolve));
 
+			// 1. "First": Calculamos el estado visual actual del trigger
 			const targetState = this._getTargetState(this._targetEl);
 			const panel = this._panel;
 
+			// 2. "Invert": Posicionamos el modal como un clon visual exacto del trigger.
+			// Desactivamos la sombra y forzamos el color/borde para coincidir con el botón/FAB.
 			this._applyRect(panel, targetState.rect);
 			panel.style.backgroundColor = targetState.backgroundColor;
 			panel.style.color = targetState.color;
@@ -269,23 +406,35 @@ export class MoniMorphModal extends MoniElement {
 				this._backdrop.style.zIndex = String(this._zIndex - 1);
 			}
 
+			// Limpiamos elementos fantasma previos si el usuario interactuó muy rápido
 			this._cleanupMorphElements();
+			
+			// Respetamos la preferencia de sistema de animaciones reducidas por accesibilidad (a11y)
 			const prefersReducedMotion = window.matchMedia(
 				'(prefers-reduced-motion: reduce)'
 			).matches;
+			
+			// 3. Verificamos si debemos orquestar la animación compleja del label flotante cruzado
 			let shouldMorph = this._shouldMorphLabel() && !prefersReducedMotion;
 			const morphTargets: HTMLElement[] = [];
 			let source: any = null;
 			const headerWrapper = this.shadowRoot!.querySelector('.header-morph-wrapper') as HTMLElement;
 
 			if (shouldMorph) {
+				// Preparamos la estructura del header para que el texto real entre con un fade in
 				this._animateLabelOpen();
+				
+				// Buscamos el ícono y el texto dentro del botón de origen (trigger)
 				source = this._resolveMorphSource();
+				
+				// Si existe un nodo de texto, creamos un elemento flotante (fantasma) en el modal
 				if (source.text) {
 					const el = this._createMorphText(source.text.content, source.text.sourceEl);
 					this._positionElement(el, source.text.rect);
 					morphTargets.push(el);
 				}
+				
+				// Hacemos lo mismo si el botón original contenía un icono
 				if (source.icon) {
 					const el = this._createMorphIcon(source.icon.element);
 					this._positionElement(el, source.icon.rect);
@@ -295,9 +444,11 @@ export class MoniMorphModal extends MoniElement {
 			}
 
 			if (shouldMorph && headerWrapper) {
+				// Ocultamos temporalmente el contenido final del header mientras animamos los elementos flotantes
 				headerWrapper.style.opacity = '0';
 			}
 
+			// Capturamos el estado "First" del panel (tamaño pequeño de botón) y de los elementos flotantes
 			const state = Flip.getState(panel, {
 				props: 'backgroundColor,borderRadius,color,boxShadow'
 			});
@@ -305,21 +456,53 @@ export class MoniMorphModal extends MoniElement {
 				props: 'color,fontSize,fontWeight,lineHeight'
 			});
 
-			const finalRect = this._computeFinalRect(targetState.rect);
+			// Fase "Last": Calculamos las dimensiones expandidas del modal basándonos en la configuración
+			let naturalSize: { width: number; height: number } | undefined;
+			if (this.autoSize) {
+				const prevW = panel.style.getPropertyValue('--_panel-width');
+				const prevH = panel.style.getPropertyValue('--_panel-height');
+				const prevPanelW = panel.style.width;
+				const prevPanelH = panel.style.height;
+				
+				panel.style.width = 'auto';
+				panel.style.height = 'auto';
+				panel.style.setProperty('--_panel-width', 'max-content');
+				panel.style.setProperty('--_panel-height', 'max-content');
+				
+				const bodyEl = this.shadowRoot!.querySelector('.body') as HTMLElement;
+				const prevOverflow = bodyEl ? bodyEl.style.overflow : '';
+				if (bodyEl) bodyEl.style.overflow = 'visible';
+
+				// Forzamos al panel-inner a expandirse para medir su contenido real
+				naturalSize = { width: this._inner.scrollWidth, height: this._inner.scrollHeight };
+				
+				panel.style.setProperty('--_panel-width', prevW);
+				panel.style.setProperty('--_panel-height', prevH);
+				panel.style.width = prevPanelW;
+				panel.style.height = prevPanelH;
+				
+				if (bodyEl) bodyEl.style.overflow = prevOverflow;
+			}
+
+			const finalRect = this._computeFinalRect(targetState.rect, naturalSize);
 			panel.style.setProperty('--_panel-width', `${finalRect.width}px`);
 			panel.style.setProperty('--_panel-height', `${finalRect.height}px`);
 			this._applyRect(panel, finalRect);
+			
+			// Removemos las forzadas de estilo del trigger para que herede las propias del modal
 			panel.style.backgroundColor = '';
 			panel.style.color = '';
 			panel.style.borderRadius = '';
 			panel.style.boxShadow = '';
 
 			if (shouldMorph && source) {
+				// Medimos dónde van a terminar el icono y el texto dentro del modal ya expandido
 				const textRect = this._measureHeaderTextRect();
 				const iconRect = this._measureHeaderIconRect();
 				const headerComputed = window.getComputedStyle(this._header);
 
 				if (this._morphEls.text && textRect) {
+					// Movemos el texto flotante a su destino y le pedimos que adopte los estilos del header
 					this._positionElement(this._morphEls.text, textRect);
 					this._morphEls.text.style.color = headerComputed.color || 'var(--on-surface)';
 					this._morphEls.text.style.fontSize = headerComputed.fontSize || 'inherit';
@@ -328,6 +511,7 @@ export class MoniMorphModal extends MoniElement {
 				}
 
 				if (this._morphEls.icon && iconRect) {
+					// Hacemos lo mismo con el icono
 					this._positionElement(this._morphEls.icon, iconRect);
 					this._morphEls.icon.style.color = headerComputed.color || 'var(--on-surface)';
 				}
@@ -341,32 +525,38 @@ export class MoniMorphModal extends MoniElement {
 				onComplete: () => {
 					this._isAnimating = false;
 					this._visible = true;
-					this._panel.classList.remove('is-animating');
 					this._cleanupMorphElements();
 					if (headerWrapper) headerWrapper.style.opacity = '1';
 				}
 			});
 
 			if (morphTargets.length > 0) {
-				Flip.from(morphState, {
+				if (this.blurContent) {
+					gsap.set(morphTargets, { filter: 'blur(16px)' });
+				}
+				const flipConfig: any = {
 					targets: morphTargets,
 					duration: 0.38,
 					ease: 'morph-open',
 					zIndex: this._zIndex + 10
-				});
+				};
+				if (this.blurContent) {
+					flipConfig.filter = 'blur(0px)';
+					flipConfig.clearProps = 'filter';
+				}
+				Flip.from(morphState, flipConfig);
 			}
 
-			const bodyChildren = Array.from(this.shadowRoot!.querySelectorAll('.body > *'));
-			const fadeTargets = [
-				...bodyChildren,
-				this.shadowRoot!.querySelector('footer'),
-				this.shadowRoot!.querySelector('.close-btn')
-			].filter(Boolean) as HTMLElement[];
+			const body = this.shadowRoot!.querySelector('.body');
+			const footer = this.shadowRoot!.querySelector('footer');
+			const closeBtn = this.shadowRoot!.querySelector('.close-btn');
+			const fadeTargets = [body, footer, closeBtn].filter(Boolean) as HTMLElement[];
 
-			gsap.set(fadeTargets, { opacity: 0, y: 8, filter: 'blur(8px)' });
+			const initialBlur = this.blurContent ? 'blur(16px)' : 'blur(0px)';
+			gsap.set(fadeTargets, { opacity: 0, y: 8, filter: initialBlur });
 			gsap.fromTo(
 				fadeTargets,
-				{ opacity: 0, y: 8, filter: 'blur(8px)' },
+				{ opacity: 0, y: 8, filter: initialBlur },
 				{
 					opacity: 1,
 					y: 0,
@@ -377,12 +567,20 @@ export class MoniMorphModal extends MoniElement {
 					ease: 'power2.out',
 					onComplete: () => {
 						gsap.set(fadeTargets, { clearProps: 'opacity,transform,filter' });
+						this._panel.classList.remove('is-animating');
 					}
 				}
 			);
 		});
 	}
 
+	/**
+	 * Solución a un caso borde de FLIP Animations:
+	 * Si el `.panel` original carece de un color de fondo sólido, la interpolación
+	 * de GSAP puede comportarse erráticamente. Este método "asciende" el árbol del DOM
+	 * hasta encontrar un padre con un color de fondo sólido y lo aplica, garantizando
+	 * que el modal no colapse de forma transparente de regreso hacia el gatillo.
+	 */
 	private _ensureSolidPanelBackground() {
 		if (!this._panel) return;
 		let bg = window.getComputedStyle(this._panel).backgroundColor;
@@ -412,20 +610,19 @@ export class MoniMorphModal extends MoniElement {
 		this.style.setProperty('--_backdrop-duration', '0.3s');
 		this.style.setProperty('--_backdrop-ease', 'cubic-bezier(0.4, 0, 0.2, 1)');
 
-		const bodyChildren = Array.from(this.shadowRoot!.querySelectorAll('.body > *'));
-		const fadeTargets = [
-			...bodyChildren,
-			this.shadowRoot!.querySelector('footer'),
-			this.shadowRoot!.querySelector('.close-btn')
-		].filter(Boolean) as HTMLElement[];
+		const body = this.shadowRoot!.querySelector('.body');
+		const footer = this.shadowRoot!.querySelector('footer');
+		const closeBtn = this.shadowRoot!.querySelector('.close-btn');
+		const fadeTargets = [body, footer, closeBtn].filter(Boolean) as HTMLElement[];
 		const headerWrapper = this.shadowRoot!.querySelector('.header-morph-wrapper') as HTMLElement;
 
+		const targetBlur = this.blurContent ? 'blur(12px)' : 'blur(0px)';
 		gsap.fromTo(
 			fadeTargets,
 			{ opacity: 1, filter: 'blur(0px)' },
 			{
 				opacity: 0,
-				filter: 'blur(4px)',
+				filter: targetBlur,
 				duration: 0.12,
 				ease: 'power2.in',
 				onComplete: () => {
@@ -478,7 +675,34 @@ export class MoniMorphModal extends MoniElement {
 					});
 
 					const targetState = this._getTargetState(this._targetEl!);
-					const finalRect = this._computeFinalRect(targetState.rect);
+					
+					let naturalSize: { width: number; height: number } | undefined;
+					if (this.autoSize) {
+						const prevW = panel.style.getPropertyValue('--_panel-width');
+						const prevH = panel.style.getPropertyValue('--_panel-height');
+						const prevPanelW = panel.style.width;
+						const prevPanelH = panel.style.height;
+
+						panel.style.width = 'auto';
+						panel.style.height = 'auto';
+						panel.style.setProperty('--_panel-width', 'max-content');
+						panel.style.setProperty('--_panel-height', 'max-content');
+						
+						const bodyEl = this.shadowRoot!.querySelector('.body') as HTMLElement;
+						const prevOverflow = bodyEl ? bodyEl.style.overflow : '';
+						if (bodyEl) bodyEl.style.overflow = 'visible';
+
+						naturalSize = { width: this._inner.scrollWidth, height: this._inner.scrollHeight };
+						
+						panel.style.setProperty('--_panel-width', prevW);
+						panel.style.setProperty('--_panel-height', prevH);
+						panel.style.width = prevPanelW;
+						panel.style.height = prevPanelH;
+						
+						if (bodyEl) bodyEl.style.overflow = prevOverflow;
+					}
+
+					const finalRect = this._computeFinalRect(targetState.rect, naturalSize);
 					panel.style.setProperty('--_panel-width', `${finalRect.width}px`);
 					panel.style.setProperty('--_panel-height', `${finalRect.height}px`);
 
@@ -541,12 +765,19 @@ export class MoniMorphModal extends MoniElement {
 					});
 
 					if (morphTargets.length > 0) {
-						Flip.from(morphState, {
+						if (this.blurContent) {
+							gsap.set(morphTargets, { filter: 'blur(0px)' });
+						}
+						const flipConfig: any = {
 							targets: morphTargets,
 							duration: 0.3,
 							ease: 'morph-close',
 							zIndex: this._zIndex + 10
-						});
+						};
+						if (this.blurContent) {
+							flipConfig.filter = 'blur(12px)';
+						}
+						Flip.from(morphState, flipConfig);
 					}
 				}
 			}
@@ -566,6 +797,12 @@ export class MoniMorphModal extends MoniElement {
 		this.hide();
 	}
 
+	/**
+	 * Fase "First" de la animación (Cierre del Trigger):
+	 * Determina cómo desaparecer u ocultar el botón original mientras el modal ocupa su lugar.
+	 * Mantiene el cache de opacidades y colores originales para poder restaurarlos 
+	 * idénticamente al cerrar el modal (evitando saltos visuales).
+	 */
 	private _hideTargetContent() {
 		if (!this._targetEl) return;
 		
@@ -594,6 +831,10 @@ export class MoniMorphModal extends MoniElement {
 		}
 	}
 
+	/**
+	 * Restaura puramente los estilos originales del botón Trigger tras terminar
+	 * la animación de cierre, leyendo las opacidades/colores almacenados en caché.
+	 */
 	private _restoreTargetContent() {
 		if (!this._targetEl) return;
 		
@@ -667,11 +908,11 @@ export class MoniMorphModal extends MoniElement {
 	}
 
 	private _animateLabelOpen(): void {
-		// No-op: label morphing is handled by the unified FLIP timeline in show()
+		// No-op: el morphing de la etiqueta es manejado por el timeline unificado FLIP en show()
 	}
 
 	private _animateLabelClose(): void {
-		// No-op: label morphing is handled by the unified FLIP timeline in hide()
+		// No-op: el morphing de la etiqueta es manejado por el timeline unificado FLIP en hide()
 	}
 
 	private _createMorphText(sourceText: string, sourceEl: Element): HTMLElement {
@@ -1025,13 +1266,13 @@ export class MoniMorphModal extends MoniElement {
 		el.style.height = `${rect.height}px`;
 	}
 
-	private _computeFinalRect(targetRect: DOMRect): DOMRect {
+	private _computeFinalRect(targetRect: DOMRect, naturalSize?: { width: number; height: number }): DOMRect {
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
 		const padding = 16;
 
-		let width = this._parseSize(this.expandedWidth, vw);
-		let height = this._parseSize(this.expandedHeight, vh);
+		let width = this.autoSize && naturalSize ? naturalSize.width : this._parseSize(this.expandedWidth, vw);
+		let height = this.autoSize && naturalSize ? naturalSize.height : this._parseSize(this.expandedHeight, vh);
 
 		width = Math.min(width, vw - padding * 2);
 		height = Math.min(height, vh - padding * 2);
@@ -1206,7 +1447,7 @@ export class MoniMorphModal extends MoniElement {
 				overflow: hidden;
 				background-color: var(--surface-container-high);
 				color: var(--on-surface);
-				border-radius: 1.75rem;
+				border-radius: var(--moni-morph-panel-radius, 1.75rem);
 				box-shadow: var(--elevate2);
 				z-index: var(--_z-index, 100);
 			}
@@ -1235,13 +1476,18 @@ export class MoniMorphModal extends MoniElement {
 
 			.body {
 				flex: 1;
-				overflow-y: auto;
-				padding: 0 1.5rem;
-				scrollbar-gutter: stable;
+				overflow-y: var(--moni-morph-body-overflow-y, auto);
+				overflow-x: var(--moni-morph-body-overflow-x, hidden);
+				padding: var(--moni-morph-body-padding, 0 1.5rem);
+				scrollbar-gutter: var(--moni-morph-body-scrollbar-gutter, stable);
 			}
 
 			.panel.is-animating .body {
-				overflow: hidden;
+				overflow: hidden !important;
+			}
+			
+			.panel.is-animating .body::-webkit-scrollbar {
+				display: none;
 			}
 
 			footer {
@@ -1291,6 +1537,27 @@ export class MoniMorphModal extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el caparazón del modal morph: fondo opcional + contenedor de panel.
+	 *
+	 * **Bandera `_visible`:**
+	 * `visible = this._visible || this.open` mantiene vivo el DOM mientras se reproduce
+	 * la animación de cierre de GSAP. `_visible` se establece en `true` al inicio de la apertura y
+	 * en `false` solo después de que se dispara el `onComplete` de la animación de cierre. Sin esto,
+	 * Lit eliminaría el panel del DOM antes de que la animación termine.
+	 *
+	 * **Condicional del fondo (backdrop):**
+	 * El div `.backdrop` solo se renderiza cuando `hasBackdrop=true`. Cuando `modal=false`,
+	 * el `background-color` del fondo se establece en `transparent` para que el fondo superpuesto
+	 * (scrim) sea invisible, pero los eventos del puntero aún se consumen (clic para cerrar).
+	 *
+	 * **Objetivo de morphing de GSAP:**
+	 * `.panel` es el objetivo de la animación GSAP. Al abrir: se anima desde el
+	 * `getBoundingClientRect()` del elemento anclaje (posición + tamaño) a su tamaño CSS natural
+	 * mediante `gsap.fromTo()`. Al cerrar: a la inversa. `.panel-inner` recibe una
+	 * contra-escala para evitar que el contenido interno se escale junto con el panel,
+	 * creando una ilusión física de "expandirse desde el origen".
+	 */
 	override render() {
 		const visible = this._visible || this.open;
 		const headerEmpty = !this._hasHeader && !this.showCloseButton;

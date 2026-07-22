@@ -10,77 +10,77 @@ import { customElement, property, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Progress Indicator component.
+ * Componente Material Design 3 Progress Indicator (Indicador de Progreso).
  *
- * Progress indicators express an unspecified wait time or display the length
- * of a process. They inform users about the status of ongoing processes such
- * as loading an app, submitting a form, or saving updates.
+ * Los indicadores de progreso expresan un tiempo de espera no especificado o muestran la duración
+ * de un proceso. Informan a los usuarios sobre el estado de procesos en curso, como
+ * cargar una aplicación, enviar un formulario o guardar actualizaciones.
  *
- * **M3 spec reference:** `m3-docs/components/progress-indicators/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/progress-indicators/specs.md`
  *
- * **Variants:**
- * - `linear` (default) — A horizontal bar that fills left-to-right.
- * - `circular` — A circular SVG stroke indicator.
- * - `wavy` — An animated wave bar (Moni extension; not in M3 spec).
- * - `circular-wavy` — Circular + wave combo (Moni extension).
+ * **Variantes:**
+ * - `linear` (por defecto) — Una barra horizontal que se llena de izquierda a derecha.
+ * - `circular` — Un indicador circular SVG de trazo (stroke).
+ * - `wavy` — Una barra de ondas animada (extensión de Moni; no en la especificación M3).
+ * - `circular-wavy` — Combinación de circular + ondas (extensión de Moni).
  *
- * **Shadow DOM compatibility note:**
- * BeerCSS's progress uses native `<progress>` pseudo-elements (`::before`,
- * `::after`, `::webkit-progress-value`) and `mask-image`, which are blocked
- * by the UA shadow root in Chrome/Firefox. This component uses a plain `<div>`
- * wrapper that replicates the visual rules exactly, and an `<svg>` element
- * for the circular variant using SVG stroke-dashoffset animation for superior
- * cross-browser support compared to `conic-gradient`.
+ * **Nota de compatibilidad con Shadow DOM:**
+ * El progreso de BeerCSS usa pseudo-elementos `<progress>` nativos (`::before`,
+ * `::after`, `::webkit-progress-value`) y `mask-image`, que son bloqueados
+ * por la raíz shadow del User Agent en Chrome/Firefox. Este componente usa un envoltorio
+ * `<div>` simple que replica las reglas visuales exactamente, y un elemento `<svg>`
+ * para la variante circular usando animación SVG stroke-dashoffset para un soporte
+ * superior entre navegadores comparado con `conic-gradient`.
  *
- * **Percentage computation:**
- * `_pct` is computed in `willUpdate()` as `(value / max) * 100`, clamped to
- * `[0, 100]`. When `indeterminate` is set, `_pct` is fixed at `50` to drive
- * the infinite loop animation.
+ * **Cálculo de porcentaje:**
+ * `_pct` se calcula en `willUpdate()` como `(value / max) * 100`, restringido a
+ * `[0, 100]`. Cuando `indeterminate` está establecido, `_pct` se fija en `50` para impulsar
+ * la animación de bucle infinito.
  *
  * @example
  * ```html
- * <!-- Determinate linear progress -->
+ * <!-- Progreso lineal determinado -->
  * <moni-progress value="65" max="100"></moni-progress>
  *
- * <!-- Indeterminate circular progress (loading spinner) -->
+ * <!-- Progreso circular indeterminado (spinner de carga) -->
  * <moni-progress variant="circular" indeterminate></moni-progress>
  * ```
  *
- * @csspart bar      - The outer container div.
- * @csspart fill     - The inner fill element (linear variant).
- * @csspart svg      - The SVG element (circular variant).
+ * @csspart bar      - El div contenedor exterior.
+ * @csspart fill     - El elemento de llenado interior (variante lineal).
+ * @csspart svg      - El elemento SVG (variante circular).
  */
 @customElement('moni-progress')
 export class MoniProgress extends MoniElement {
 	/**
-	 * Current progress value.
+	 * Valor de progreso actual.
 	 *
-	 * Must be in the range `[0, max]`. Values outside this range are clamped
-	 * during percentage computation in `willUpdate()`. Ignored when
-	 * `indeterminate` is set.
+	 * Debe estar en el rango `[0, max]`. Los valores fuera de este rango se restringen
+	 * durante el cálculo del porcentaje en `willUpdate()`. Se ignora cuando
+	 * `indeterminate` está establecido.
 	 *
 	 * @default 0
 	 */
 	@property({ type: Number, reflect: true }) value = 0;
 
 	/**
-	 * Maximum value of the progress range.
+	 * Valor máximo del rango de progreso.
 	 *
-	 * Defaults to `100` so `value` can be set as a percentage directly.
-	 * For non-percentage ranges (e.g. steps), set `max` to the total step count
-	 * and `value` to the current step.
+	 * Por defecto es `100` para que el `value` pueda establecerse como porcentaje directamente.
+	 * Para rangos que no son porcentajes (ej. pasos), establece `max` al recuento total de pasos
+	 * y `value` al paso actual.
 	 *
 	 * @default 100
 	 */
 	@property({ type: Number, reflect: true }) max = 100;
 
 	/**
-	 * Visual variant of the progress indicator.
+	 * Variante visual del indicador de progreso.
 	 *
-	 * - `'linear'` (default) — Horizontal fill bar.
-	 * - `'circular'` — SVG circle with stroke-dashoffset animation.
-	 * - `'wavy'` — Animated wave bar.
-	 * - `'circular-wavy'` — Combination of circular and wave.
+	 * - `'linear'` (por defecto) — Barra de llenado horizontal.
+	 * - `'circular'` — Círculo SVG con animación stroke-dashoffset.
+	 * - `'wavy'` — Barra de ondas animada.
+	 * - `'circular-wavy'` — Combinación de circular y ondas.
 	 *
 	 * @default 'linear'
 	 */
@@ -88,11 +88,11 @@ export class MoniProgress extends MoniElement {
 	variant: 'linear' | 'circular' | 'wavy' | 'circular-wavy' = 'linear';
 
 	/**
-	 * Visual size of the progress indicator.
+	 * Tamaño visual del indicador de progreso.
 	 *
-	 * - `'small'`  — Compact; suitable for inline or tight layouts.
-	 * - `'medium'` — Standard M3 size (default).
-	 * - `'large'`  — Prominent; for full-page loading states.
+	 * - `'small'`  — Compacto; adecuado para diseños en línea o ajustados.
+	 * - `'medium'` — Tamaño estándar M3 (por defecto).
+	 * - `'large'`  — Prominente; para estados de carga a pantalla completa.
 	 *
 	 * @default 'medium'
 	 */
@@ -100,33 +100,36 @@ export class MoniProgress extends MoniElement {
 	size: 'small' | 'medium' | 'large' = 'medium';
 
 	/**
-	 * When `true`, the indicator animates in an infinite loop regardless of `value`.
+	 * Cuando es `true`, el indicador se anima en un bucle infinito independientemente del `value`.
 	 *
-	 * Use for operations where the completion percentage is unknown
-	 * (e.g. network requests, file processing). When `indeterminate` is set,
-	 * `_pct` is fixed at `50` to drive a continuous sweep animation.
+	 * Úsalo para operaciones donde el porcentaje de finalización es desconocido
+	 * (ej. peticiones de red, procesamiento de archivos). Cuando `indeterminate` está establecido,
+	 * `_pct` se fija en `50` para impulsar una animación de barrido continuo.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) indeterminate = false;
 
 	/**
-	 * Computed fill percentage in the range `[0, 100]`.
+	 * Porcentaje de llenado calculado en el rango `[0, 100]`.
 	 *
-	 * Updated in `willUpdate()` whenever `value`, `max`, or `indeterminate` changes.
-	 * Used directly in CSS custom property bindings and SVG stroke attributes.
+	 * Actualizado en `willUpdate()` cada vez que cambia `value`, `max` o `indeterminate`.
+	 * Usado directamente en vinculaciones de propiedades personalizadas de CSS y atributos de trazo (stroke) SVG.
 	 *
 	 * @internal
 	 */
 	@state() private _pct = 0;
 
 	/**
-	 * Computes the fill percentage before each render.
+	 * Hook de ciclo de vida de Lit. Calcula la fracción de llenado antes de pintar.
 	 *
-	 * Recalculates `_pct` whenever `value`, `max`, or `indeterminate` changes.
-	 * The `Math.max(1, max)` guard prevents division-by-zero when `max` is 0.
-	 *
-	 * @param changed - Map of property names to their previous values.
+	 * A diferencia de los componentes nativos, necesitamos computar explícitamente el 
+	 * progreso como un número de 0 a 100 para inyectarlo en variables CSS (Lineal) 
+	 * o calcular el `stroke-dashoffset` (Circular). 
+	 * 
+	 * Se usa `Math.max(1, this.max)` para evitar un NaN / Infinity por división entre cero.
+	 * 
+	 * @param changed - Mapa de propiedades reactivas que detonaron la actualización.
 	 */
 	override willUpdate(changed: Map<string, unknown>) {
 		if (changed.has('value') || changed.has('max') || changed.has('indeterminate')) {
@@ -263,6 +266,13 @@ export class MoniProgress extends MoniElement {
 		`
 	];
 
+	/**
+	 * Motor de Renderizado: Linear Progress Bar.
+	 * 
+	 * Renderiza un contenedor horizontal clásico. Pasa el porcentaje computado
+	 * como variable CSS `--_p` para que el navegador lo interpole usando `transform: scaleX`.
+	 * Expone los atributos ARIA completos para lectores de pantalla.
+	 */
 	private _renderLinear() {
 		const isIndet = this.indeterminate;
 		return html`
@@ -280,6 +290,13 @@ export class MoniProgress extends MoniElement {
 		`;
 	}
 
+	/**
+	 * Motor de Renderizado: Wavy Progress Bar (Estilo BeerCSS/Material You).
+	 * 
+	 * Utiliza un `<svg>` con una animación de `clip-path` y ondas sinusoidales
+	 * inyectadas directamente. Ajusta matemáticamente el ancho y la posición de la onda
+	 * dependiendo de si está en modo indeterminado (infinito) o con un progreso específico (`_pct`).
+	 */
 	private _renderWavy() {
 		// BeerCSS wavy uses an SVG mask. We replicate with an SVG clipPath wave.
 		const isIndet = this.indeterminate;
@@ -337,6 +354,15 @@ export class MoniProgress extends MoniElement {
 		`;
 	}
 
+	/**
+	 * Algoritmo de renderizado para el spinner circular.
+	 * Utiliza la técnica de SVG `stroke-dasharray` y `stroke-dashoffset` para animar o
+	 * fijar el arco de progreso sin utilizar gradientes CSS cónicos (mejor compatibilidad).
+	 *
+	 * Matemáticas del círculo:
+	 * Perímetro = 2 * π * radio.
+	 * Para r=20, Perímetro ≈ 125.66. El porcentaje vacío se resta para desplazar (offset) el trazo.
+	 */
 	private _renderCircular(withWavy = false) {
 		const isIndet = this.indeterminate;
 		// SVG circle math: r=20, circumference = 2π*20 ≈ 125.66
@@ -389,9 +415,27 @@ export class MoniProgress extends MoniElement {
 		`;
 	}
 
-	/** Unique ID per instance for SVG clipPath IDs */
+	/** ID único por instancia para los IDs de SVG clipPath */
 	private readonly _instanceId = Math.random().toString(36).slice(2, 8);
 
+	/**
+	 * Despacha el renderizado al sub-renderizador privado apropiado basado en `variant`.
+	 *
+	 * **¿Por qué sub-renderizadores separados?**
+	 * Cada variante de progreso tiene una estructura DOM fundamentalmente diferente:
+	 * - Lineal: un `<div>` con un `<div>` de llenado escalado por una propiedad personalizada CSS.
+	 * - Wavy (Ondulado): un `<svg>` con un `<clipPath>` animado para la máscara de onda sinusoidal.
+	 * - Circular: un `<svg>` con `stroke-dasharray`/`stroke-dashoffset` para el arco.
+	 *
+	 * Fusionar los tres en una sola plantilla crearía un marcado profundamente condicional;
+	 * dividir en `_renderLinear()`, `_renderWavy()` y `_renderCircular()` mantiene
+	 * cada variante auto-contenida y permite una exposición específica de `@csspart` por variante.
+	 *
+	 * **`_instanceId`:**
+	 * Los IDs de `<clipPath>` SVG deben ser únicos por documento; `_instanceId` es un
+	 * sufijo aleatorio generado una vez en el momento de la instanciación para evitar colisiones de IDs cuando
+	 * hay múltiples elementos `<moni-progress>` en la misma página.
+	 */
 	override render() {
 		switch (this.variant) {
 			case 'circular':

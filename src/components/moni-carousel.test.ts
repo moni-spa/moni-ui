@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-// Mock ResizeObserver globally for jsdom environment before component imports
+// Simular ResizeObserver globalmente para el entorno jsdom antes de las importaciones de componentes
 globalThis.ResizeObserver = class {
 	observe = vi.fn();
 	unobserve = vi.fn();
@@ -29,7 +29,7 @@ describe('moni-carousel', () => {
 		el.remove();
 	});
 
-	it('renders container, viewport and scroll-container', async () => {
+	it('renderiza el container, viewport y scroll-container', async () => {
 		await el.updateComplete;
 		const container = el.shadowRoot?.querySelector('.carousel-container');
 		const viewport = el.shadowRoot?.querySelector('.carousel-viewport');
@@ -40,7 +40,7 @@ describe('moni-carousel', () => {
 		expect(scrollContainer).toBeTruthy();
 	});
 
-	it('renders the correct number of cards and snap-items', async () => {
+	it('renderiza el número correcto de cards y snap-items', async () => {
 		await el.updateComplete;
 		const cards = el.shadowRoot?.querySelectorAll('.card');
 		const snapItems = el.shadowRoot?.querySelectorAll('.snap-item');
@@ -49,7 +49,7 @@ describe('moni-carousel', () => {
 		expect(snapItems?.length).toBe(3);
 	});
 
-	it('renders the header title and show-all button when set', async () => {
+	it('renderiza el título del header y el botón show-all cuando se establecen', async () => {
 		el.headerText = 'Recent Highlights';
 		el.showAll = true;
 		el.showAllText = 'View All';
@@ -64,7 +64,7 @@ describe('moni-carousel', () => {
 		expect(showAllLink?.textContent?.trim()).toBe('View All');
 	});
 
-	it('renders card links when href is specified in items', async () => {
+	it('renderiza enlaces en las cards cuando href está especificado en los items', async () => {
 		const testEl = document.createElement('moni-carousel') as MoniCarousel;
 		testEl.items = [
 			{ title: 'Link Item', img: 'https://picsum.photos/200', href: 'https://moni.com', target: '_blank' }
@@ -82,7 +82,7 @@ describe('moni-carousel', () => {
 		testEl.remove();
 	});
 
-	it('dispatches item-click event when card is clicked', async () => {
+	it('despacha el evento item-click cuando se hace clic en una card', async () => {
 		await el.updateComplete;
 		const card = el.shadowRoot?.querySelector('.card') as HTMLElement;
 		expect(card).toBeTruthy();
@@ -98,7 +98,7 @@ describe('moni-carousel', () => {
 		expect(eventDetail.item.title).toBe('Item 1');
 	});
 
-	it('dispatches show-all-click event when show-all link is clicked', async () => {
+	it('despacha el evento show-all-click cuando se hace clic en el enlace show-all', async () => {
 		el.showAll = true;
 		await el.updateComplete;
 		const showAllLink = el.shadowRoot?.querySelector('.show-all-link') as HTMLElement;
@@ -112,7 +112,7 @@ describe('moni-carousel', () => {
 		expect(clickSpy).toHaveBeenCalledOnce();
 	});
 
-	it('updates snap padding based on layout type', async () => {
+	it('actualiza el relleno de ajuste (snap padding) basándose en el tipo de diseño (layout)', async () => {
 		el.layout = 'hero';
 		await el.updateComplete;
 		let containerStyle = el.shadowRoot?.querySelector('.carousel-container')?.getAttribute('style');
@@ -124,7 +124,7 @@ describe('moni-carousel', () => {
 		expect(containerStyle?.includes('--carousel-right-padding')).toBe(true);
 	});
 
-	it('renders slotted images as items', async () => {
+	it('renderiza las imágenes insertadas como items', async () => {
 		const testEl = document.createElement('moni-carousel') as MoniCarousel;
 		const img1 = document.createElement('img');
 		img1.src = 'https://picsum.photos/200?1';
@@ -152,7 +152,7 @@ describe('moni-carousel', () => {
 		testEl.remove();
 	});
 
-	it('renders slotted show-all button and dispatches click event', async () => {
+	it('renderiza el botón show-all insertado y despacha el evento click', async () => {
 		const testEl = document.createElement('moni-carousel') as MoniCarousel;
 		const btn = document.createElement('button');
 		btn.setAttribute('slot', 'show-all');
@@ -180,7 +180,7 @@ describe('moni-carousel', () => {
 		testEl.remove();
 	});
 
-	it('hides navigation buttons when hideNav is true', async () => {
+	it('oculta los botones de navegación cuando hideNav es true', async () => {
 		const testEl = document.createElement('moni-carousel') as MoniCarousel;
 		testEl.hideNav = true;
 		document.body.appendChild(testEl);
@@ -195,7 +195,7 @@ describe('moni-carousel', () => {
 		testEl.remove();
 	});
 
-	it('provides enough scroll width to reach the last item (Firefox regression)', async () => {
+	it('proporciona suficiente ancho de desplazamiento para alcanzar el último elemento (regresión de Firefox)', async () => {
 		const testEl = document.createElement('moni-carousel') as MoniCarousel;
 		testEl.items = Array.from({ length: 10 }, (_, i) => ({
 			title: `Item ${i}`,

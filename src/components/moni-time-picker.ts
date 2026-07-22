@@ -12,40 +12,40 @@ import './moni-icon.js';
 import './moni-button.js';
 
 /**
- * Material Design 3 Time Picker component.
+ * Componente Material Design 3 Time Picker (Selector de hora).
  *
- * A highly interactive control that allows users to select a specific time.
- * It provides two distinct input modes:
- * 1. **Dial mode:** An interactive clock face where users can drag or click
- *    to select hours and minutes.
- * 2. **Input mode:** Standard text inputs for precise keyboard entry.
+ * Un control altamente interactivo que permite a los usuarios seleccionar una hora específica.
+ * Proporciona dos modos de entrada distintos:
+ * 1. **Modo dial (analógico):** Una carátula de reloj interactiva donde los usuarios pueden arrastrar o hacer clic
+ *    para seleccionar horas y minutos.
+ * 2. **Modo input (texto):** Entradas de texto estándar para una introducción precisa por teclado.
  *
- * **M3 spec reference:** `m3-docs/components/time-pickers/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/time-pickers/specs.md`
  *
- * **Time formats & modes:**
- * - The `value` property expects and always outputs a 24-hour formatted string
- *   (`HH:MM`, e.g., `"14:30"`).
- * - Setting `use-24-hour` configures the visual presentation to use a 24-hour
- *   clock dial (inner and outer rings) and removes the AM/PM toggle. Otherwise,
- *   it uses a standard 12-hour dial with an AM/PM toggle.
+ * **Formatos de hora y modos:**
+ * - La propiedad `value` espera y siempre emite un string en formato de 24 horas
+ *   (`HH:MM`, ej. `"14:30"`).
+ * - Establecer `use-24-hour` configura la presentación visual para usar un
+ *   reloj de 24 horas (anillos interior y exterior) y elimina el selector AM/PM. De lo contrario,
+ *   utiliza un dial estándar de 12 horas con un selector AM/PM.
  *
- * **Responsive design:**
- * The `orientation` attribute configures the layout. `vertical` stacks the
- * time display above the clock face, `horizontal` places them side-by-side,
- * and `auto` responds to the container/viewport width automatically.
+ * **Diseño responsivo:**
+ * El atributo `orientation` configura el diseño. `vertical` apila la
+ * visualización de la hora sobre la carátula del reloj, `horizontal` los coloca lado a lado,
+ * y `auto` responde automáticamente al ancho del contenedor/viewport.
  *
- * @fires change - Fired when the selected time changes interactively. The
- *                 `detail.value` contains the new time in `HH:MM` format.
- * @fires cancel - Fired when the 'Cancel' button is clicked.
- * @fires ok     - Fired when the 'OK' button is clicked. The `detail.value`
- *                 contains the final confirmed time.
+ * @fires change - Se dispara cuando la hora seleccionada cambia interactivamente. El
+ *                 `detail.value` contiene la nueva hora en formato `HH:MM`.
+ * @fires cancel - Se dispara cuando se hace clic en el botón 'Cancelar'.
+ * @fires ok     - Se dispara cuando se hace clic en el botón 'OK'. El `detail.value`
+ *                 contiene la hora final confirmada.
  *
  * @example
  * ```html
- * <!-- 12-hour format (AM/PM) -->
+ * <!-- Formato 12 horas (AM/PM) -->
  * <moni-time-picker value="14:30"></moni-time-picker>
  *
- * <!-- 24-hour format -->
+ * <!-- Formato 24 horas -->
  * <moni-time-picker use-24-hour value="14:30"></moni-time-picker>
  * ```
  */
@@ -66,12 +66,24 @@ export class MoniTimePicker extends MoniElement {
 
 	private isDragging = false;
 
+	/**
+	 * Hook del ciclo de vida (Lit) previo al renderizado.
+	 * 
+	 * Si la propiedad externa `value` o el modo `use24Hour` cambian (vía binding o atributo HTML),
+	 * dispara el `parseValue()` de inmediato para mantener sincronizado el estado interno de 
+	 * horas y minutos (y recalcular AM/PM) antes de mutar el DOM real.
+	 */
 	protected override willUpdate(changedProperties: PropertyValues) {
 		if (changedProperties.has('value') || changedProperties.has('use24Hour')) {
 			this.parseValue();
 		}
 	}
 
+	/**
+	 * Interpreta el string `value` (formato "HH:MM") y lo descompone en enteros para
+	 * el estado interno. Automáticamente corrige valores fuera de rango y determina
+	 * si estamos en AM o PM (cuando no se usa formato de 24 horas).
+	 */
 	private parseValue() {
 		const parts = this.value.split(':');
 		let h = parseInt(parts[0], 10);
@@ -92,6 +104,11 @@ export class MoniTimePicker extends MoniElement {
 		}
 	}
 
+	/**
+	 * Reconstruye el string `value` a partir del estado interno (`currentHour`, `currentMinute`).
+	 * Formatea con ceros a la izquierda e incluye la lógica de conversión AM/PM a 24hrs
+	 * para garantizar que el valor expuesto hacia afuera sea siempre un estándar ISO ("14:30").
+	 */
 	private updateValue() {
 		let h = this.currentHour;
 		const m = this.currentMinute;
@@ -101,7 +118,7 @@ export class MoniTimePicker extends MoniElement {
 				if (h < 12) h += 12;
 			} else {
 				if (h === 12) h = 0;
-				else if (h > 12) h -= 12; // Adjust if out of bounds
+				else if (h > 12) h -= 12; // Ajuste por si quedó fuera de límites
 			}
 		}
 
@@ -116,20 +133,41 @@ export class MoniTimePicker extends MoniElement {
 		}));
 	}
 
+	/**
+	 * Alterna el modo de interacción visual entre el Reloj Analógico (dial) 
+	 * y el modo de Entrada de Texto manual (input).
+	 */
 	private toggleMode() {
 		this.mode = this.mode === 'dial' ? 'input' : 'dial';
 	}
 
+	/**
+	 * Define el nivel de selección activo ('hour' o 'minute').
+	 * Cambia dinámicamente qué anillo o qué matemáticas (12 vs 60 items)
+	 * utilizará el componente principal y el reloj.
+	 */
 	private setSelection(type: 'hour' | 'minute') {
 		this.activeSelection = type;
 	}
 
+	/**
+	 * Cambia forzosamente el periodo del día ('AM' o 'PM') cuando el usuario 
+	 * presiona los conmutadores laterales (sólo visible en formato 12h).
+	 * Inmediatamente propaga el cambio hacia `updateValue()` para recalcular
+	 * y despachar la hora formateada.
+	 */
 	private setPeriod(p: 'AM' | 'PM') {
 		this.period = p;
 		this.updateValue();
 	}
 
 	// Clock Math and Interaction
+	/**
+	 * Inicia el proceso de arrastre en la carátula del reloj (Pointer Down).
+	 * Utiliza `setPointerCapture` nativo para asegurar que el movimiento (drag) siga
+	 * siendo rastreado aunque el puntero del usuario salga físicamente del contenedor,
+	 * garantizando una interacción "Touch" a prueba de errores.
+	 */
 	private handleClockPointerDown(e: PointerEvent) {
 		if (!this.clockFaceEl) return;
 		this.isDragging = true;
@@ -138,42 +176,52 @@ export class MoniTimePicker extends MoniElement {
 		this.handleClockPointerMove(e);
 	}
 
+	/**
+	 * Corazón matemático del reloj radial (Time Picker analógico).
+	 * Convierte las coordenadas cartesianas del ratón/dedo en un ángulo polar (0-360º),
+	 * y dependiendo si medimos horas o minutos, lo mapea al número correspondiente.
+	 */
 	private handleClockPointerMove(e: PointerEvent) {
 		if (!this.isDragging || !this.clockFaceEl) return;
+		
 		const rect = this.clockFaceEl.getBoundingClientRect();
+		// Encontramos el centro geométrico absoluto del reloj
 		const centerX = rect.left + rect.width / 2;
 		const centerY = rect.top + rect.height / 2;
 
 		const dx = e.clientX - centerX;
 		const dy = e.clientY - centerY;
+		// Teorema de Pitágoras para saber a qué distancia del centro está apuntando el usuario
 		const distance = Math.sqrt(dx * dx + dy * dy);
 
-		// Calculate angle in degrees from 12 o'clock position (clockwise)
+		// Calculamos el ángulo en grados partiendo desde las 12 (sentido horario).
+		// Math.atan2 devuelve de -PI a PI, sumamos 90º para desfasar el origen arriba (eje Y).
 		let angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
 		if (angle < 0) angle += 360;
 
 		if (this.activeSelection === 'hour') {
 			if (this.use24Hour) {
-				// Outer circle for 13-00, inner circle for 1-12
+				// Reloj de 24 horas M3: Un círculo externo (13-00) y uno interno (1-12)
+				// El umbral (0.32) fue medido visualmente para coincidir con el diseño radial interno.
 				const isInner = distance < rect.width * 0.32;
-				let hour = Math.round(angle / 30) % 12;
+				let hour = Math.round(angle / 30) % 12; // 360 / 12 horas = 30 grados por hora
 				if (hour === 0) hour = 12;
 
 				if (isInner) {
-					// Inner circle: 1 to 12
+					// Círculo interno: 1 a 12 (AM/PM)
 					this.currentHour = hour;
 				} else {
-					// Outer circle: 13 to 00/24
+					// Círculo externo: 13 a 24 (donde las 24 = 0)
 					this.currentHour = hour === 12 ? 0 : hour + 12;
 				}
 			} else {
-				// 12-hour face: 1 to 12
+				// Reloj estándar de 12 horas: solo 1 a 12
 				let hour = Math.round(angle / 30) % 12;
 				if (hour === 0) hour = 12;
 				this.currentHour = hour;
 			}
 		} else {
-			// Minutes: 0 to 59
+			// Modo minutos: 360 / 60 minutos = 6 grados por minuto
 			const minute = Math.round(angle / 6) % 60;
 			this.currentMinute = minute;
 		}
@@ -181,12 +229,19 @@ export class MoniTimePicker extends MoniElement {
 		this.updateValue();
 	}
 
+	/**
+	 * Finaliza la interacción de arrastre en la carátula del reloj (Pointer Up).
+	 * 
+	 * Como heurística de usabilidad, si el usuario acaba de seleccionar la Hora,
+	 * el componente espera 300ms y automáticamente transiciona a la vista de Minutos.
+	 * Esto reduce los clics necesarios en interacciones de Time Pickers de un solo toque.
+	 */
 	private handleClockPointerUp() {
 		if (this.isDragging) {
 			this.isDragging = false;
 			this.clockFaceEl?.classList.remove('dragging');
 			if (this.activeSelection === 'hour') {
-				// Automatically switch to minute selection after choosing hour
+				// Cambiar automáticamente a la selección de minutos después de elegir la hora
 				setTimeout(() => {
 					this.activeSelection = 'minute';
 				}, 300);
@@ -194,6 +249,11 @@ export class MoniTimePicker extends MoniElement {
 		}
 	}
 
+	/**
+	 * Handler para entradas directas desde el `<input>` de horas (Modo 'input' texto).
+	 * Implementa clamping (límites mínimos y máximos) para asegurar que el usuario
+	 * nunca pueda introducir valores erróneos mayores a 23h o menores a 0h.
+	 */
 	private handleHourInputChange(e: Event) {
 		const target = e.target as HTMLInputElement;
 		let val = parseInt(target.value, 10);
@@ -211,6 +271,10 @@ export class MoniTimePicker extends MoniElement {
 		this.updateValue();
 	}
 
+	/**
+	 * Handler para entradas directas desde el `<input>` de minutos (Modo 'input' texto).
+	 * Trunca cualquier input alfanumérico a enteros y realiza un clamp a 0-59.
+	 */
 	private handleMinuteInputChange(e: Event) {
 		const target = e.target as HTMLInputElement;
 		let val = parseInt(target.value, 10);
@@ -598,6 +662,13 @@ export class MoniTimePicker extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderizador de la carátula circular (Dial Face).
+	 * 
+	 * Utiliza trigonometría básica (`sin` y `cos`) para distribuir los números equitativamente
+	 * a lo largo del perímetro del círculo en CSS absoluto. En formato 24h, renderiza
+	 * dos anillos concéntricos manipulando el radio relativo (`50%` vs `32%`).
+	 */
 	private renderDialClockFace() {
 		const isHour = this.activeSelection === 'hour';
 		let degrees = 0;
@@ -734,6 +805,30 @@ export class MoniTimePicker extends MoniElement {
 		`;
 	}
 
+	/**
+	 * Renderiza el selector de hora (time picker) en modo `dial` o `input`.
+	 *
+	 * **Visualización 12 vs 24 horas:**
+	 * `hourVal` convierte `currentHour` (0–23) al formato de visualización:
+	 * - Modo 24 horas: string con ceros a la izquierda (ej. `'09'`, `'14'`).
+	 * - Modo 12 horas: `0` → `12`, `13` → `1`, preservando la visualización AM/PM.
+	 * `minuteVal` siempre tiene ceros a la izquierda para tener 2 dígitos.
+	 *
+	 * **Modo dial:**
+	 * Renderiza una carátula de reloj DOM (HTML/CSS) con números distribuidos
+	 * circularmente para cada hora/minuto. El sub-método `renderDialClockFace()` 
+	 * maneja la geometría y estilos que mueven la manecilla selectora mientras
+	 * el usuario arrastra.
+	 *
+	 * **Modo input:**
+	 * Renderiza dos elementos `<input type="number">` para la hora y el minuto con
+	 * un selector AM/PM. El modo input es la alternativa (fallback) para accesibilidad
+	 * y entornos no táctiles.
+	 *
+	 * **Alternador de modo:**
+	 * Un icono de teclado cambia de modo `dial` a `input`; un icono de reloj
+	 * cambia de vuelta.
+	 */
 	override render() {
 		const hourVal = !this.use24Hour
 			? String(this.currentHour > 12 ? this.currentHour - 12 : this.currentHour === 0 ? 12 : this.currentHour).padStart(2, '0')

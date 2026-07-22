@@ -14,21 +14,21 @@ describe('moni-time-picker', () => {
 		el.remove();
 	});
 
-	it('initializes with default values', async () => {
+	it('se inicializa con valores por defecto', async () => {
 		await el.updateComplete;
 		expect(el.value).toBe('00:00');
 		expect(el.mode).toBe('dial');
 		expect(el.use24Hour).toBe(false);
 	});
 
-	it('parses input value correctly', async () => {
+	it('analiza el valor de entrada correctamente', async () => {
 		el.value = '14:45';
 		await el.updateComplete;
-		// Since use24Hour is false, PM is set
+		// Como use24Hour es false, PM está establecido
 		expect(el.value).toBe('14:45');
 	});
 
-	it('toggles mode', async () => {
+	it('alterna el modo', async () => {
 		await el.updateComplete;
 		const toggleBtn = el.shadowRoot?.querySelector('.mode-toggle-btn') as HTMLButtonElement;
 		expect(toggleBtn).toBeTruthy();
@@ -42,7 +42,7 @@ describe('moni-time-picker', () => {
 		expect(el.mode).toBe('dial');
 	});
 
-	it('allows typing time in input mode', async () => {
+	it('permite escribir la hora en modo input', async () => {
 		el.mode = 'input';
 		el.use24Hour = true;
 		await el.updateComplete;

@@ -11,37 +11,37 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import { MoniButtonSegment } from './moni-button-segment.js';
 
 /**
- * Material Design 3 Segmented Button component (Legacy).
+ * Componente Material Design 3 Segmented Button (Botón Segmentado) (Heredado).
  *
- * A form-associated group of selectable segmented buttons.
+ * Un grupo de botones segmentados seleccionables asociado a formularios.
  *
- * **Deprecation Notice:** The M3 spec (`m3-docs/components/segmented-buttons/overview.md`)
- * has updated the segmented button pattern. The bespoke segments have been
- * replaced with standard `<moni-button>` elements grouped inside a
+ * **Aviso de obsolescencia (Deprecation Notice):** La especificación M3 (`m3-docs/components/segmented-buttons/overview.md`)
+ * ha actualizado el patrón de botones segmentados. Los segmentos a medida han sido
+ * reemplazados por elementos estándar `<moni-button>` agrupados dentro de un
  * `<moni-button-group variant="connected">`.
  *
- * This component continues to work for backward compatibility but will be
- * removed in v1.0. A deprecation warning is logged to the console when the
- * element is connected to the DOM.
+ * Este componente sigue funcionando para mantener la compatibilidad con versiones anteriores, pero será
+ * eliminado en la v1.0. Se registra una advertencia de obsolescencia en la consola cuando el
+ * elemento se conecta al DOM.
  *
- * @deprecated Use `<moni-button-group variant="connected">` instead.
+ * @deprecated Usa `<moni-button-group variant="connected">` en su lugar.
  *
  * @example
  * ```html
- * <!-- Legacy usage (not recommended) -->
+ * <!-- Uso heredado (no recomendado) -->
  * <moni-segmented-button name="view" multi>
- *   <moni-button-segment value="day">Day</moni-button-segment>
- *   <moni-button-segment value="week">Week</moni-button-segment>
+ *   <moni-button-segment value="day">Día</moni-button-segment>
+ *   <moni-button-segment value="week">Semana</moni-button-segment>
  * </moni-segmented-button>
  *
- * <!-- Modern M3 equivalent -->
+ * <!-- Equivalente M3 moderno -->
  * <moni-button-group variant="connected">
- *   <moni-button>Day</moni-button>
- *   <moni-button>Week</moni-button>
+ *   <moni-button>Día</moni-button>
+ *   <moni-button>Semana</moni-button>
  * </moni-button-group>
  * ```
  *
- * @slot default - `<moni-button-segment>` elements.
+ * @slot default - elementos `<moni-button-segment>`.
  */
 @customElement('moni-segmented-button')
 export class MoniSegmentedButton extends MoniElement {
@@ -49,18 +49,39 @@ export class MoniSegmentedButton extends MoniElement {
 
 	private static _deprecationWarned = false;
 
+	/**
+	 * Nombre del botón segmentado, usado para el envío del formulario.
+	 * @type {string}
+	 */
 	@property({ reflect: true })
 	name = '';
 
+	/**
+	 * Permite seleccionar múltiples segmentos simultáneamente.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true })
 	multi = false;
 
+	/**
+	 * Tamaño de los segmentos del botón.
+	 * @type {'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra'}
+	 * @default 'medium'
+	 */
 	@property({ reflect: true })
 	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
 
+	/**
+	 * Oculta el icono de marca de verificación principal (leading checkmark) cuando se selecciona un segmento.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'hide-check' })
 	hideCheck = false;
 
+	/**
+	 * Define un espaciado personalizado entre segmentos.
+	 * @type {string}
+	 */
 	@property()
 	gap = '';
 
@@ -69,6 +90,11 @@ export class MoniSegmentedButton extends MoniElement {
 
 	private internals: ElementInternals;
 
+	/**
+	 * Constructor del componente.
+	 * Inicializa ElementInternals (`attachInternals`) para integrar el custom element
+	 * nativamente en formularios HTML, permitiéndole participar en validaciones y envíos de datos.
+	 */
 	constructor() {
 		super();
 		this.internals = this.attachInternals();
@@ -89,10 +115,17 @@ export class MoniSegmentedButton extends MoniElement {
 		}
 	}
 
+	/**
+	 * Expone el formulario anfitrión al que pertenece este componente,
+	 * derivado de la API de ElementInternals.
+	 */
 	get form() {
 		return this.internals.form;
 	}
 
+	/**
+	 * Define el tipo semántico del control de formulario.
+	 */
 	get type() {
 		return 'segmented-button';
 	}
@@ -132,6 +165,12 @@ export class MoniSegmentedButton extends MoniElement {
 		`
 	];
 
+	/**
+	 * Hook del ciclo de vida reactivo (Lit).
+	 * Enlaza propiedades estructurales (como el gap o la visibilidad de los checks)
+	 * desde el contenedor padre hacia los segmentos hijos y comunica el nuevo valor
+	 * consolidado al formulario subyacente cada vez que el estado cambia.
+	 */
 	protected override updated(changedProperties: Map<string | number | symbol, unknown>) {
 		super.updated(changedProperties);
 		if (changedProperties.has('hideCheck') || changedProperties.has('size') || changedProperties.has('gap')) {
@@ -140,6 +179,11 @@ export class MoniSegmentedButton extends MoniElement {
 		this.updateFormValue();
 	}
 
+	/**
+	 * Manejador del Slot Change.
+	 * Re-evalúa jerárquicamente a los hijos proyectados si el DOM muta, 
+	 * reactualizando su topología visual (`border-radius`) y su valor en el form.
+	 */
 	private handleSlotChange() {
 		this.updateChildren();
 		this.updateFormValue();
@@ -156,6 +200,12 @@ export class MoniSegmentedButton extends MoniElement {
 		return gap;
 	}
 
+	/**
+	 * Patrón "Top-Down" para inyectar configuración visual y de posición a los segmentos hijos.
+	 * Dado que CSS no puede pasar atributos reactivos fácilmente a hijos proyectados (<slot>),
+	 * JS itera los hijos y les asigna si son 'first', 'middle' o 'last' para manejar
+	 * el `border-radius` continuo.
+	 */
 	private updateChildren() {
 		const segments = this.segments;
 		const len = segments.length;
@@ -176,12 +226,22 @@ export class MoniSegmentedButton extends MoniElement {
 		});
 	}
 
+	/**
+	 * Sincroniza el valor interno del componente (`this.value`) con
+	 * la estructura nativa del formulario utilizando la API de `ElementInternals.setFormValue`.
+	 * Permite que los datos viajen de forma natural al hacer submit.
+	 */
 	private updateFormValue() {
 		if (typeof this.internals.setFormValue === 'function') {
 			this.internals.setFormValue(this.value);
 		}
 	}
 
+	/**
+	 * Delegación de eventos (Event Delegation) capturando el click en el contenedor padre.
+	 * Maneja la lógica de exclusión mutua (single selection) estilo Radio Button
+	 * o la selección aditiva estilo Checkbox cuando `multi` es true.
+	 */
 	private handleClick(e: Event) {
 		const target = e.target as HTMLElement;
 		const clickedSegment = target.closest('moni-button-segment') as MoniButtonSegment | null;
@@ -193,11 +253,13 @@ export class MoniSegmentedButton extends MoniElement {
 		const segments = this.segments;
 
 		if (this.multi) {
+			// Toggle independiente
 			clickedSegment.checked = !clickedSegment.checked;
 		} else {
+			// Comportamiento de grupo radio: deseleccionar hermanos
 			segments.forEach((seg) => {
 				if (seg === clickedSegment) {
-					seg.checked = !seg.checked;
+					seg.checked = !seg.checked; // Permite toggle off incluso en single mode (comportamiento M3)
 				} else {
 					seg.checked = false;
 				}
@@ -219,6 +281,21 @@ export class MoniSegmentedButton extends MoniElement {
 		);
 	}
 
+	/**
+	 * Renderiza el contenedor del botón segmentado con un `role="group"` y su superposición de indicador GSAP.
+	 *
+	 * **Indicador deslizante:**
+	 * Un `<div>` `.indicator` se posiciona de forma absoluta dentro del contenedor del grupo.
+	 * GSAP anima su `left` y `width` para deslizarse de un segmento a otro
+	 * cuando la selección cambia (resaltado del segmento seleccionado del Segmented Button M3).
+	 * En el primer renderizado, el indicador se posiciona instantáneamente (sin transición); los cambios
+	 * posteriores usan `gsap.to()` con la curva de animación (easing) `_speed2` para un deslizamiento suave.
+	 *
+	 * **Sincronización `@slotchange`:**
+	 * Cuando los segmentos se agregan/eliminan en tiempo de ejecución, `_syncSegments()` vuelve a leer
+	 * los elementos asignados a la ranura (slot) y actualiza los atributos `first` / `last` de cada segmento
+	 * para controlar el border-radius en los segmentos terminales.
+	 */
 	override render() {
 		const resolvedGap = this.getGapValue(this.gap);
 		const inlineStyles = resolvedGap

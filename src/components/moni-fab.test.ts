@@ -14,7 +14,7 @@ describe('moni-fab', () => {
 		el.remove();
 	});
 
-	it('renders a <button> with default icon "add"', async () => {
+	it('renderiza un <button> con el icono por defecto "add"', async () => {
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		const icon = el.shadowRoot?.querySelector('moni-icon');
@@ -22,21 +22,21 @@ describe('moni-fab', () => {
 		expect(icon?.getAttribute('name')).toBe('add');
 	});
 
-	it('uses the provided icon name', async () => {
+	it('usa el nombre del icono proporcionado', async () => {
 		el.icon = 'edit';
 		await el.updateComplete;
 		const icon = el.shadowRoot?.querySelector('moni-icon');
 		expect(icon?.getAttribute('name')).toBe('edit');
 	});
 
-	it('renders the label text when label is set (visible by default, no extended required)', async () => {
+	it('renderiza el texto del label cuando se establece (visible por defecto, no requiere extended)', async () => {
 		el.label = 'Create';
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('.label');
 		expect(label?.textContent).toBe('Create');
 	});
 
-	it('does not require extended/expanded for the label to be visible', async () => {
+	it('no requiere extended/expanded para que el label sea visible', async () => {
 		el.label = 'Send';
 		await el.updateComplete;
 		expect(el.hasAttribute('extended')).toBe(false);
@@ -45,20 +45,20 @@ describe('moni-fab', () => {
 		expect(label?.textContent).toBe('Send');
 	});
 
-	it('hides the label visually when no label is set (empty span + display:none)', async () => {
+	it('oculta el label visualmente cuando no se establece (span vacío + display:none)', async () => {
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('.label');
 		expect(label?.textContent).toBe('');
 	});
 
-	it('applies shape=circle class', async () => {
+	it('aplica la clase shape=circle', async () => {
 		el.shape = 'circle';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button?.classList.contains('circle')).toBe(true);
 	});
 
-	it('applies color classes (secondary/tertiary/surface)', async () => {
+	it('aplica las clases de color (secondary/tertiary/surface)', async () => {
 		el.color = 'secondary';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
@@ -73,7 +73,7 @@ describe('moni-fab', () => {
 		expect(button?.classList.contains('surface')).toBe(true);
 	});
 
-	it('applies size classes (small/large)', async () => {
+	it('aplica las clases de tamaño (small/large)', async () => {
 		el.size = 'small';
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
@@ -84,13 +84,13 @@ describe('moni-fab', () => {
 		expect(button?.classList.contains('large')).toBe(true);
 	});
 
-	it('reflects the position attribute', async () => {
+	it('refleja el atributo position', async () => {
 		el.position = 'top-leading';
 		await el.updateComplete;
 		expect(el.getAttribute('position')).toBe('top-leading');
 	});
 
-	it('reflects extended and expanded attributes', async () => {
+	it('refleja los atributos extended y expanded', async () => {
 		el.extended = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('extended')).toBe(true);
@@ -100,7 +100,7 @@ describe('moni-fab', () => {
 		expect(el.hasAttribute('expanded')).toBe(true);
 	});
 
-	it('forwards disabled to the button', async () => {
+	it('reenvía disabled al botón', async () => {
 		el.disabled = true;
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector(
@@ -109,11 +109,11 @@ describe('moni-fab', () => {
 		expect(button.disabled).toBe(true);
 	});
 
-	it('logs a deprecation warning when size="small" is used (M3 Expressive deprecates FAB small)', async () => {
+	it('registra una advertencia de obsolescencia cuando se usa size="small" (M3 Expressive deprecia el FAB pequeño)', async () => {
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-		// Detach and re-attach to re-run connectedCallback with the
-		// deprecated size already set. The component reads the attribute
-		// from the element during connect.
+		// Desmontar y volver a montar para ejecutar de nuevo connectedCallback con el
+		// tamaño obsoleto ya establecido. El componente lee el atributo
+		// del elemento durante la conexión.
 		el.remove();
 		el.size = 'small';
 		document.body.appendChild(el);
@@ -122,7 +122,7 @@ describe('moni-fab', () => {
 			String(c[0]).includes('[moni-ui]') &&
 			String(c[0]).includes('size="small"')
 		);
-		expect(call, 'expected a deprecation warning to mention size="small"').toBeTruthy();
+		expect(call, 'se esperaba que una advertencia de obsolescencia mencionara size="small"').toBeTruthy();
 		warnSpy.mockRestore();
 	});
 });

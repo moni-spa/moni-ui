@@ -8,87 +8,88 @@
 import { html, css } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
+import { emitMoniEvent } from '../utils/event-emitter.js';
 
 /**
- * Material Design 3 Dialog component.
+ * Componente Material Design 3 Dialog (Diálogo).
  *
- * Dialogs inform users about a task and can contain critical information,
- * require decisions, or involve multiple tasks. They interrupt the user's
- * workflow and should be used sparingly.
+ * Los diálogos informan a los usuarios sobre una tarea y pueden contener información crítica,
+ * requerir decisiones o implicar múltiples tareas. Interrumpen el flujo de trabajo del
+ * usuario y deben usarse con moderación.
  *
- * **M3 spec reference:** `m3-docs/components/dialogs/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/dialogs/specs.md`
  *
- * **Implementation note — native `<dialog>` element:**
- * This component wraps the native `<dialog>` HTML element. Opening and closing
- * are controlled via the `open` attribute (and its JS property). The component
- * syncs `open` changes to the native `<dialog>` in `updated()`:
- * - `modal=true` → calls `dialog.showModal()` (blocks focus, adds backdrop).
- * - `modal=false` → calls `dialog.show()` (non-blocking, no backdrop).
- * - `open=false` → calls `dialog.close()`.
+ * **Nota de implementación — elemento nativo `<dialog>`:**
+ * Este componente envuelve el elemento HTML nativo `<dialog>`. La apertura y cierre
+ * se controlan mediante el atributo `open` (y su propiedad JS). El componente
+ * sincroniza los cambios de `open` al `<dialog>` nativo en `updated()`:
+ * - `modal=true` → llama a `dialog.showModal()` (bloquea el foco, añade fondo oscuro).
+ * - `modal=false` → llama a `dialog.show()` (no bloquea, sin fondo oscuro).
+ * - `open=false` → llama a `dialog.close()`.
  *
- * **Placement (`side` attribute):**
- * - `center` (default) — Centered in the viewport. Standard M3 dialog.
- * - `top`, `right`, `bottom`, `left` — Edge-anchored panels (side sheet pattern).
- * - `max` — Full-screen dialog for complex flows.
+ * **Colocación (atributo `side`):**
+ * - `center` (por defecto) — Centrado en la ventana gráfica. Diálogo M3 estándar.
+ * - `top`, `right`, `bottom`, `left` — Paneles anclados a los bordes (patrón side sheet).
+ * - `max` — Diálogo a pantalla completa para flujos complejos.
  *
  * @example
  * ```html
- * <!-- Basic modal dialog -->
- * <moni-dialog open modal title="Delete item?" size="small">
- *   <p>This action cannot be undone.</p>
+ * <!-- Diálogo modal básico -->
+ * <moni-dialog open modal title="Eliminar elemento?" size="small">
+ *   <p>Esta acción no se puede deshacer.</p>
  *   <div slot="footer">
- *     <moni-button variant="text">Cancel</moni-button>
- *     <moni-button>Delete</moni-button>
+ *     <moni-button variant="text">Cancelar</moni-button>
+ *     <moni-button>Eliminar</moni-button>
  *   </div>
  * </moni-dialog>
  * ```
  *
- * @slot default - The dialog body content.
- * @slot header  - Custom header content (overrides `title` attribute).
- * @slot footer  - Action buttons row at the bottom of the dialog.
+ * @slot default - El contenido del cuerpo del diálogo.
+ * @slot header  - Contenido personalizado del encabezado (sobrescribe el atributo `title`).
+ * @slot footer  - Fila de botones de acción en la parte inferior del diálogo.
  *
- * @csspart dialog - The native `<dialog>` element.
- * @csspart header - The header container.
- * @csspart body   - The body content wrapper.
- * @csspart footer - The footer actions wrapper.
+ * @csspart dialog - El elemento `<dialog>` nativo.
+ * @csspart header - El contenedor del encabezado.
+ * @csspart body   - El envoltorio del contenido del cuerpo.
+ * @csspart footer - El envoltorio de acciones del pie de página.
  */
 @customElement('moni-dialog')
 export class MoniDialog extends MoniElement {
 	/**
-	 * Controls the open/closed state of the dialog.
+	 * Controla el estado abierto/cerrado del diálogo.
 	 *
-	 * When set to `true`, the component calls `dialog.showModal()` (if `modal`)
-	 * or `dialog.show()`. When set to `false`, calls `dialog.close()`.
-	 * Reflected as an HTML attribute for CSS and external state readers.
+	 * Cuando se establece en `true`, el componente llama a `dialog.showModal()` (si `modal`)
+	 * o `dialog.show()`. Cuando se establece en `false`, llama a `dialog.close()`.
+	 * Reflejado como un atributo HTML para CSS y lectores de estado externos.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) open = false;
 
 	/**
-	 * When `true`, opens the dialog as a modal using `<dialog>.showModal()`.
+	 * Cuando es `true`, abre el diálogo como un modal usando `<dialog>.showModal()`.
 	 *
-	 * Modal dialogs:
-	 * - Block keyboard focus from leaving the dialog.
-	 * - Render a `::backdrop` scrim over the rest of the page.
-	 * - Can be closed by pressing `Escape` (native browser behavior).
+	 * Diálogos modales:
+	 * - Bloquean que el foco del teclado salga del diálogo.
+	 * - Renderizan una capa `::backdrop` sobre el resto de la página.
+	 * - Se pueden cerrar presionando `Escape` (comportamiento nativo del navegador).
 	 *
-	 * When `false`, uses `<dialog>.show()` which is non-blocking (no focus trap
-	 * and no backdrop).
+	 * Cuando es `false`, usa `<dialog>.show()` que no es bloqueante (sin trampa de foco
+	 * y sin capa de fondo).
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) modal = false;
 
 	/**
-	 * Placement of the dialog within the viewport.
+	 * Colocación del diálogo dentro de la ventana gráfica.
 	 *
-	 * - `'center'` (default) — Centered. Standard M3 dialog placement.
-	 * - `'top'`    — Anchored to the top edge (drawer from top).
-	 * - `'right'`  — Anchored to the right edge (side sheet pattern).
-	 * - `'bottom'` — Anchored to the bottom edge (bottom sheet alternative).
-	 * - `'left'`   — Anchored to the left edge (navigation drawer pattern).
-	 * - `'max'`    — Full-screen (covers the entire viewport).
+	 * - `'center'` (por defecto) — Centrado. Colocación de diálogo M3 estándar.
+	 * - `'top'`    — Anclado al borde superior (cajón desde arriba).
+	 * - `'right'`  — Anclado al borde derecho (patrón de hoja lateral).
+	 * - `'bottom'` — Anclado al borde inferior (alternativa de hoja inferior).
+	 * - `'left'`   — Anclado al borde izquierdo (patrón de cajón de navegación).
+	 * - `'max'`    — Pantalla completa (cubre toda la ventana gráfica).
 	 *
 	 * @default 'center'
 	 */
@@ -96,11 +97,11 @@ export class MoniDialog extends MoniElement {
 	side: 'center' | 'top' | 'right' | 'bottom' | 'left' | 'max' = 'center';
 
 	/**
-	 * Size of the dialog container.
+	 * Tamaño del contenedor del diálogo.
 	 *
-	 * - `'small'`  — Narrow dialog; ideal for simple confirmations.
-	 * - `'medium'` — Standard dialog width (default).
-	 * - `'large'`  — Wide dialog; for forms or complex content.
+	 * - `'small'`  — Diálogo estrecho; ideal para confirmaciones simples.
+	 * - `'medium'` — Ancho de diálogo estándar (por defecto).
+	 * - `'large'`  — Diálogo ancho; para formularios o contenido complejo.
 	 *
 	 * @default 'medium'
 	 */
@@ -108,30 +109,47 @@ export class MoniDialog extends MoniElement {
 	size: 'small' | 'medium' | 'large' = 'medium';
 
 	/**
-	 * Text displayed in the dialog header area.
+	 * Texto mostrado en el área del encabezado del diálogo.
 	 *
-	 * When non-empty, renders as a styled heading inside the header container.
-	 * The `header` slot takes precedence over this attribute when both are present.
+	 * Cuando no está vacío, se renderiza como un encabezado estilizado dentro del contenedor del encabezado.
+	 * El slot `header` tiene prioridad sobre este atributo cuando ambos están presentes.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) title = '';
 
-	/** Direct reference to the native `<dialog>` element for programmatic access. */
+	/** Referencia directa al elemento `<dialog>` nativo para acceso programático. */
 	@query('dialog') private _dialog!: HTMLDialogElement;
 
+	override willUpdate(changed: Map<string, unknown>) {
+		if (changed.has('open') && this.open !== changed.get('open')) {
+			const isOpening = this.open;
+			const eventName = isOpening ? 'moni-request-open' : 'moni-request-close';
+			const allowed = emitMoniEvent(this, eventName, { cancelable: true });
+			
+			if (!allowed) {
+				this.open = !isOpening;
+			}
+		}
+	}
+
 	/**
-	 * Syncs the `open` and `modal` state to the native `<dialog>` element.
+	 * Hook de ciclo de vida de Lit. Sincroniza el estado declarativo (`open`, `modal`)
+	 * con la API imperativa del elemento `<dialog>` nativo de HTML5.
 	 *
-	 * Called by Lit after every render cycle where tracked properties change.
-	 * Avoids calling `showModal()` or `show()` if the dialog is already open
-	 * (prevents the `InvalidStateError` DOMException).
+	 * - `showModal()`: Bloquea el resto del DOM (Inert), atrapa el foco del teclado (Focus Trap)
+	 *   y renderiza el seudoelemento `::backdrop`.
+	 * - `show()`: Permite interacción con el fondo (Non-modal).
 	 *
-	 * @param changed - Map of changed property names to their previous values.
+	 * IMPORTANTE: Previene la excepción `InvalidStateError` validando si el
+	 * diálogo ya está abierto antes de llamar a `show()` o `showModal()`.
+	 *
+	 * @param changed - Mapa de propiedades reactivas modificadas.
 	 */
 	override updated(changed: Map<string, unknown>) {
 		if (changed.has('open') && this._dialog) {
 			if (this.open) {
+				emitMoniEvent(this, 'moni-open');
 				if (this.modal) {
 					if (!this._dialog.open) {
 						this._dialog.showModal();
@@ -142,9 +160,20 @@ export class MoniDialog extends MoniElement {
 					}
 				}
 			} else {
+				emitMoniEvent(this, 'moni-close');
 				if (this._dialog.open) {
 					this._dialog.close();
 				}
+			}
+		}
+	}
+
+	private _onTransitionEnd(e: TransitionEvent) {
+		if (e.target === this._dialog && e.propertyName === 'transform') {
+			if (this.open) {
+				emitMoniEvent(this, 'moni-opened');
+			} else {
+				emitMoniEvent(this, 'moni-closed');
 			}
 		}
 	}
@@ -311,6 +340,25 @@ export class MoniDialog extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el elemento `<dialog>` nativo con la estructura semántica de slots del diálogo.
+	 *
+	 * **¿Por qué `<dialog>`?**
+	 * El elemento nativo `<dialog>` proporciona captura de foco, renderizado de fondo (backdrop)
+	 * y semántica modal accesible sin JavaScript. El enlace `?open` de Lit
+	 * alterna el atributo de forma imperativa, mientras que `updated()` llama a `.show()` /
+	 * `.showModal()` / `.close()` para conducir la pila de abrir/cerrar nativa del navegador.
+	 *
+	 * **Estructura de slots:**
+	 * - `[slot="header"]` — se repliega al valor del atributo `title`.
+	 * - Slot por defecto — la región de contenido principal del diálogo.
+	 * - `[slot="footer"]` — botones de acción (típicamente elementos `<moni-button>`).
+	 *
+	 * **Composición de `classes`:**
+	 * `side`, `size`, y `modal` (si `modal=true`) se unen como clases CSS.
+	 * `side` posiciona el diálogo en `start`, `end`, `top`, o `bottom`; usado
+	 * para diálogos de panel lateral. `size` controla max-width/height.
+	 */
 	override render() {
 		const classes = [this.side, this.size, this.modal ? 'modal' : '']
 			.filter(Boolean)
@@ -318,6 +366,7 @@ export class MoniDialog extends MoniElement {
 		return html`<dialog
 			part="dialog"
 			class=${classes}
+			@transitionend=${this._onTransitionEnd}
 		>
 			<header part="header">
 				<slot name="header">${this.title}</slot>

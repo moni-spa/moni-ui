@@ -10,46 +10,46 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Top App Bar (Toolbar) component.
+ * Componente Material Design 3 Top App Bar (Barra de herramientas superior).
  *
- * Top app bars display information and actions at the top of a screen.
- * They are used for branding, screen titles, navigation, and actions.
+ * Las barras de aplicación superiores muestran información y acciones en la parte superior de una pantalla.
+ * Se utilizan para identidad de marca, títulos de pantalla, navegación y acciones.
  *
- * **M3 spec reference:** `m3-docs/components/top-app-bar/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/top-app-bar/specs.md`
  *
- * **Note:** This is the standard top-level toolbar. For bottom navigation
- * bars (often used on mobile), use `<moni-app-bar>`.
+ * **Nota:** Esta es la barra de herramientas estándar de nivel superior. Para barras de navegación
+ * inferiores (a menudo usadas en móviles), usa `<moni-app-bar>`.
  *
- * **Variants:**
- * - `standard` (default): A full-width bar (64dp height) that sits flush
- *   against the top of the screen.
- * - `floating`: A detached bar with a 4dp margin and rounded 8dp corners,
- *   appearing to float above the content.
+ * **Variantes:**
+ * - `standard` (por defecto): Una barra de ancho completo (altura de 64dp) que se asienta al ras
+ *   contra la parte superior de la pantalla.
+ * - `floating`: Una barra separada con un margen de 4dp y esquinas redondeadas de 8dp,
+ *   que parece flotar sobre el contenido.
  *
- * **Scroll behavior:**
- * When the `scroll` attribute is present, the toolbar visually responds to
- * scrolling by increasing its elevation (shadow) and dynamically shifting
- * its surface color to indicate depth over the scrolling content.
+ * **Comportamiento de desplazamiento (scroll):**
+ * Cuando el atributo `scroll` está presente, la barra de herramientas responde visualmente al
+ * desplazamiento aumentando su elevación (sombra) y cambiando dinámicamente
+ * su color de superficie para indicar profundidad sobre el contenido desplazado.
  *
  * @example
  * ```html
- * <!-- Standard toolbar with navigation and actions -->
- * <moni-toolbar title="Inbox">
+ * <!-- Barra de herramientas estándar con navegación y acciones -->
+ * <moni-toolbar title="Bandeja de entrada">
  *   <moni-icon-button slot="leading" icon="menu"></moni-icon-button>
  *   <moni-icon-button slot="trailing" icon="search"></moni-icon-button>
  *   <moni-icon-button slot="trailing" icon="more_vert"></moni-icon-button>
  * </moni-toolbar>
  *
- * <!-- Floating toolbar with an attached FAB -->
- * <moni-toolbar type="floating" title="Notes">
+ * <!-- Barra de herramientas flotante con un FAB adjunto -->
+ * <moni-toolbar type="floating" title="Notas">
  *   <moni-fab slot="action-button" icon="add"></moni-fab>
  * </moni-toolbar>
  * ```
  *
- * @slot default       - The title text or center content.
- * @slot leading       - Navigation icon/button placed on the far left.
- * @slot trailing      - Action icons/buttons placed on the far right.
- * @slot action-button - A floating action button (FAB) anchored to the right side.
+ * @slot default       - El texto del título o contenido central.
+ * @slot leading       - Icono/botón de navegación colocado en el extremo izquierdo.
+ * @slot trailing      - Iconos/botones de acción colocados en el extremo derecho.
+ * @slot action-button - Un botón de acción flotante (FAB) anclado al lado derecho.
  */
 @customElement('moni-toolbar')
 export class MoniToolbar extends MoniElement {
@@ -123,6 +123,20 @@ export class MoniToolbar extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el diseño `<header>` de 3 zonas de la barra de herramientas.
+	 *
+	 * **Zonas:**
+	 * - `.leading` — slot inicial para iconos de navegación o controles de migas de pan (breadcrumb).
+	 * - `.title` — zona del título central; renderiza `this.title` como texto si el atributo
+	 *   está configurado, de lo contrario recurre al slot por defecto para contenido rico.
+	 * - `.trailing` — slot final para iconos de acción (buscar, más, etc.).
+	 *
+	 * **Slot `action-button`:**
+	 * Un slot nombrado separado, fuera del `<header>`, para un botón de acción flotante
+	 * (FAB) o disparador de menú contextual que no debe participar en el diseño
+	 * flex de la fila del título.
+	 */
 	override render() {
 		return html`
 			<header class="container" part="container">

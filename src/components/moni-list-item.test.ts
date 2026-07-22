@@ -15,13 +15,13 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		el.remove();
 	});
 
-	it('defaults to lines=1', async () => {
+	it('por defecto es lines=1', async () => {
 		await el.updateComplete;
 		expect(el.lines).toBe(1);
 		expect(el.getAttribute('lines')).toBe('1');
 	});
 
-	it('renders the headline slot', async () => {
+	it('renderiza el slot de headline', async () => {
 		await el.updateComplete;
 		const headline = el.shadowRoot?.querySelector('[part="headline"]');
 		expect(headline).toBeTruthy();
@@ -31,7 +31,7 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		expect(text).toBe('Item headline');
 	});
 
-	it('does not render supporting/meta slots when lines=1', async () => {
+	it('no renderiza los slots supporting/meta cuando lines=1', async () => {
 		await el.updateComplete;
 		const supporting = el.shadowRoot?.querySelector('[part="supporting"]');
 		const meta = el.shadowRoot?.querySelector('[part="meta"]');
@@ -39,7 +39,7 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		expect(meta).toBeFalsy();
 	});
 
-	it('renders supporting slot when lines=2', async () => {
+	it('renderiza el slot supporting cuando lines=2', async () => {
 		el.lines = 2;
 		const sup = document.createElement('span');
 		sup.setAttribute('slot', 'supporting');
@@ -50,7 +50,7 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		expect(supporting).toBeTruthy();
 	});
 
-	it('renders meta slot when lines=3', async () => {
+	it('renderiza el slot meta cuando lines=3', async () => {
 		el.lines = 3;
 		const sup = document.createElement('span');
 		sup.setAttribute('slot', 'supporting');
@@ -67,7 +67,7 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		expect(metaEl).toBeTruthy();
 	});
 
-	it('reflects active and disabled attributes', async () => {
+	it('refleja los atributos active y disabled', async () => {
 		el.active = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('active')).toBe(true);
@@ -77,14 +77,14 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		expect(el.hasAttribute('disabled')).toBe(true);
 	});
 
-	it('renders an avatar when the avatar attribute is set', async () => {
+	it('renderiza un avatar cuando el atributo avatar está establecido', async () => {
 		el.avatar = 'https://example.com/avatar.png';
 		await el.updateComplete;
 		const avatar = el.shadowRoot?.querySelector('[part="avatar"]');
 		expect(avatar).toBeTruthy();
 	});
 
-	it('renders a leading icon when the icon attribute is set', async () => {
+	it('renderiza un icono leading cuando el atributo icon está establecido', async () => {
 		el.icon = 'home';
 		await el.updateComplete;
 		const leading = el.shadowRoot?.querySelector('[part="leading"]');
@@ -93,14 +93,14 @@ describe('moni-list-item (P5.3 — recreated)', () => {
 		expect(moniIcon?.getAttribute('name')).toBe('home');
 	});
 
-	it('renders a trailing icon when the trailing-icon attribute is set', async () => {
+	it('renderiza un icono trailing cuando el atributo trailing-icon está establecido', async () => {
 		el.setAttribute('trailing-icon', 'more_vert');
 		await el.updateComplete;
 		const trailing = el.shadowRoot?.querySelector('[part="trailing"]');
 		expect(trailing).toBeTruthy();
 	});
 
-	it('renders an <a> wrapper when href is set, otherwise the row is inline', async () => {
+	it('renderiza un contenedor <a> cuando href está establecido, de lo contrario la fila es inline', async () => {
 		await el.updateComplete;
 		let row = el.shadowRoot?.querySelector('a');
 		expect(row).toBeFalsy();

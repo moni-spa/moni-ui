@@ -11,35 +11,35 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
 
 /**
- * Material Design 3 Tab component.
+ * Componente Material Design 3 Tab (Pestaña).
  *
- * An individual interactive tab element designed to be placed inside a
- * `<moni-tabs>` container. Tabs organize content across different screens,
- * data sets, and other interactions.
+ * Un elemento interactivo de pestaña individual diseñado para ser colocado dentro de un
+ * contenedor `<moni-tabs>`. Las pestañas organizan el contenido en diferentes pantallas,
+ * conjuntos de datos y otras interacciones.
  *
- * **M3 spec reference:** `m3-docs/components/tabs/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/tabs/specs.md`
  *
- * **Visual layout & interaction:**
- * Internally renders as an `<a>` element to support native link behavior when
- * an `href` is provided, but behaves visually as a tab button. It displays a
- * text label and an optional Material icon. If the parent `<moni-tabs>` has the
- * `vertical` attribute set, the layout automatically adjusts to stack the icon
- * above the text.
+ * **Diseño visual e interacción:**
+ * Internamente se renderiza como un elemento `<a>` para soportar el comportamiento nativo
+ * de enlace cuando se proporciona un `href`, pero se comporta visualmente como un botón de pestaña.
+ * Muestra una etiqueta de texto y un icono opcional de Material. Si el `<moni-tabs>` padre tiene el
+ * atributo `vertical` configurado, el diseño se ajusta automáticamente para apilar el icono
+ * encima del texto.
  *
- * **State:**
- * The `active` attribute highlights the tab, applying the primary color to the
- * text and rendering the active indicator line (handled via CSS in the parent
- * container or pseudo-elements).
+ * **Estado:**
+ * El atributo `active` resalta la pestaña, aplicando el color principal (primary) al
+ * texto y renderizando la línea indicadora activa (manejado vía CSS en el contenedor
+ * padre o mediante pseudo-elementos).
  *
  * @example
  * ```html
  * <moni-tabs>
- *   <moni-tab active icon="home" label="Home"></moni-tab>
- *   <moni-tab icon="settings" label="Settings" href="/settings"></moni-tab>
+ *   <moni-tab active icon="home" label="Inicio"></moni-tab>
+ *   <moni-tab icon="settings" label="Ajustes" href="/settings"></moni-tab>
  * </moni-tabs>
  * ```
  *
- * @csspart tab - The inner `<a>` element acting as the tab button.
+ * @csspart tab - El elemento `<a>` interno que actúa como botón de pestaña.
  */
 @customElement('moni-tab')
 export class MoniTab extends MoniElement {
@@ -113,8 +113,8 @@ export class MoniTab extends MoniElement {
 				block-size: auto;
 			}
 
-			/* M3 indicator-size='min': 24dp tall (centered on tab) with
-			   8dp top/bottom radius — matches M3 spec § Indicator anatomy. */
+			/* M3 indicator-size='min': 24dp de altura (centrado en la pestaña) con
+			   radio superior/inferior de 8dp — coincide con la especificación M3 § Indicator anatomy. */
 			:host-context(moni-tabs[indicator-size='min']) a.active::before {
 				margin: 0 auto;
 				max-inline-size: min(100%, 4rem);
@@ -130,13 +130,21 @@ export class MoniTab extends MoniElement {
 				border-radius: 0.5rem;
 			}
 
-			/* M3 indicator-size='max': full tab height, no rounding. */
+			/* M3 indicator-size='max': altura completa de la pestaña, sin redondeo. */
 			:host-context(moni-tabs[indicator-size='max']) a.active::before {
 				border-radius: 0;
 			}
 		`
 	];
 
+	/**
+	 * Renderiza el botón de pestaña con un icono opcional y etiqueta.
+	 *
+	 * El botón de pestaña es un elemento `<a>` con `aria-selected` para
+	 * cumplimiento WCAG. La clase `active` controla la transición de subrayado
+	 * del indicador CSS (a través del pseudo-elemento `::before`). El `<moni-icon>`
+	 * opcional se renderiza antes del texto de la etiqueta cuando se establece `icon`.
+	 */
 	override render() {
 		return html`<a
 			href=${this.href || '#'}

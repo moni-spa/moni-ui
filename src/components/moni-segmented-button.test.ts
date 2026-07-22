@@ -16,7 +16,7 @@ describe('moni-segmented-button', () => {
 		group.remove();
 	});
 
-	it('sets positioning shape properties on child segments', async () => {
+	it('establece propiedades de forma de posicionamiento en los segmentos hijos', async () => {
 		const seg1 = document.createElement('moni-button-segment') as MoniButtonSegment;
 		const seg2 = document.createElement('moni-button-segment') as MoniButtonSegment;
 		const seg3 = document.createElement('moni-button-segment') as MoniButtonSegment;
@@ -34,7 +34,7 @@ describe('moni-segmented-button', () => {
 		expect(seg3.position).toBe('last');
 	});
 
-	it('preserves positioning first/last when gap is set', async () => {
+	it('preserva el posicionamiento first/last cuando se establece gap', async () => {
 		group.gap = 'small';
 		const seg1 = document.createElement('moni-button-segment') as MoniButtonSegment;
 		const seg2 = document.createElement('moni-button-segment') as MoniButtonSegment;
@@ -49,7 +49,7 @@ describe('moni-segmented-button', () => {
 		expect(seg2.position).toBe('last');
 	});
 
-	it('manages checked state when clicked in single select mode', async () => {
+	it('maneja el estado checked al hacer clic en modo de selección única', async () => {
 		const seg1 = document.createElement('moni-button-segment') as MoniButtonSegment;
 		seg1.value = 'one';
 		const seg2 = document.createElement('moni-button-segment') as MoniButtonSegment;
@@ -74,7 +74,7 @@ describe('moni-segmented-button', () => {
 		expect(group.value).toBe('two');
 	});
 
-	it('manages checked state when clicked in multi select mode', async () => {
+	it('maneja el estado checked al hacer clic en modo de selección múltiple', async () => {
 		group.multi = true;
 		const seg1 = document.createElement('moni-button-segment') as MoniButtonSegment;
 		seg1.value = 'one';

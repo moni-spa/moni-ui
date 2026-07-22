@@ -17,33 +17,33 @@ describe('moni-context-menu (P3.5 — flip)', () => {
 		parent.remove();
 	});
 
-	it('renders a <moni-menu> in the shadow DOM', async () => {
+	it('renderiza un <moni-menu> en el shadow DOM', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('moni-menu');
 		expect(menu).toBeTruthy();
 	});
 
-	it('reflects placement=bottom (default)', async () => {
+	it('refleja placement=bottom (por defecto)', async () => {
 		await el.updateComplete;
 		expect(el.placement).toBe('bottom');
 		const menu = el.shadowRoot?.querySelector('moni-menu');
 		expect(menu?.getAttribute('placement')).toBe('bottom');
 	});
 
-	it('reflects placement changes on the inner menu', async () => {
+	it('refleja los cambios de placement en el menú interno', async () => {
 		el.placement = 'top';
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('moni-menu');
 		expect(menu?.getAttribute('placement')).toBe('top');
 	});
 
-	it('reflects the flip attribute on the host', async () => {
+	it('refleja el atributo flip en el host', async () => {
 		el.flip = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('flip')).toBe(true);
 	});
 
-	it('opens the menu on right-click on the parent', async () => {
+	it('abre el menú al hacer clic derecho en el padre', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector(
 			'moni-menu'
@@ -60,7 +60,7 @@ describe('moni-context-menu (P3.5 — flip)', () => {
 		expect(menu?.hasAttribute('active')).toBe(true);
 	});
 
-	it('closes the menu on document click', async () => {
+	it('cierra el menú al hacer clic en el documento', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector(
 			'moni-menu'
@@ -74,7 +74,7 @@ describe('moni-context-menu (P3.5 — flip)', () => {
 		expect(menu?.hasAttribute('active')).toBe(false);
 	});
 
-	it('closes the menu on Escape', async () => {
+	it('cierra el menú al presionar Escape', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector(
 			'moni-menu'
@@ -88,10 +88,10 @@ describe('moni-context-menu (P3.5 — flip)', () => {
 		expect(menu?.hasAttribute('active')).toBe(false);
 	});
 
-	it('does not call showPopover (visual-only; no Popover API)', async () => {
-		// Sanity: the component is visual-only. The moni-menu inside handles
-		// the active attribute via CSS visibility/opacity. No native popover
-		// toggling.
+	it('no llama a showPopover (solo visual; sin API Popover)', async () => {
+		// Sanidad: el componente es solo visual. El moni-menu interior maneja
+		// el atributo active vía visibility/opacity de CSS. No hay popover nativo
+		// de cambio.
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector('moni-menu');
 		expect(menu?.hasAttribute('popover')).toBe(false);

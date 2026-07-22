@@ -10,44 +10,44 @@ import { customElement, property, query, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Menu component.
+ * Componente Material Design 3 Menu (Menú).
  *
- * Menus display a list of choices on a temporary surface. They appear when
- * users interact with a button, action, or other control.
+ * Los menús muestran una lista de opciones en una superficie temporal. Aparecen cuando
+ * los usuarios interactúan con un botón, acción u otro control.
  *
- * **M3 spec reference:** `m3-docs/components/menus/guidelines.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/menus/guidelines.md`
  *
- * **Positioning architecture:**
- * The menu uses `position: absolute` relative to its nearest positioned
- * ancestor. The component's `:host` uses `display: contents`, meaning the
- * inner `<menu>` element directly participates in the consumer's layout context.
- * **Crucial:** The consumer must apply `position: relative` to the wrapper
- * element that contains both the trigger and the `<moni-menu>`.
+ * **Arquitectura de posicionamiento:**
+ * El menú usa `position: absolute` relativo a su ancestro posicionado más cercano.
+ * El `:host` del componente usa `display: contents`, lo que significa que el
+ * elemento interior `<menu>` participa directamente en el contexto de diseño del consumidor.
+ * **Crucial:** El consumidor debe aplicar `position: relative` al elemento contenedor
+ * que contiene tanto el activador (trigger) como el `<moni-menu>`.
  *
- * **Auto-flip positioning:**
- * Per M3 guidelines, menus should flip to the opposite side of the anchor
- * if they overflow the viewport.
- * - **Modern browsers (Chrome/Edge 125+, Safari 18+):** Uses CSS anchor
- *   positioning and `@position-try-fallback` natively when `flip=true`.
- * - **Fallback:** A JavaScript polyfill measures the menu after it opens. If
- *   it overflows the requested `placement`, it sets an internal state to flip
- *   the placement classes.
+ * **Posicionamiento de auto-volteo (auto-flip):**
+ * Según las pautas de M3, los menús deben voltearse hacia el lado opuesto del anclaje
+ * si se desbordan de la ventana gráfica (viewport).
+ * - **Navegadores modernos (Chrome/Edge 125+, Safari 18+):** Utiliza el posicionamiento
+ *   de anclaje de CSS y `@position-try-fallback` nativamente cuando `flip=true`.
+ * - **Alternativa (Fallback):** Un polyfill de JavaScript mide el menú después de que se abre. Si
+ *   se desborda de la posición `placement` solicitada, establece un estado interno para voltear
+ *   las clases de posicionamiento.
  *
- * **State management:**
- * The `active` attribute controls visibility. Consumers must listen to trigger
- * events (like `click`) and toggle the `active` property.
+ * **Gestión del estado:**
+ * El atributo `active` controla la visibilidad. Los consumidores deben escuchar los eventos
+ * del activador (como `click`) y alternar la propiedad `active`.
  *
  * @example
  * ```html
- * <!-- Wrapper must have position: relative -->
+ * <!-- El contenedor debe tener position: relative -->
  * <div style="position: relative; display: inline-block;">
- *   <moni-button id="menu-trigger">Open Menu</moni-button>
+ *   <moni-button id="menu-trigger">Abrir Menú</moni-button>
  *
  *   <moni-menu placement="bottom" flip id="my-menu">
- *     <moni-menu-item icon="edit">Edit</moni-menu-item>
- *     <moni-menu-item icon="content_copy">Copy</moni-menu-item>
+ *     <moni-menu-item icon="edit">Editar</moni-menu-item>
+ *     <moni-menu-item icon="content_copy">Copiar</moni-menu-item>
  *     <moni-divider></moni-divider>
- *     <moni-menu-item icon="delete">Delete</moni-menu-item>
+ *     <moni-menu-item icon="delete">Eliminar</moni-menu-item>
  *   </moni-menu>
  * </div>
  *
@@ -58,16 +58,37 @@ import { MoniElement, sharedStyles } from './_base/index.js';
  * </script>
  * ```
  *
- * @slot default - `<moni-menu-item>`, `<moni-divider>`, or raw `<li>` elements.
+ * @slot default - Elementos `<moni-menu-item>`, `<moni-divider>`, o elementos `<li>` en bruto.
  *
- * @csspart menu - The inner `<menu>` container.
+ * @csspart menu - El contenedor interior `<menu>`.
  */
 @customElement('moni-menu')
 export class MoniMenu extends MoniElement {
+	/**
+	 * Posición preferida en relación con el anclaje padre.
+	 * @type {'bottom' | 'top' | 'left' | 'right' | 'min' | 'max'}
+	 * @default 'bottom'
+	 */
 	@property({ reflect: true })
 	placement: 'bottom' | 'top' | 'left' | 'right' | 'min' | 'max' = 'bottom';
+
+	/**
+	 * Deshabilita el ajuste de texto dentro del menú.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true, attribute: 'no-wrap' }) noWrap = false;
+
+	/**
+	 * Controla si el menú está visible.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) active = false;
+
+	/**
+	 * Lógica de espaciado entre el anclaje y el menú.
+	 * @type {'no-space' | 'space' | 'small-space' | 'medium-space' | 'large-space' | 'extra-space'}
+	 * @default 'no-space'
+	 */
 	@property({ reflect: true })
 	space:
 		| 'no-space'
@@ -76,6 +97,12 @@ export class MoniMenu extends MoniElement {
 		| 'medium-space'
 		| 'large-space'
 		| 'extra-space' = 'no-space';
+
+	/**
+	 * Habilita la evitación de colisiones basada en JS (volteando la posición si está fuera de los límites).
+	 * Útil para navegadores que carecen de soporte para anclaje CSS.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) flip = false;
 
 	@state() private _resolvedPlacement:
@@ -88,25 +115,36 @@ export class MoniMenu extends MoniElement {
 
 	@query('menu') private _menuEl?: HTMLElement;
 
+	/**
+	 * Hook de ciclo de vida de Lit.
+	 * Detecta si el menú se acaba de abrir (active = true) con la propiedad de 'flip' habilitada.
+	 * Usa una Promesa (`updateComplete`) para esperar a que Lit termine de renderizar el DOM y 
+	 * el navegador haga el reflow antes de medir sus dimensiones.
+	 */
 	override updated(changed: Map<string, unknown>) {
 		super.updated(changed);
 		if (changed.has('active') && this.active && this.flip) {
-			// JS polyfill for browsers without @position-try-fallback.
-			// Wait one frame so the menu is laid out, then measure.
 			this.updateComplete.then(() => this._maybeFlip());
 		}
 	}
 
+	/**
+	 * Polyfill manual en JS para "position-try-fallbacks" (CSS Anchoring API).
+	 * Si el menú desborda el viewport en su posición actual, invierte lógicamente
+	 * su colocación (ej. de 'bottom' a 'top') calculando los BoundingClientRect.
+	 */
 	private _maybeFlip() {
 		const menu = this._menuEl;
 		if (!menu || !this.flip) return;
 		const rect = menu.getBoundingClientRect();
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
+		
 		const overflowsBottom = rect.bottom > vh;
 		const overflowsTop = rect.top < 0;
 		const overflowsRight = rect.right > vw;
 		const overflowsLeft = rect.left < 0;
+		
 		if (this.placement === 'bottom' && overflowsBottom) {
 			this._resolvedPlacement = 'top';
 		} else if (this.placement === 'top' && overflowsTop) {
@@ -284,6 +322,25 @@ export class MoniMenu extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el menú como una superposición Popover API o un `<div>` posicionado.
+	 *
+	 * **Popover API (`popover="auto"`):**
+	 * Cuando se establece `popover`, el menú usa la Popover API nativa del navegador.
+	 * Esto proporciona descarte ligero (light-dismiss) automático (clic fuera para cerrar) y
+	 * apilamiento en la capa superior sin gestión de `z-index`.
+	 *
+	 * **Patrón de menú ARIA:**
+	 * El contenedor del menú lleva `role="menu"`. Cada hijo `<moni-menu-item>`
+	 * debe llevar `role="menuitem"`. La navegación con las teclas de flecha se maneja a través de
+	 * `@keydown` en el contenedor del menú, ciclando a través de los elementos usando
+	 * `_focusedItemIndex` (incrementado/decrementado con ciclo continuo).
+	 *
+	 * **Posicionamiento:**
+	 * Cuando se establece `anchor`, `_computeStyle()` calcula `top`/`left` desde
+	 * `getBoundingClientRect()` del elemento anclaje y los inyecta como
+	 * estilos en línea en el `<div>` del menú.
+	 */
 	override render() {
 		const effectivePlacement = this.active && this.flip
 			? this._resolvedPlacement

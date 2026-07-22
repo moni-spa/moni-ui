@@ -13,59 +13,64 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Material Design 3 Button component.
+ * Componente Material Design 3 Button.
  *
- * Buttons allow users to take actions and make choices with a single tap.
- * This component provides all M3 button variants, sizes, and shape morphing
- * capabilities (e.g. morphing to a pill shape on press or toggle).
+ * Los botones permiten a los usuarios realizar acciones y hacer elecciones con un solo toque.
+ * Este componente proporciona todas las variantes de botones de M3, tamaños y capacidades
+ * de transformación de formas (ej. cambiar a una forma de píldora al presionar o alternar).
  *
- * **M3 spec reference:** `m3-docs/components/buttons/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/buttons/specs.md`
  *
- * **Variants:**
- * - `filled` (default) — High emphasis. Use for primary actions.
- * - `tonal` — Medium emphasis. Secondary actions that still need to stand out.
- * - `elevated` — Medium emphasis with shadow. Used when sitting on patterned backgrounds.
- * - `outlined` — Medium emphasis, no fill. Secondary or tertiary actions.
- * - `text` — Low emphasis. Tertiary actions (e.g. dialog cancel button).
+ * **Variantes:**
+ * - `filled` (por defecto) — Énfasis alto. Úsalo para acciones principales.
+ * - `tonal` — Énfasis medio. Acciones secundarias que aún necesitan destacar.
+ * - `elevated` — Énfasis medio con sombra. Úsalo al sentarse sobre fondos con patrones.
+ * - `outlined` — Énfasis medio, sin relleno. Acciones secundarias o terciarias.
+ * - `text` — Énfasis bajo. Acciones terciarias (ej. botón de cancelar diálogo).
  *
- * **Shape morphing (M3 Expressive feature):**
- * - On press (active state): Round and square buttons morph to a slightly squarer
- *   "pressed" shape with specific M3 corner radii (e.g. XS/S 8dp, M 12dp).
- * - On toggle (`active` attribute): The resting shape flips (e.g. round ↔ square).
+ * **Transformación de forma (Característica M3 Expressive):**
+ * - Al presionar (estado activo): Los botones redondos y cuadrados se transforman a una forma
+ *   "presionada" ligeramente más cuadrada con radios de esquina específicos de M3 (ej. XS/S 8dp, M 12dp).
+ * - Al alternar (atributo `active`): La forma de reposo se invierte (ej. redondo ↔ cuadrado).
  *
- * **Rendering as a link:**
- * When the `href` attribute is provided, the component internally renders as
- * an `<a>` element instead of a `<button>`, allowing native routing and
- * middle-click (open in new tab) behaviors while maintaining button visuals.
+ * **Renderizando como un enlace:**
+ * Cuando se proporciona el atributo `href`, el componente se renderiza internamente como
+ * un elemento `<a>` en lugar de un `<button>`, permitiendo enrutamiento nativo y comportamientos
+ * de clic central (abrir en nueva pestaña) mientras mantiene los visuales del botón.
  *
  * @example
  * ```html
- * <!-- Primary filled button -->
- * <moni-button icon="add">Create new</moni-button>
+ * <!-- Botón primario relleno -->
+ * <moni-button icon="add">Crear nuevo</moni-button>
  *
- * <!-- Outlined button -->
- * <moni-button variant="outlined">Cancel</moni-button>
+ * <!-- Botón contorneado -->
+ * <moni-button variant="outlined">Cancelar</moni-button>
  *
- * <!-- Toggle button (toggles active state on click) -->
- * <moni-button icon="favorite" active>Like</moni-button>
+ * <!-- Botón de alternar (alterna estado activo al hacer clic) -->
+ * <moni-button icon="favorite" active>Me gusta</moni-button>
  *
- * <!-- Link button -->
- * <moni-button href="/settings" icon="settings">Settings</moni-button>
+ * <!-- Botón enlace -->
+ * <moni-button href="/settings" icon="settings">Ajustes</moni-button>
  * ```
  *
- * @slot default       - The button label text.
- * @slot icon          - Optional override for the leading icon.
- * @slot icon-trailing - Optional override for the trailing icon.
+ * @slot default       - El texto de la etiqueta del botón.
+ * @slot icon          - Sobrescritura opcional para el icono inicial (leading).
+ * @slot icon-trailing - Sobrescritura opcional para el icono final (trailing).
  *
- * @csspart button     - The inner `<button>` or `<a>` element.
- * @csspart icon       - The leading icon container.
- * @csspart label      - The label container.
- * @csspart trailing-icon - The trailing icon container.
+ * @csspart button     - El elemento interno `<button>` o `<a>`.
+ * @csspart icon       - El contenedor del icono inicial.
+ * @csspart label      - El contenedor de la etiqueta.
+ * @csspart trailing-icon - El contenedor del icono final.
  */
 @customElement('moni-button')
 export class MoniButton extends MoniElement {
 	private static _deprecationWarned = false;
 
+	/**
+	 * Variante visual del botón.
+	 * @type {'filled' | 'tonal' | 'outlined' | 'text' | 'fill' | 'elevated'}
+	 * @default 'filled'
+	 */
 	@property({ reflect: true })
 	variant:
 		| 'filled'
@@ -73,14 +78,24 @@ export class MoniButton extends MoniElement {
 		| 'outlined'
 		| 'text'
 		| 'fill'
-		| 'elevated' = 'filled';
+		| 'elevated'
+		| 'error' = 'filled';
+
 	/**
-	 * M3 Expressive sizes: xsmall, small, medium, large, xlarge.
-	 * `extra` is a Moni legacy alias for `xlarge`, deprecated in v0.3.1; will
-	 * be removed in v1.0. See `m3-docs/components/buttons/overview.md` § Sizes.
+	 * Tamaños de M3 Expressive: xsmall, small, medium, large, xlarge.
+	 * `extra` es un alias heredado de Moni para `xlarge`, obsoleto en v0.3.1; se
+	 * eliminará en v1.0. Ver `m3-docs/components/buttons/overview.md` § Sizes.
+	 * @type {'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra'}
+	 * @default 'medium'
 	 */
 	@property({ reflect: true })
 	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
+
+	/**
+	 * Forma de las esquinas del botón.
+	 * @type {'round' | 'no-round' | 'square' | 'circle' | 'left-round' | 'right-round' | 'top-round' | 'bottom-round' | 'left-round-flat' | 'right-round-flat' | 'top-round-flat' | 'bottom-round-flat' | 'inner-round'}
+	 * @default 'round'
+	 */
 	@property({ reflect: true })
 	shape:
 		| 'round'
@@ -96,14 +111,55 @@ export class MoniButton extends MoniElement {
 		| 'top-round-flat'
 		| 'bottom-round-flat'
 		| 'inner-round' = 'round';
+
+	/**
+	 * Deshabilita el botón.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Si es verdadero, muestra un indicador de carga y deshabilita el botón.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) loading = false;
+
+	/**
+	 * Si es verdadero, establece el botón a un estado activo/seleccionado.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) active = false;
+
+	/**
+	 * Nombre del icono inicial (Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) icon = '';
+
+	/**
+	 * Nombre del icono final (Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true, attribute: 'icon-trailing' }) iconTrailing = '';
+
+	/**
+	 * Tipo nativo del botón (cuando se renderiza como un `<button>`).
+	 * @type {'button' | 'submit' | 'reset'}
+	 * @default 'button'
+	 */
 	@property({ reflect: true })
 	type: 'button' | 'submit' | 'reset' = 'button';
+
+	/**
+	 * Si está establecido, renderiza el botón como un elemento `<a>` con esta URL.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) href = '';
+
+	/**
+	 * Atributo target para los botones tipo enlace.
+	 * @type {string}
+	 */
 	@property({ reflect: true }) target = '';
 
 	override connectedCallback(): void {
@@ -198,7 +254,7 @@ export class MoniButton extends MoniElement {
 			/* Square keeps horizontal padding (like a normal button) but
 			   drops border-radius. Only the circle removes all padding. */
 			.button.circle {
-				padding: 0;
+				padding: 0 !important;
 				border-radius: 50%;
 				inline-size: 2.5rem;
 				aspect-ratio: 1;
@@ -529,6 +585,16 @@ export class MoniButton extends MoniElement {
 				color: var(--primary);
 				box-shadow: var(--elevate1);
 			}
+			.button.error {
+				background-color: var(--error);
+				color: var(--on-error);
+			}
+			.button.error:hover:not(:disabled) {
+				background-image: linear-gradient(color-mix(in srgb, currentColor 8%, transparent), color-mix(in srgb, currentColor 8%, transparent));
+			}
+			.button.error:focus-visible {
+				outline-color: var(--error);
+			}
 
 			/* Disabled / active */
 			.button:disabled,
@@ -630,6 +696,11 @@ export class MoniButton extends MoniElement {
 		`
 	];
 
+	/**
+	 * Intercepta los clicks en botones tipo enlace (`href="..."`).
+	 * Si el botón está desactivado (`disabled`), previene agresivamente
+	 * tanto la navegación por defecto del navegador como la burbuja de eventos.
+	 */
 	private handleLinkClick(e: Event) {
 		if (this.disabled) {
 			e.preventDefault();
@@ -637,12 +708,41 @@ export class MoniButton extends MoniElement {
 		}
 	}
 
+	/**
+	 * Assembles the button's Shadow DOM structure for each Lit render cycle.
+	 *
+	 * **Variant → CSS class mapping:**
+	 * | `variant`    | CSS class     | Visual result               |
+	 * |--------------|---------------|-----------------------------|
+	 * | `'filled'`   | `''` (empty)  | Primary filled button       |
+	 * | `'outlined'` | `'border'`    | Outlined/stroked button     |
+	 * | `'tonal'`    | `'fill'`      | Secondary container fill    |
+	 * | `'text'`     | `'transparent'` | Ghost/text button         |
+	 * | `'elevated'` | `'elevated'`  | Tonal surface + shadow      |
+	 *
+	 * **Shape morphing:**
+	 * When `active=true`, the button inverts its corner-radius shape to create
+	 * a micro-animation where clicking "morphs" the shape (round → square, etc.).
+	 * This is used in toggle-button patterns (e.g., a nav-item that morphs to
+	 * indicate the current page).
+	 *
+	 * **Icon resolution priority:**
+	 * 1. `loading=true` → renders a `<moni-progress>` spinner (hides label at 50% opacity).
+	 * 2. `icon` attribute → renders a `<moni-icon>` in the leading icon slot.
+	 * 3. Otherwise → renders the `icon` named slot for slotted content.
+	 *
+	 * **Link vs. button:**
+	 * When `href` is set, the root element is an `<a>` tag (with disabled click
+	 * guard) for proper browser navigation semantics. Otherwise it's a `<button>`
+	 * with `type="button"` to prevent accidental form submission.
+	 */
 	override render() {
 		let variantClass = '';
 		if (this.variant === 'outlined') variantClass = 'border';
 		else if (this.variant === 'tonal' || this.variant === 'fill') variantClass = 'fill';
 		else if (this.variant === 'text') variantClass = 'transparent';
 		else if (this.variant === 'elevated') variantClass = 'elevated';
+		else if (this.variant === 'error') variantClass = 'error';
 
 		let activeShape: string = this.shape;
 		if (this.active) {

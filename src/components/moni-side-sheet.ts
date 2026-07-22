@@ -12,55 +12,55 @@ import './moni-icon.js';
 import './moni-button.js';
 
 /**
- * Material Design 3 Side Sheet component.
+ * Componente Material Design 3 Side Sheet (Hoja o panel lateral).
  *
- * Side sheets show supplementary content that is anchored to the left or right
- * edge of the screen. They can be standard (inline with content) or modal
- * (overlaying content with a scrim).
+ * Los paneles laterales muestran contenido complementario que está anclado al borde
+ * izquierdo o derecho de la pantalla. Pueden ser estándar (en línea con el contenido)
+ * o modales (superpuestos al contenido con un fondo/scrim oscurecido).
  *
- * **M3 spec reference:** `m3-docs/components/side-sheets/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/side-sheets/specs.md`
  *
- * **Dialog behavior:**
- * Internally, this component uses the native HTML `<dialog>` element for robust
- * accessibility, focus trapping, and top-layer rendering.
- * - When `modal=true`, the sheet uses `dialog.showModal()`, rendering a scrim
- *   backdrop and trapping focus. Pressing `Escape` closes it.
- * - When `modal=false`, the sheet uses `dialog.show()` and remains interactive
- *   alongside the main page content.
+ * **Comportamiento del cuadro de diálogo (Dialog behavior):**
+ * Internamente, este componente utiliza el elemento HTML nativo `<dialog>` para una
+ * accesibilidad robusta, captura de foco y renderizado en la capa superior (top-layer).
+ * - Cuando `modal=true`, el panel usa `dialog.showModal()`, renderizando un fondo
+ *   (scrim backdrop) y capturando el foco. Al presionar `Escape` se cierra.
+ * - Cuando `modal=false`, el panel usa `dialog.show()` y permanece interactivo
+ *   junto al contenido de la página principal.
  *
- * **Drag & Resize (Moni feature):**
- * Setting the `with-handle` attribute adds a draggable grab handle to the inner
- * edge of the sheet. Users can click and drag this handle to resize the sheet's
- * width up to the `max-width` limit. If the user drags the sheet towards the
- * screen edge quickly or beyond a certain threshold, it automatically closes.
+ * **Arrastrar y redimensionar (Característica Moni):**
+ * Al configurar el atributo `with-handle`, se agrega un controlador de arrastre en el borde
+ * interior del panel. Los usuarios pueden hacer clic y arrastrar este controlador para 
+ * redimensionar el ancho del panel hasta el límite `max-width`. Si el usuario arrastra
+ * el panel hacia el borde de la pantalla rápidamente o más allá de cierto umbral, se cierra automáticamente.
  *
- * **Animations:**
- * Side sheets slide in from the specified `side` (`left` or `right`). The open
- * and close animations are handled via CSS transitions tied to the `open` property.
+ * **Animaciones:**
+ * Los paneles laterales se deslizan desde el `side` (lado) especificado (`left` o `right`).
+ * Las animaciones de apertura y cierre se manejan a través de transiciones CSS vinculadas a la propiedad `open`.
  *
- * @fires close - Fired when the side sheet is completely closed (after animations
- *                finish), either via the close button, scrim click, drag-to-close,
- *                or `Escape` key.
+ * @fires close - Se dispara cuando el panel lateral está completamente cerrado (después de
+ *                que terminan las animaciones), ya sea a través del botón de cierre, clic en el fondo (scrim),
+ *                arrastrar para cerrar o la tecla `Escape`.
  *
  * @example
  * ```html
- * <!-- Modal side sheet on the right -->
- * <moni-side-sheet id="details-sheet" modal title="Item Details">
- *   <p>Here is more information about the selected item.</p>
+ * <!-- Panel lateral modal a la derecha -->
+ * <moni-side-sheet id="details-sheet" modal title="Detalles del artículo">
+ *   <p>Aquí hay más información sobre el artículo seleccionado.</p>
  *   <div slot="footer">
- *     <moni-button>Save</moni-button>
+ *     <moni-button>Guardar</moni-button>
  *   </div>
  * </moni-side-sheet>
  *
- * <!-- Resizable, detached side sheet on the left -->
+ * <!-- Panel lateral a la izquierda, desvinculado (detached) y redimensionable -->
  * <moni-side-sheet side="left" detached with-handle max-width="50vw">
- *   <p>Navigation options</p>
+ *   <p>Opciones de navegación</p>
  * </moni-side-sheet>
  * ```
  *
- * @slot default - Main body content.
- * @slot header  - Custom header content (overrides `title`, close/back buttons remain).
- * @slot footer  - Bottom-anchored action area.
+ * @slot default - Contenido del cuerpo principal.
+ * @slot header  - Contenido de encabezado personalizado (anula `title`, los botones de cerrar/volver permanecen).
+ * @slot footer  - Área de acción anclada en la parte inferior.
  */
 @customElement('moni-side-sheet')
 export class MoniSideSheet extends MoniElement {
@@ -99,6 +99,14 @@ export class MoniSideSheet extends MoniElement {
 		return 600;
 	}
 
+	/**
+	 * Hook del ciclo de vida reactivo (Lit).
+	 * Coordina la transición del elemento `<dialog>` nativo.
+	 * Utiliza `showModal()` para Side Sheets modales (con backdrop) y `show()` 
+	 * para Side Sheets estándar. Administra manualmente la clase `.opened` y escucha
+	 * eventos `transitionend` para cerrar limpiamente el `<dialog>` sólo cuando 
+	 * las animaciones CSS terminan.
+	 */
 	override updated(changedProperties: PropertyValues) {
 		super.updated(changedProperties);
 
@@ -156,6 +164,12 @@ export class MoniSideSheet extends MoniElement {
 		}
 	}
 
+	/**
+	 * Inicia la interacción de arrastre (Drag) del Side Sheet.
+	 * Verifica si el usuario agarró el componente desde el "handle" o la cabecera.
+	 * Captura el ancho actual para determinar si el usuario pretende expandir o contraer
+	 * el panel lateral mediante gestos.
+	 */
 	private _onPointerDown(e: PointerEvent) {
 		if (!this.withHandle) return;
 		const target = e.target as HTMLElement;
@@ -175,6 +189,13 @@ export class MoniSideSheet extends MoniElement {
 		this._dialog.classList.add('dragging');
 	}
 
+	/**
+	 * Procesa el movimiento del arrastre y aplica transformaciones CSS inline
+	 * imperativamente a 60FPS. Diferencia la lógica dependiendo de la posición 
+	 * de anclaje (izquierdo vs derecho) y del estado actual (expandido vs contraído).
+	 * Introduce una "resistencia elástica" si el usuario intenta expandir el panel
+	 * más allá de su ancho máximo permitido (`maxWidth`).
+	 */
 	private _onPointerMove(e: PointerEvent) {
 		if (!this._isDragging) return;
 
@@ -209,6 +230,15 @@ export class MoniSideSheet extends MoniElement {
 		}
 	}
 
+	/**
+	 * Evalúa el resultado de la interacción de arrastre (Pointer Up).
+	 * 
+	 * Basado en umbrales de distancia física (`threshold`) y el estado actual, decide:
+	 * 1. Expandir el panel por completo (modo "expanded").
+	 * 2. Contraer el panel de vuelta a su tamaño estándar.
+	 * 3. Cerrar el Side Sheet totalmente y disparar el evento `close`.
+	 * Utiliza transiciones CSS nativas en vez de animar por frame para la resolución final.
+	 */
 	private _onPointerUp(e: PointerEvent) {
 		if (!this._isDragging) return;
 
@@ -290,6 +320,11 @@ export class MoniSideSheet extends MoniElement {
 		}
 	}
 
+	/**
+	 * Aborta limpiamente la interacción de arrastre (Pointer Cancel).
+	 * Remueve estilos imperativos y clases de estado (`dragging`) si el navegador
+	 * toma el control o la interacción se interrumpe prematuramente.
+	 */
 	private _onPointerCancel(e: PointerEvent) {
 		if (!this._isDragging) return;
 		const target = e.target as HTMLElement;
@@ -300,15 +335,30 @@ export class MoniSideSheet extends MoniElement {
 		this._dialog.style.width = '';
 	}
 
+	/**
+	 * Manejador del botón "Cerrar" explícito (X).
+	 * Modifica la propiedad `open` a false y despacha el evento de cierre.
+	 */
 	private _onCloseClick() {
 		this.open = false;
 		this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
 	}
 
+	/**
+	 * Manejador del botón "Atrás".
+	 * Emite un evento especializado `back` útil para Side Sheets de navegación anidada,
+	 * permitiendo a los controladores padres reaccionar cambiando la vista interna.
+	 */
 	private _onBackClick() {
 		this.dispatchEvent(new CustomEvent('back', { bubbles: true, composed: true }));
 	}
 
+	/**
+	 * Intercepta clics en el backdrop nativo del `<dialog>`.
+	 * Si el componente es `modal`, hacer clic fuera del panel cierra la interfaz.
+	 * Verifica `_justDragged` para evitar cerrar si el usuario hizo un click
+	 * "accidental" derivado del final de un arrastre.
+	 */
 	private _onDialogClick(e: MouseEvent) {
 		if (this._justDragged) {
 			this._justDragged = false;
@@ -513,6 +563,18 @@ export class MoniSideSheet extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el panel lateral usando un elemento `<dialog>` nativo.
+	 *
+	 * **Manejo de estados:**
+	 * Utiliza clases dinámicas para controlar el lado (`left`/`right`), el modo (`modal`/`standard`),
+	 * y el estilo desvinculado (`detached`).
+	 *
+	 * **Atributo `[open]`:**
+	 * La vinculación `?open=${this.open}` añade o remueve el atributo `open` nativo de HTML.
+	 * Las transiciones visuales (slide-in/slide-out) son manejadas por el evento `transitionend` 
+	 * en el método `updated()` usando la clase `.opened`.
+	 */
 	override render() {
 		const classes = [
 			this.side,

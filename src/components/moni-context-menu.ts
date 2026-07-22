@@ -11,47 +11,47 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-menu.js';
 
 /**
- * Material Design 3 Context Menu component.
+ * Componente Material Design 3 Context Menu (Menú Contextual).
  *
- * A specialized menu that opens at the exact coordinates of a pointer event,
- * typically triggered by a right-click (`contextmenu` event). It provides
- * contextual actions related to the specific item clicked.
+ * Un menú especializado que se abre en las coordenadas exactas de un evento de puntero,
+ * típicamente desencadenado por un clic derecho (evento `contextmenu`). Proporciona
+ * acciones contextuales relacionadas con el elemento específico clicado.
  *
- * **M3 spec reference:** `m3-docs/components/menus/specs.md` (Contextual menus)
+ * **Referencia de la especificación M3:** `m3-docs/components/menus/specs.md` (Menús contextuales)
  *
- * **Triggering mechanism:**
- * The component does not require programmatic triggering via an `open` property.
- * Instead, it attaches a `contextmenu` event listener to its parent element
- * during `connectedCallback`. When the parent is right-clicked, the menu
- * captures the `clientX`/`clientY` coordinates, prevents the default browser
- * context menu, and opens itself at the cursor position using `position: fixed`.
+ * **Mecanismo de activación:**
+ * El componente no requiere activación programática a través de una propiedad `open`.
+ * En su lugar, adjunta un detector de eventos `contextmenu` a su elemento padre
+ * durante `connectedCallback`. Cuando se hace clic derecho en el padre, el menú
+ * captura las coordenadas `clientX`/`clientY`, previene el menú contextual predeterminado
+ * del navegador, y se abre en la posición del cursor usando `position: fixed`.
  *
- * **Auto-flip behavior (`flip` attribute):**
- * Per the M3 guidelines, menus should flip to the opposite side of the cursor
- * if opening in the requested `placement` would cause them to overflow the
- * viewport. When `flip=true`, the component dynamically calculates viewport
- * bounds before opening and overrides `placement` if necessary (e.g., flipping
- * from `bottom` to `top` if clicked near the bottom of the screen).
+ * **Comportamiento de auto-inversión (atributo `flip`):**
+ * Según las pautas de M3, los menús deben invertirse al lado opuesto del cursor
+ * si al abrirse en la `placement` solicitada causarían un desbordamiento de la
+ * ventana gráfica. Cuando `flip=true`, el componente calcula dinámicamente los límites
+ * de la ventana antes de abrir y anula `placement` si es necesario (ej., invirtiendo
+ * de `bottom` a `top` si se hace clic cerca de la parte inferior de la pantalla).
  *
- * **Auto-dismiss:**
- * Closes automatically when clicking anywhere outside the menu, or when
- * pressing the `Escape` key.
+ * **Auto-descarte:**
+ * Se cierra automáticamente al hacer clic en cualquier lugar fuera del menú, o al
+ * presionar la tecla `Escape`.
  *
  * @example
  * ```html
- * <!-- Wrap the trigger area and the menu in a container -->
+ * <!-- Envuelve el área de activación y el menú en un contenedor -->
  * <div>
- *   <p>Right-click me for options</p>
+ *   <p>Haz clic derecho para ver las opciones</p>
  *   <moni-context-menu flip>
- *     <moni-menu-item>Copy</moni-menu-item>
- *     <moni-menu-item>Paste</moni-menu-item>
+ *     <moni-menu-item>Copiar</moni-menu-item>
+ *     <moni-menu-item>Pegar</moni-menu-item>
  *     <moni-divider></moni-divider>
- *     <moni-menu-item>Delete</moni-menu-item>
+ *     <moni-menu-item>Eliminar</moni-menu-item>
  *   </moni-context-menu>
  * </div>
  * ```
  *
- * @slot default - The `<moni-menu-item>` elements that make up the menu.
+ * @slot default - Los elementos `<moni-menu-item>` que componen el menú.
  */
 @customElement('moni-context-menu')
 export class MoniContextMenu extends MoniElement {
@@ -67,8 +67,18 @@ export class MoniContextMenu extends MoniElement {
 	@query('moni-menu') private _menuEl?: HTMLElement;
 
 	private _target: HTMLElement | null = null;
+	/**
+	 * Wrapper estático para el manejador de teclado global.
+	 * Conserva la referencia exacta para desregistrar el evento en `disconnectedCallback`.
+	 */
 	private _docKeydown = (e: KeyboardEvent) => this._onDocKeydown(e);
 
+	/**
+	 * Hook de inicialización (Lit).
+	 * Atrapa al elemento padre directo y le inyecta `position: relative` (si era static)
+	 * para que las coordenadas de despliegue del menú floten correctamente.
+	 * Adjunta los eventos nativos de `contextmenu` (clic derecho) al contenedor.
+	 */
 	override connectedCallback() {
 		super.connectedCallback();
 		this._target = this.parentElement;
@@ -84,6 +94,11 @@ export class MoniContextMenu extends MoniElement {
 		document.addEventListener('keydown', this._docKeydown);
 	}
 
+	/**
+	 * Hook de destrucción (Lit).
+	 * Limpia los detectores de clic derecho y atajos de teclado para eludir memory leaks
+	 * al desmontarse del DOM.
+	 */
 	override disconnectedCallback() {
 		if (this._target) {
 			this._target.removeEventListener('contextmenu', this._onContextMenu);
@@ -93,6 +108,11 @@ export class MoniContextMenu extends MoniElement {
 		super.disconnectedCallback();
 	}
 
+	/**
+	 * Intercepta el clic derecho (`contextmenu`) del navegador de forma nativa.
+	 * Previene el menú por defecto del SO y captura las coordenadas X/Y del ratón
+	 * relativas al elemento anfitrión para ubicar milimétricamente el popup personalizado.
+	 */
 	private _onContextMenu = (e: MouseEvent) => {
 		e.preventDefault();
 		if (this._target) {
@@ -105,10 +125,16 @@ export class MoniContextMenu extends MoniElement {
 		}
 		this._resolvedPlacement = this.placement;
 		this._open = true;
-		// After Lit renders the menu, check viewport fit and flip if needed.
+		// Después de que Lit renderice el menú, verificar el ajuste al viewport y voltear si es necesario.
 		this.updateComplete.then(() => this._maybeFlip());
 	};
 
+	/**
+	 * Sistema de Colisión/Desbordamiento de Ventana.
+	 * Si la directiva `flip` está habilitada, examina los límites (BoundingClientRect)
+	 * del menú tras su renderizado y altera su `placement` sobre la marcha si éste
+	 * colisiona con el borde del Viewport, invirtiendo top/bottom o left/right.
+	 */
 	private _maybeFlip() {
 		if (!this.flip) return;
 		const menu = this._menuEl?.shadowRoot?.querySelector('menu') as HTMLElement | null;
@@ -129,12 +155,20 @@ export class MoniContextMenu extends MoniElement {
 		}
 	}
 
+	/**
+	 * Cierra instintivamente el menú contextual si el usuario hace clic en 
+	 * cualquier zona exterior al mismo.
+	 */
 	private _onDocumentClick = () => {
 		if (this._open) {
 			this._open = false;
 		}
 	};
 
+	/**
+	 * Escucha la tecla Escape a nivel documento para cerrar el menú si se
+	 * encuentra desplegado, cumpliendo con los estándares de accesibilidad (WAI-ARIA).
+	 */
 	private _onDocKeydown = (e: KeyboardEvent) => {
 		if (e.key === 'Escape' && this._open) {
 			this._open = false;
@@ -159,10 +193,22 @@ export class MoniContextMenu extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el menú contextual como una superposición de Popover API posicionada en las coordenadas del puntero.
+	 *
+	 * El `<div>` del menú usa `popover="manual"` para que aparezca en la capa superior
+	 * por encima de todo el otro contenido. Sus `top` y `left` se establecen mediante propiedades personalizadas CSS
+	 * `--_x` / `--_y` (inyectadas como estilo en línea) que se calculan
+	 * a partir de `clientX` / `clientY` del evento `contextmenu`.
+	 *
+	 * El `@click` en el fondo (fuera de los límites del menú) llama a `hidePopover()`
+	 * para descartar ligeramente el menú contextual. Los elementos dentro del menú deben llamar a
+	 * `event.stopPropagation()` para evitar el cierre accidental al hacer clic en un elemento.
+	 */
 	override render() {
-		// When the menu is open, prefer the resolved (possibly flipped)
-		// placement; otherwise just use the host's requested placement so
-		// the inner element reflects the attribute synchronously.
+		// Cuando el menú está abierto, preferir la ubicación resuelta (posiblemente volteada);
+		// de lo contrario, simplemente usar la ubicación solicitada por el host para que
+		// el elemento interno refleje el atributo sincrónicamente.
 		const effectivePlacement = this._open
 			? this._resolvedPlacement
 			: this.placement;

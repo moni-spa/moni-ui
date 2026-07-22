@@ -12,58 +12,63 @@ import './moni-icon.js';
 import './moni-progress.js';
 
 /**
- * Material Design 3 Chip component.
+ * Componente Material Design 3 Chip.
  *
- * Chips are compact, interactive elements that represent actions, filters,
- * attributes, or user inputs. They are visual-only shells — the consumer
- * owns all state management (selection, removal, active filter state).
+ * Los chips (fichas) son elementos compactos e interactivos que representan acciones, filtros,
+ * atributos o entradas de usuario. Son contenedores solo visuales — el consumidor
+ * es dueño de todo el manejo del estado (selección, eliminación, estado de filtro activo).
  *
- * **M3 spec reference:** `m3-docs/components/chips/specs.md`
+ * **Referencia de la especificación M3:** `m3-docs/components/chips/specs.md`
  *
- * **Variants:**
- * - `assist` (default) — Smart or suggested actions. Uses `var(--outline)` border
- *   to ensure 3:1 contrast per the M3 accessibility spec. Alias: `outlined`.
- * - `filter` — Filters for a content collection. Shows a leading checkmark when
- *   `selected`. Alias: `fill`.
- * - `input` — Represents discrete user input (tags, tokens). Adds a trailing
- *   remove icon when `removable`.
- * - `suggestion` — Product-generated suggestions. Outlined, no icons.
+ * **Variantes:**
+ * - `assist` (por defecto) — Acciones inteligentes o sugeridas. Usa borde `var(--outline)`
+ *   para asegurar un contraste de 3:1 según la especificación de accesibilidad de M3. Alias: `outlined`.
+ * - `filter` — Filtros para una colección de contenido. Muestra una marca de verificación al principio cuando
+ *   está `selected`. Alias: `fill`.
+ * - `input` — Representa una entrada de usuario discreta (etiquetas, tokens). Añade un icono de
+ *   eliminación al final cuando es `removable`.
+ * - `suggestion` — Sugerencias generadas por el producto. Con contorno, sin iconos.
  *
- * **M3 measurements:**
- * - Default height: 32dp (`small` size = M3 spec baseline).
- * - Corner radius: 8dp.
- * - Icon size: 18dp.
- * - `medium` and `large` sizes are Moni extensions with larger touch targets.
+ * **Medidas M3:**
+ * - Altura por defecto: 32dp (tamaño `small` = línea base de la especificación M3).
+ * - Radio de esquina: 8dp.
+ * - Tamaño de icono: 18dp.
+ * - Los tamaños `medium` y `large` son extensiones de Moni con áreas táctiles más grandes.
  *
- * **Accessibility:**
- * `assist` and `suggestion` chips use `var(--outline)` for their stroke to
- * guarantee 3:1 contrast against the surface background at rest.
- * `filter` and `input` use `outline-variant` at rest but achieve contrast
- * through the `secondary-container` fill when selected.
+ * **Accesibilidad:**
+ * Los chips `assist` y `suggestion` usan `var(--outline)` para su trazo para
+ * garantizar un contraste de 3:1 contra el fondo de la superficie en reposo.
+ * `filter` e `input` usan `outline-variant` en reposo pero logran contraste
+ * a través del relleno `secondary-container` cuando se seleccionan.
  *
- * @fires remove - Bubbles and is composed. Fired when the trailing remove
- *                 icon is clicked on an `input` chip with `removable`.
+ * @fires remove - Burbujea y está compuesto. Se dispara cuando el icono de eliminación
+ *                 final se hace clic en un chip `input` con `removable`.
  *
  * @example
  * ```html
- * <!-- Filter chip with selected state -->
+ * <!-- Chip de filtro con estado seleccionado -->
  * <moni-chip variant="filter" selected>Technology</moni-chip>
  *
- * <!-- Input chip (tag/token) -->
+ * <!-- Chip de entrada (etiqueta/token) -->
  * <moni-chip variant="input" removable icon="label">TypeScript</moni-chip>
  *
- * <!-- Assist chip with icon -->
+ * <!-- Chip de asistencia con icono -->
  * <moni-chip icon="directions_car">Get directions</moni-chip>
  * ```
  *
- * @slot default   - The chip label text.
- * @slot icon      - Override for the leading icon (alternative to the `icon` attribute).
+ * @slot default   - El texto de la etiqueta del chip.
+ * @slot icon      - Anula el icono inicial (alternativa al atributo `icon`).
  *
- * @csspart chip   - The inner `<button>` element.
- * @csspart label  - The label `<span>` element.
+ * @csspart chip   - El elemento interno `<button>`.
+ * @csspart label  - El elemento `<span>` de la etiqueta.
  */
 @customElement('moni-chip')
 export class MoniChip extends MoniElement {
+	/**
+	 * Variante visual del chip.
+	 * @type {'assist' | 'filter' | 'input' | 'suggestion' | 'outlined' | 'fill'}
+	 * @default 'assist'
+	 */
 	@property({ reflect: true })
 	variant:
 		| 'assist'
@@ -72,8 +77,20 @@ export class MoniChip extends MoniElement {
 		| 'suggestion'
 		| 'outlined'
 		| 'fill' = 'assist';
+
+	/**
+	 * Define las dimensiones del chip.
+	 * @type {'small' | 'medium' | 'large'}
+	 * @default 'small'
+	 */
 	@property({ reflect: true })
 	size: 'small' | 'medium' | 'large' = 'small';
+
+	/**
+	 * Forma del radio del borde del chip.
+	 * @type {'round' | 'no-round' | 'square' | 'circle' | 'left-round' | 'right-round' | 'top-round' | 'bottom-round'}
+	 * @default 'round'
+	 */
 	@property({ reflect: true })
 	shape:
 		| 'round'
@@ -84,21 +101,61 @@ export class MoniChip extends MoniElement {
 		| 'right-round'
 		| 'top-round'
 		| 'bottom-round' = 'round';
+
+	/**
+	 * Si es true, marca el chip como seleccionado (útil para chips de filtro).
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) selected = false;
+
+	/**
+	 * Si es true, muestra un icono de cierre al final para permitir la eliminación.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) removable = false;
+
+	/**
+	 * Deshabilita el chip.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
+
+	/**
+	 * Si es true, muestra un indicador de carga dentro del chip.
+	 * @type {boolean}
+	 */
 	@property({ type: Boolean, reflect: true }) loading = false;
+
+	/**
+	 * Nombre del icono inicial (Material Symbols).
+	 * @type {string}
+	 */
 	@property({ reflect: true }) icon = '';
 
 	@state()
 	private _hasSlottedIcon = false;
 
+	/**
+	 * Manejador del slot interno de icono (Slot Change).
+	 * Determina si el desarrollador proporcionó un icono dinámicamente vía Light DOM
+	 * (`<moni-icon slot="icon">`), permitiendo que el componente ajuste 
+	 * sus márgenes internos (`padding`) y espaciados dinámicamente.
+	 */
 	private _handleSlotChange(e: Event) {
 		const slot = e.target as HTMLSlotElement;
 		this._hasSlottedIcon = slot.assignedNodes({ flatten: true }).length > 0;
 	}
 
-	/** Normalize legacy variant names to M3 spec. */
+	/**
+	 * Manejador de clics en el icono de remover.
+	 * Detiene la propagación para no disparar el clic del chip y emite un evento custom 'remove'.
+	 */
+	private _handleRemoveClick(e: Event) {
+		e.stopPropagation();
+		this.dispatchEvent(new CustomEvent('remove', { bubbles: true, composed: true }));
+	}
+
+	/** Normaliza los nombres de variantes heredadas a la especificación M3. */
 	private get _variant(): 'assist' | 'filter' | 'input' | 'suggestion' {
 		if (this.variant === 'outlined') return 'assist';
 		if (this.variant === 'fill') return 'filter';
@@ -288,6 +345,27 @@ export class MoniChip extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el elemento `<button>` del chip con su lista de clases calculada.
+	 *
+	 * **Normalización de variantes:**
+	 * `_variant` mapea nombres de alias heredados (`'outlined'` → `'assist'`, `'fill'` → `'filter'`)
+	 * a nombres de variantes canónicas de M3 antes de inyectarlos como clases CSS.
+	 *
+	 * **Ruta rápida de carga:**
+	 * Cuando `loading=true`, se devuelve temprano un botón mínimo con solo un indicador de carga
+	 * (sin slot de icono, sin etiqueta, sin botón de eliminación) con `aria-busy="true"`.
+	 *
+	 * **Lógica del botón de eliminación:**
+	 * `showRemove` es `true` cuando:
+	 * - `variant='input'` (Especificación M3: los chips de entrada siempre tienen un icono de cierre al final), o
+	 * - `removable=true` se establece explícitamente.
+	 *
+	 * **Resolución de icono:**
+	 * Si se establece el atributo `icon`, se renderiza un `<moni-icon>`. De lo contrario, se usa el
+	 * slot nombrado `icon`, con `_hasSlottedIcon` rastreando si se proyectó contenido en el slot
+	 * (usado para añadir condicionalmente los ajustes de relleno `has-icon`).
+	 */
 	override render() {
 		const variant = this._variant;
 		const hasIcon = Boolean(this.icon) || this._hasSlottedIcon;
@@ -335,7 +413,7 @@ export class MoniChip extends MoniElement {
 				></slot>`;
 
 		const removeEl = showRemove
-			? html`<span class="remove" part="remove" aria-hidden="true"
+			? html`<span class="remove" part="remove" aria-hidden="true" @click=${this._handleRemoveClick}
 					><moni-icon name="close"></moni-icon
 				></span>`
 			: nothing;

@@ -11,39 +11,39 @@ import { MoniElement, sharedStyles } from './_base/index.js';
 import { loadingIndicatorPolygons } from './loading-shapes.js';
 
 /**
- * Material Design 3 Loading Indicator component.
+ * Componente Material Design 3 Loading Indicator (Indicador de carga).
  *
- * An indeterminate loading indicator that visually represents an unspecified
- * wait time. Unlike standard circular spinners, this component uses a morphing
- * polygon animation that shifts between shapes (circle, rounded square, etc.)
- * in accordance with the high-fidelity M3 Expressive motion specifications.
+ * Un indicador de carga indeterminado que representa visualmente un tiempo de espera
+ * no especificado. A diferencia de los spinners circulares estándar, este componente usa una animación
+ * de polígono cambiante que cambia entre formas (círculo, cuadrado redondeado, etc.)
+ * de acuerdo con las especificaciones de movimiento de alta fidelidad M3 Expressive.
  *
- * **Variants:**
- * - `uncontained` (default) — A standalone morphing shape that inherits color
- *   from its text context (or defaults to `primary`).
- * - `contained` — The morphing shape is placed inside a circular container
- *   with a distinct background color, useful for high-contrast loading states
- *   or overlaying imagery.
+ * **Variantes:**
+ * - `uncontained` (por defecto) — Una forma cambiante independiente que hereda el color
+ *   de su contexto de texto (o por defecto es `primary`).
+ * - `contained` — La forma cambiante se coloca dentro de un contenedor circular
+ *   con un color de fondo distinto, útil para estados de carga de alto contraste
+ *   o superposición de imágenes.
  *
- * **Animation & Accessibility:**
- * The component manages its own SVG `<animate>` tags. The animation is
- * automatically started/stopped via `connectedCallback`/`disconnectedCallback`
- * to save CPU cycles when the element is off-screen. It applies standard ARIA
- * roles (`role="progressbar"`) and value attributes to ensure screen readers
- * identify it correctly as an indeterminate loading state.
+ * **Animación y Accesibilidad:**
+ * El componente gestiona sus propias etiquetas `<animate>` SVG. La animación se
+ * inicia/detiene automáticamente a través de `connectedCallback`/`disconnectedCallback`
+ * para ahorrar ciclos de CPU cuando el elemento está fuera de la pantalla. Aplica los atributos de valor
+ * y roles ARIA estándar (`role="progressbar"`) para asegurar que los lectores de pantalla
+ * lo identifiquen correctamente como un estado de carga indeterminado.
  *
  * @example
  * ```html
- * <!-- Uncontained indicator -->
+ * <!-- Indicador no contenido -->
  * <moni-loading-indicator></moni-loading-indicator>
  *
- * <!-- Contained indicator (default container is secondary-container) -->
+ * <!-- Indicador contenido (el contenedor por defecto es secondary-container) -->
  * <moni-loading-indicator variant="contained"></moni-loading-indicator>
  * ```
  *
- * @csspart container - The outer `.container` wrapper.
- * @csspart svg       - The inner `<svg>` element.
- * @csspart shape     - The `<path>` element that morphs.
+ * @csspart container - El envoltorio exterior `.container`.
+ * @csspart svg       - El elemento `<svg>` interior.
+ * @csspart shape     - El elemento `<path>` que se transforma.
  */
 @customElement('moni-loading-indicator')
 export class MoniLoadingIndicator extends MoniElement {
@@ -52,6 +52,11 @@ export class MoniLoadingIndicator extends MoniElement {
 
 	@query('.container') private _container?: HTMLElement;
 
+	/**
+	 * Hook de inicialización (Lit).
+	 * Configura roles ARIA (progressbar) por defecto y asegura
+	 * el encendido inicial de la animación infinita en el Shadow DOM.
+	 */
 	override connectedCallback() {
 		super.connectedCallback();
 		this.ariaValueMin = this.ariaValueMin || '0';
@@ -60,15 +65,30 @@ export class MoniLoadingIndicator extends MoniElement {
 		this._toggleAnimation(true);
 	}
 
+	/**
+	 * Hook de destrucción (Lit).
+	 * Apaga formalmente la animación CSS (`.animate`) para frenar el GPU repaint
+	 * cuando el componente es destruido, reduciendo el consumo de batería.
+	 */
 	override disconnectedCallback() {
 		super.disconnectedCallback();
 		this._toggleAnimation(false);
 	}
 
+	/**
+	 * Hook de primera actualización (Lit).
+	 * Dispara explícitamente el estado de animación una vez que el DOM 
+	 * interno (`this._container`) ha sido montado y es seleccionable.
+	 */
 	protected override firstUpdated() {
 		this._toggleAnimation(true);
 	}
 
+	/**
+	 * Controlador imperativo de las clases de animación.
+	 * Permite pausar/reanudar el loader mediante CSS, muy útil cuando se integra
+	 * con observadores de visibilidad (IntersectionObserver) para mejorar el rendimiento.
+	 */
 	private _toggleAnimation(enable: boolean) {
 		if (this._container) {
 			this._container.classList.toggle('animate', enable);
@@ -196,6 +216,18 @@ export class MoniLoadingIndicator extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza la superposición de carga de pantalla completa con un spinner centrado y una etiqueta opcional.
+	 *
+	 * La superposición utiliza `position: fixed; inset: 0` para cubrir toda la ventana gráfica,
+	 * y `z-index` para aparecer por encima del resto del contenido. El spinner `<moni-progress>`
+	 * se centra mediante CSS flexbox en el elemento `:host`.
+	 *
+	 * **Región ARIA en vivo:**
+	 * `aria-live="polite"` y `aria-label` en el contenedor anuncian los cambios de estado
+	 * de carga a los lectores de pantalla sin interrumpir el flujo de lectura del usuario.
+	 * El `role="status"` da a los lectores de pantalla un punto de referencia implícito similar a una alerta.
+	 */
 	override render() {
 		return html`
 			<div class="container animate" aria-hidden="true">

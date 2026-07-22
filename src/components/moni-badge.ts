@@ -10,26 +10,26 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Badge component.
+ * Componente Material Design 3 Badge.
  *
- * Badges are small status descriptors anchored to a parent element, used to
- * convey supplementary information such as a notification count, online
- * status, or selection indicator.
+ * Los badges son pequeños descriptores de estado anclados a un elemento padre, usados para
+ * transmitir información suplementaria como un conteo de notificaciones, estado
+ * en línea, o indicador de selección.
  *
- * **Positioning contract:**
- * The badge uses `position: absolute` and anchors to the parent element.
- * On `connectedCallback`, if the parent's computed `position` is `'static'`,
- * the badge automatically sets `parent.style.position = 'relative'`.
- * Consumers do not need to manually add `position: relative` to the parent.
+ * **Contrato de posicionamiento:**
+ * El badge usa `position: absolute` y se ancla al elemento padre.
+ * En `connectedCallback`, si el `position` computado del padre es `'static'`,
+ * el badge automáticamente establece `parent.style.position = 'relative'`.
+ * Los consumidores no necesitan añadir manualmente `position: relative` al padre.
  *
- * **Rendering model:**
- * The `:host` displays as `contents`, making it transparent to layout.
- * Only the inner `.badge` span is visually rendered. This allows the badge
- * to be dropped inside any element without affecting its layout flow.
+ * **Modelo de renderizado:**
+ * El `:host` se muestra como `contents`, haciéndolo transparente para el layout.
+ * Solo el span interior `.badge` se renderiza visualmente. Esto permite que el badge
+ * se inserte dentro de cualquier elemento sin afectar su flujo de layout.
  *
  * @example
  * ```html
- * <!-- Notification badge on a button -->
+ * <!-- Badge de notificación en un botón -->
  * <div style="position: relative; display: inline-flex;">
  *   <moni-button icon="notifications" variant="text"></moni-button>
  *   <moni-badge value="5"></moni-badge>
@@ -38,37 +38,37 @@ import { MoniElement, sharedStyles } from './_base/index.js';
  *
  * @example
  * ```html
- * <!-- Inline dot badge for status -->
+ * <!-- Badge de punto en línea para estado -->
  * <moni-badge shape="min" color="primary" inline></moni-badge>
- * Online
+ * Conectado
  * ```
  *
- * @csspart badge - The badge `<span>` element. Override `background-color`,
- *                  `color`, or `border-radius` to customize appearance.
+ * @csspart badge - El elemento `<span>` del badge. Sobrescribe `background-color`,
+ *                  `color`, o `border-radius` para personalizar la apariencia.
  */
 @customElement('moni-badge')
 export class MoniBadge extends MoniElement {
 	/**
-	 * Text content of the badge label.
+	 * Contenido de texto de la etiqueta del badge.
 	 *
-	 * Also accepts slotted content — the default slot inside the badge span
-	 * falls back to this value when no children are slotted.
-	 * Use an empty string with `shape="min"` to render a dot-only badge.
+	 * También acepta contenido en el slot — el slot por defecto dentro del span del badge
+	 * usa este valor cuando no hay hijos proporcionados en el slot.
+	 * Usa un string vacío con `shape="min"` para renderizar un badge de solo punto.
 	 *
 	 * @default ''
 	 */
 	@property({ reflect: true }) value = '';
 
 	/**
-	 * Anchor position relative to the parent element's edges.
+	 * Posición de anclaje relativa a los bordes del elemento padre.
 	 *
-	 * Uses `inset: 50% auto auto 50%` as the base and adjusts translation:
-	 * - `''` (default) — top-right corner (translate: 0, -100%).
-	 * - `'top'`    — same as default, explicit alias.
-	 * - `'bottom'` — bottom-right corner (translate: 0, 0).
-	 * - `'left'`   — top-left corner (translate: -100%, -100%).
-	 * - `'right'`  — top-right corner (translate: 0, -100%).
-	 * - `'none'`   — disables absolute positioning; see also the `inline` attribute.
+	 * Usa `inset: 50% auto auto 50%` como base y ajusta la traslación:
+	 * - `''` (por defecto) — esquina superior derecha (translate: 0, -100%).
+	 * - `'top'`    — igual que por defecto, alias explícito.
+	 * - `'bottom'` — esquina inferior derecha (translate: 0, 0).
+	 * - `'left'`   — esquina superior izquierda (translate: -100%, -100%).
+	 * - `'right'`  — esquina superior derecha (translate: 0, -100%).
+	 * - `'none'`   — deshabilita el posicionamiento absoluto; ver también el atributo `inline`.
 	 *
 	 * @default ''
 	 */
@@ -76,14 +76,14 @@ export class MoniBadge extends MoniElement {
 	position: 'top' | 'bottom' | 'left' | 'right' | 'none' | '' = '';
 
 	/**
-	 * Shape of the badge container.
+	 * Forma del contenedor del badge.
 	 *
-	 * - `''` (default) — Rounded pill shape (border-radius: 1rem).
-	 * - `'circle'`     — Alias for pill; the badge is always circular when the
-	 *                    content is a single character or absent.
-	 * - `'square'`     — No border-radius (angular badge).
-	 * - `'min'`        — Dot only; content is hidden via `display: none` and the
-	 *                    shape is clipped to a small circle via `clip-path`.
+	 * - `''` (por defecto) — Forma de píldora redondeada (border-radius: 1rem).
+	 * - `'circle'`     — Alias para píldora; el badge siempre es circular cuando el
+	 *                    contenido es un solo carácter o está ausente.
+	 * - `'square'`     — Sin border-radius (badge angular).
+	 * - `'min'`        — Solo punto; el contenido se oculta mediante `display: none` y la
+	 *                    forma se recorta a un círculo pequeño mediante `clip-path`.
 	 *
 	 * @default ''
 	 */
@@ -91,13 +91,13 @@ export class MoniBadge extends MoniElement {
 	shape: 'circle' | 'square' | 'min' | '' = '';
 
 	/**
-	 * Semantic color role of the badge.
+	 * Rol de color semántico del badge.
 	 *
-	 * Maps to the M3 color palette roles:
-	 * - `'error'` (default) — Red; standard for notification counts and alerts.
-	 * - `'primary'`         — Brand primary color; for selection or active states.
-	 * - `'secondary'`       — Secondary accent; for supplementary indicators.
-	 * - `'tertiary'`        — Tertiary accent; for decorative or informational badges.
+	 * Se asigna a los roles de la paleta de colores M3:
+	 * - `'error'` (por defecto) — Rojo; estándar para conteos de notificaciones y alertas.
+	 * - `'primary'`         — Color primario de la marca; para estados activos o de selección.
+	 * - `'secondary'`       — Acento secundario; para indicadores suplementarios.
+	 * - `'tertiary'`        — Acento terciario; para badges decorativos o informativos.
 	 *
 	 * @default 'error'
 	 */
@@ -105,38 +105,36 @@ export class MoniBadge extends MoniElement {
 	color: 'primary' | 'secondary' | 'tertiary' | 'error' = 'error';
 
 	/**
-	 * When `true`, the badge renders inline (resets `position: absolute` to
-	 * `position: relative`) rather than anchoring to the parent.
+	 * Cuando es `true`, el badge se renderiza en línea (restablece `position: absolute` a
+	 * `position: relative`) en lugar de anclarse al padre.
 	 *
-	 * Equivalent to BeerCSS's `.badge.none` class. Use for inline status
-	 * indicators that flow within text or flex containers.
+	 * Equivalente a la clase `.badge.none` de BeerCSS. Úsalo para indicadores de estado en línea
+	 * que fluyen dentro de texto o contenedores flex.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) inline = false;
 
 	/**
-	 * When present, renders the badge with an outlined style:
-	 * - Background becomes `--surface` (same as the page background).
-	 * - Border and text color use the palette color token (e.g. `--error`).
+	 * Cuando está presente, renderiza el badge con un estilo delineado:
+	 * - El fondo se convierte en `--surface` (igual que el fondo de la página).
+	 * - El borde y el color del texto usan el token de color de la paleta (ej. `--error`).
 	 *
-	 * Equivalent to BeerCSS's `.badge.border` class.
+	 * Equivalente a la clase `.badge.border` de BeerCSS.
 	 *
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) border = false;
 
 	/**
-	 * Ensures the parent element can contain the absolutely-positioned badge.
-	 *
-	 * Reads the parent's computed `position` via `getComputedStyle`. If it is
-	 * `'static'` (the browser default), sets `parent.style.position = 'relative'`
-	 * so the badge anchors correctly. This is a convenience that avoids requiring
-	 * consumers to remember to add `position: relative` to the parent themselves.
+	 * Hook de ciclo de vida de Lit.
+	 * Mutación imperativa del DOM padre para garantizar el sistema de anclaje (CSS Position).
+	 * Un badge por defecto usa position: absolute. Si su contenedor padre es estático,
+	 * el badge "escaparía" hasta el body. Esto detecta el computed style y fuerza
+	 * un contexto de apilamiento relativo para encapsularlo.
 	 */
 	override connectedCallback() {
 		super.connectedCallback();
-		// Ensure the badge's absolutely-positioned anchor point is correct.
 		const parent = this.parentElement;
 		if (parent) {
 			const computed = getComputedStyle(parent);
@@ -218,16 +216,16 @@ export class MoniBadge extends MoniElement {
 	];
 
 	/**
-	 * Renders the badge span with the computed class list.
+	 * Renderiza el span del badge con la lista de clases computada.
 	 *
-	 * Class composition:
-	 * - `'badge'`       — always present (base styles).
-	 * - `this.position` — position variant class (e.g. `'bottom'`, `'left'`).
-	 * - `this.shape`    — shape variant class (e.g. `'min'`, `'square'`).
-	 * - `'none'`        — added when `inline=true` to reset absolute positioning.
+	 * Composición de clases:
+	 * - `'badge'`       — siempre presente (estilos base).
+	 * - `this.position` — clase de variante de posición (ej. `'bottom'`, `'left'`).
+	 * - `this.shape`    — clase de variante de forma (ej. `'min'`, `'square'`).
+	 * - `'none'`        — se añade cuando `inline=true` para restablecer el posicionamiento absoluto.
 	 *
-	 * Falsy values are filtered out so no extra spaces appear in the class string.
-	 * The default slot falls back to the `value` attribute text node.
+	 * Los valores falsos se filtran para que no aparezcan espacios extra en el string de clases.
+	 * El slot por defecto usa el nodo de texto del atributo `value` como respaldo.
 	 */
 	override render() {
 		const classes = [

@@ -10,50 +10,50 @@ import { customElement, property } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
- * Material Design 3 Tabs container component.
+ * Componente Material Design 3 Tabs container (Contenedor de pestañas).
  *
- * A navigational container that groups multiple `<moni-tab>` elements. Tabs
- * organize content into high-level categories and allow the user to switch
- * between them.
+ * Un contenedor de navegación que agrupa múltiples elementos `<moni-tab>`. Las pestañas
+ * organizan el contenido en categorías de alto nivel y permiten al usuario alternar
+ * entre ellas.
  *
- * **M3 spec reference:** `m3-docs/components/tabs/specs.md`
+ * **Referencia a la especificación M3:** `m3-docs/components/tabs/specs.md`
  *
- * **Modes (Primary vs Secondary):**
- * - `primary` (default): Used for top-level navigation at the highest hierarchy,
- *   often placed directly below a top app bar. They span the full width and
- *   feature a prominent active indicator.
- * - `secondary`: Used for deeper content hierarchies within a specific area
- *   or page. They are typically more subtle.
+ * **Modos (Primario vs Secundario):**
+ * - `primary` (por defecto): Usado para navegación de nivel superior en la jerarquía más alta,
+ *   a menudo colocado directamente debajo de una barra de aplicación superior (top app bar).
+ *   Abarcan todo el ancho y presentan un indicador activo prominente.
+ * - `secondary`: Usado para jerarquías de contenido más profundas dentro de un área
+ *   o página específica. Típicamente son más sutiles.
  *
- * **Layout & Alignment:**
- * - `scrollable`: If the number of tabs exceeds the container width, this
- *   enables horizontal scrolling (`overflow-x: auto`) rather than squishing.
- * - `align`: Controls how the tabs are distributed (`default` space-around,
- *   `left`, `center`, or `right`).
- * - `vertical`: Stacks the icon above the text label inside the child tabs.
+ * **Diseño y alineación:**
+ * - `scrollable`: Si el número de pestañas excede el ancho del contenedor, esto
+ *   habilita el desplazamiento horizontal (`overflow-x: auto`) en lugar de aplastarlas.
+ * - `align`: Controla cómo se distribuyen las pestañas (`default` space-around,
+ *   `left`, `center`, o `right`).
+ * - `vertical`: Apila el icono sobre la etiqueta de texto dentro de las pestañas hijas.
  *
- * **Active Indicator:**
- * The `indicator-size` attribute allows customizing the width of the active
- * underline indicator (`default` fits the tab content, `min` is narrow, `max`
- * fills the full tab width).
+ * **Indicador Activo:**
+ * El atributo `indicator-size` permite personalizar el ancho del
+ * indicador de subrayado activo (`default` se ajusta al contenido de la pestaña, `min` es estrecho, `max`
+ * llena todo el ancho de la pestaña).
  *
  * @example
  * ```html
- * <!-- Primary, scrollable tabs -->
+ * <!-- Pestañas primarias, con desplazamiento (scrollable) -->
  * <moni-tabs scrollable>
- *   <moni-tab active label="Flights"></moni-tab>
- *   <moni-tab label="Trips"></moni-tab>
- *   <moni-tab label="Explore"></moni-tab>
+ *   <moni-tab active label="Vuelos"></moni-tab>
+ *   <moni-tab label="Viajes"></moni-tab>
+ *   <moni-tab label="Explorar"></moni-tab>
  * </moni-tabs>
  *
- * <!-- Secondary, centered tabs with vertical layout -->
+ * <!-- Pestañas secundarias, centradas con diseño vertical -->
  * <moni-tabs mode="secondary" align="center" vertical>
  *   <moni-tab active icon="video_camera_front" label="Video"></moni-tab>
- *   <moni-tab icon="photo_camera" label="Photo"></moni-tab>
+ *   <moni-tab icon="photo_camera" label="Foto"></moni-tab>
  * </moni-tabs>
  * ```
  *
- * @slot default - `<moni-tab>` child elements.
+ * @slot default - Elementos hijos `<moni-tab>`.
  */
 @customElement('moni-tabs')
 export class MoniTabs extends MoniElement {
@@ -106,6 +106,12 @@ export class MoniTabs extends MoniElement {
 		`
 	];
 
+	/**
+	 * Renderiza el contenedor de navegación.
+	 * Construye dinámicamente las clases CSS que habilitan los selectores estructurales
+	 * (`mode`, `align`, `indicatorSize`) permitiendo que el componente hijo `moni-tab`
+	 * herede estilos contextuales sin necesidad de inyectar variables complejas.
+	 */
 	override render() {
 		const classes = [
 			'tabs',

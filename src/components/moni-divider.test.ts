@@ -14,13 +14,13 @@ describe('moni-divider (P5.1 — recreated)', () => {
 		el.remove();
 	});
 
-	it('defaults to inset=leading', async () => {
+	it('por defecto es inset=leading', async () => {
 		await el.updateComplete;
 		expect(el.inset).toBe('leading');
 		expect(el.getAttribute('inset')).toBe('leading');
 	});
 
-	it('reflects all three M3 insets: leading / middle / none', async () => {
+	it('refleja las tres inserciones M3: leading / middle / none', async () => {
 		for (const inset of ['leading', 'middle', 'none'] as const) {
 			el.inset = inset;
 			await el.updateComplete;
@@ -28,13 +28,13 @@ describe('moni-divider (P5.1 — recreated)', () => {
 		}
 	});
 
-	it('renders an empty default slot for inline content', async () => {
+	it('renderiza un slot por defecto vacío para contenido en línea', async () => {
 		await el.updateComplete;
 		const slot = el.shadowRoot?.querySelector('slot');
 		expect(slot).toBeTruthy();
 	});
 
-	it('reflects the vertical attribute', async () => {
+	it('refleja el atributo vertical', async () => {
 		el.setAttribute('vertical', '');
 		await el.updateComplete;
 		expect(el.hasAttribute('vertical')).toBe(true);
