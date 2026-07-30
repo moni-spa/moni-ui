@@ -1619,6 +1619,11 @@ private _handleTouchMove(e: TouchEvent) {
 		// In infinite mode, the DOM index may be a multiple of the original list length.
 		// Modulo maps it back to the logical item index.
 		const logicalItemIndex = cardDomIndex % this.effectiveItems.length;
+		this.dispatchEvent(new CustomEvent('item-click', {
+			bubbles: true,
+			composed: true,
+			detail: { item, index: logicalItemIndex }
+		}));
 		emitMoniEvent<CarouselItem>(this, 'moni-item-click', {
 			detail: { item, index: logicalItemIndex }
 		});
@@ -1654,6 +1659,7 @@ private _handleTouchMove(e: TouchEvent) {
 		if (target.tagName.toLowerCase() === 'a' && target.getAttribute('href') === '#') {
 			e.preventDefault();
 		}
+		this.dispatchEvent(new CustomEvent('show-all-click', { bubbles: true, composed: true }));
 		emitMoniEvent(this, 'moni-show-all-click');
 	}
 

@@ -181,6 +181,7 @@ export class MoniBottomSheet extends MoniElement {
 		this._skipRequestClose = false;
 		if (!allowed) return false;
 
+		this.dispatchEvent(new Event('close', { bubbles: true, composed: true }));
 		emitMoniEvent(this, 'moni-close');
 
 		this._dialog.classList.remove('expanded');

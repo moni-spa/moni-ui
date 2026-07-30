@@ -59,30 +59,34 @@ export class MoniElement extends LitElement {
 		super.connectedCallback();
 		
 		// 1. Intersection Observer for all components (Visibility Events)
-		this._globalIntersectionObserver = new IntersectionObserver((entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting !== this._isBaseInViewport) {
-					this._isBaseInViewport = entry.isIntersecting;
-					this.dispatchEvent(new CustomEvent(
-						this._isBaseInViewport ? 'moni-enter-viewport' : 'moni-leave-viewport',
-						{ bubbles: true, composed: true, detail: { element: this } }
-					));
-				}
-			});
-		}, { threshold: [0, 1] });
-		this._globalIntersectionObserver.observe(this);
+		if (typeof IntersectionObserver !== 'undefined') {
+			this._globalIntersectionObserver = new IntersectionObserver((entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting !== this._isBaseInViewport) {
+						this._isBaseInViewport = entry.isIntersecting;
+						this.dispatchEvent(new CustomEvent(
+							this._isBaseInViewport ? 'moni-enter-viewport' : 'moni-leave-viewport',
+							{ bubbles: true, composed: true, detail: { element: this } }
+						));
+					}
+				});
+			}, { threshold: [0, 1] });
+			this._globalIntersectionObserver.observe(this);
+		}
 
 		// 2. Resize Observer for all components (Layout Events)
-		this._globalResizeObserver = new ResizeObserver((entries) => {
-			entries.forEach((entry) => {
-				this.dispatchEvent(new CustomEvent('moni-resize', {
-					bubbles: true,
-					composed: true,
-					detail: { contentRect: entry.contentRect, element: this }
-				}));
+		if (typeof ResizeObserver !== 'undefined') {
+			this._globalResizeObserver = new ResizeObserver((entries) => {
+				entries.forEach((entry) => {
+					this.dispatchEvent(new CustomEvent('moni-resize', {
+						bubbles: true,
+						composed: true,
+						detail: { contentRect: entry.contentRect, element: this }
+					}));
+				});
 			});
-		});
-		this._globalResizeObserver.observe(this);
+			this._globalResizeObserver.observe(this);
+		}
 
 		// 3. Global Slot Click Delegation
 		this.addEventListener('click', this._handleGlobalSlotClick);

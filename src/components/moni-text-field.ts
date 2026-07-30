@@ -209,7 +209,7 @@ export class MoniTextField extends MoniElement {
 		if (this._input) {
 			if (changed.has('value')) {
 				this._input.value = this.value;
-				this._internals.setFormValue(this.value);
+				this._internals?.setFormValue?.(this.value);
 			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 		}

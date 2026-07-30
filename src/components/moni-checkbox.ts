@@ -141,7 +141,7 @@ export class MoniCheckbox extends MoniElement {
 		if (this._input) {
 			if (changed.has('checked')) {
 				this._input.checked = this.checked;
-				this._internals.setFormValue(this.checked ? (this.value || 'on') : null);
+				this._internals?.setFormValue?.(this.checked ? (this.value || 'on') : null);
 			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 		}

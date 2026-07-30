@@ -135,16 +135,18 @@ describe('moni-button', () => {
 	});
 
 	it('registra una advertencia de obsolescencia cuando se usa size="extra" (usar size="xlarge" según M3)', async () => {
+		(el.constructor as any)._deprecationWarned = false;
 		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-		el.remove();
-		el.size = 'extra';
-		document.body.appendChild(el);
-		await el.updateComplete;
+		const extraBtn = document.createElement('moni-button') as MoniButton;
+		extraBtn.size = 'extra';
+		document.body.appendChild(extraBtn);
+		await extraBtn.updateComplete;
 		const call = warnSpy.mock.calls.find((c) =>
 			String(c[0]).includes('[moni-ui]') &&
 			String(c[0]).includes('size="extra"')
 		);
 		expect(call, 'se esperaba que una advertencia de obsolescencia mencionara size="extra"').toBeTruthy();
+		extraBtn.remove();
 		warnSpy.mockRestore();
 	});
 

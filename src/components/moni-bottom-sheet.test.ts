@@ -331,12 +331,6 @@ describe('moni-bottom-sheet', () => {
 		el.addEventListener('close', closeSpy);
 
 		// Clic adentro (el objetivo es handle): no debería cerrarse
-		dialog.dispatchEvent(new MouseEvent('click', {
-			bubbles: true,
-			cancelable: true
-		}));
-		// Espera, MouseEvent despachado directamente en dialog tiene e.target === dialog.
-		// Para simular el clic en el handle, despachar el evento click en el handle, que burbujea hasta el diálogo:
 		handle.dispatchEvent(new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true

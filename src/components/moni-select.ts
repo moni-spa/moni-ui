@@ -621,7 +621,7 @@ export class MoniSelect extends MoniElement {
 	override updated(changedProperties: Map<string | number | symbol, unknown>) {
 		super.updated(changedProperties);
 		if (changedProperties.has('value')) {
-			this._internals.setFormValue(this.value);
+			this._internals?.setFormValue?.(this.value);
 		}
 		if (
 			changedProperties.has('_open') ||
@@ -1033,6 +1033,8 @@ export class MoniSelect extends MoniElement {
 		this.value = option.value;
 		this._closeDropdown();
 
+		this.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+		this.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 		emitMoniEvent(this, 'moni-change', { detail: { value: this.value } });
 	}
 

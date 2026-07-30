@@ -159,6 +159,7 @@ describe('moni-morph-modal', () => {
 		const modal = document.createElement('moni-morph-modal') as MoniMorphModal;
 		modal.target = '#missing-target';
 		document.body.appendChild(modal);
+		modal.show();
 		const call = warnSpy.mock.calls.find((c) =>
 			String(c[0]).includes('[moni-morph-modal]')
 		);
