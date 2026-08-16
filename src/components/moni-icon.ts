@@ -98,7 +98,7 @@ export class MoniIcon extends MoniElement {
 		sharedStyles,
 		css`
 			:host {
-				--_size: 1.5rem;
+				--_size: var(--moni-icon-size, 1.5rem);
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
@@ -125,19 +125,19 @@ export class MoniIcon extends MoniElement {
 			}
 
 			:host([size='tiny']) {
-				--_size: 1rem;
+				--_size: var(--moni-icon-size, 1rem);
 			}
 			:host([size='small']) {
-				--_size: 1.25rem;
+				--_size: var(--moni-icon-size, 1.25rem);
 			}
 			:host([size='medium']) {
-				--_size: 1.5rem;
+				--_size: var(--moni-icon-size, 1.5rem);
 			}
 			:host([size='large']) {
-				--_size: 1.75rem;
+				--_size: var(--moni-icon-size, 1.75rem);
 			}
 			:host([size='extra']) {
-				--_size: 2rem;
+				--_size: var(--moni-icon-size, 2rem);
 			}
 
 			:host([filled]) {

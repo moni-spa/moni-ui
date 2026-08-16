@@ -370,6 +370,8 @@ export class MoniSlider extends MoniElement {
 				cursor: grab;
 				margin: 0;
 				z-index: 1;
+				transform: scaleX(1);
+				transition: transform 180ms cubic-bezier(0.2, 0, 0, 1), border-radius 180ms cubic-bezier(0.2, 0, 0, 1);
 			}
 			.slider > input::-webkit-slider-thumb:active { cursor: grabbing; }
 
@@ -385,10 +387,14 @@ export class MoniSlider extends MoniElement {
 				background: var(--primary);
 				cursor: grab;
 				margin: 0;
+				transform: scaleX(1);
+				transition: transform 180ms cubic-bezier(0.2, 0, 0, 1), border-radius 180ms cubic-bezier(0.2, 0, 0, 1);
 			}
 
-			.slider > input:not(:disabled):is(:focus)::-webkit-slider-thumb {
+			.slider > input:not(:disabled):is(:focus, :active)::-webkit-slider-thumb,
+			.slider > input:not(:disabled):is(:focus, :active)::-moz-range-thumb {
 				transform: scaleX(0.6);
+				border-radius: 0.375rem;
 			}
 
 			.slider > input:disabled { cursor: not-allowed; }
@@ -420,11 +426,17 @@ export class MoniSlider extends MoniElement {
 
 			/* Value indicator tooltip */
 			.slider > .tooltip {
+				--_indicator-gap: 0.5rem;
 				visibility: hidden;
 				opacity: 0;
 				border-radius: 2rem;
-				transition: top var(--speed2) ease, opacity var(--speed2) ease;
-				transform: translate(-50%, -25%);
+				transform-origin: 50% 100%;
+				transform: translate(-50%, calc(-100% + 0.25rem)) scale(0.82);
+				transition:
+					opacity 150ms cubic-bezier(0.2, 0, 0, 1),
+					transform 200ms cubic-bezier(0.2, 0, 0, 1),
+					visibility 0s linear 200ms;
+				inset-block-start: calc(50% - (var(--_thumb) / 2) - var(--_indicator-gap));
 				padding: 0.75rem 1rem;
 				position: absolute;
 				background-color: var(--inverse-surface);
@@ -436,20 +448,31 @@ export class MoniSlider extends MoniElement {
 			}
 
 			.slider > .tooltip.bottom {
-				transform: translate(-50%, 25%);
+				transform-origin: 50% 0;
+				transform: translate(-50%, calc(100% - 0.25rem)) scale(0.82);
+				inset-block: auto calc(50% - (var(--_thumb) / 2) - var(--_indicator-gap));
 			}
 
 			/* BeerCSS: tooltip shows on :focus of the input */
 			.slider > input:first-of-type:focus ~ .tooltip-1,
 			.slider > input:nth-of-type(2):focus ~ .tooltip-2 {
-				inset-block: -1rem auto;
 				opacity: 1;
 				visibility: visible;
+				transform: translate(-50%, -100%) scale(1);
+				transition-delay: 0s;
 			}
 
 			.slider > input:first-of-type:focus ~ .tooltip-1.bottom,
 			.slider > input:nth-of-type(2):focus ~ .tooltip-2.bottom {
-				inset-block: auto -1rem;
+				transform: translate(-50%, 100%) scale(1);
+			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.slider > input::-webkit-slider-thumb,
+				.slider > input::-moz-range-thumb,
+				.slider > .tooltip {
+					transition-duration: 0.01ms;
+				}
 			}
 		`
 	];

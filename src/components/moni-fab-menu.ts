@@ -1,295 +1,241 @@
-/**
- * @file components/moni-fab-menu.ts
- * @package @moni-labs/moni-ui
- * @license MIT
- * @contributors Moni Labs & Contributors
- */
-
-import { html, css } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { css, html } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
+import type { MoniFab, MoniFabColor, MoniFabPosition, MoniFabSize } from './moni-fab.js';
 import './moni-fab.js';
-import './moni-icon.js';
-import type { MoniFab } from './moni-fab.js';
 
-/**
- * Componente Material Design 3 FAB Menu (Menú FAB).
- *
- * Un contenedor especializado que combina un disparador principal `<moni-fab>` con un
- * `<menu>` de FABs secundarios. Permite ocultar múltiples acciones
- * detrás de un solo Botón de Acción Flotante primario, reduciendo el desorden en la pantalla.
- *
- * **Referencia de la especificación M3:** `m3-docs/components/floating-action-buttons/specs.md` (Menús FAB)
- *
- * **Disparador y animación:**
- * El componente enlaza el evento `click` del FAB disparador principal para alternar su
- * estado interno `open`. Cuando `open=true`, los FABs secundarios anidados se escalan
- * y aparecen mediante transiciones CSS. Los consumidores también pueden controlar el estado `open`
- * programáticamente estableciendo el atributo.
- *
- * **Gestión del foco (Accesibilidad):**
- * - Cuando el menú se abre, el foco se mueve automáticamente al primer elemento secundario
- *   enfocable (o permanece en el disparador si está vacío).
- * - Mientras está abierto, la tecla `Tab` cicla el foco estrictamente dentro de los elementos del menú para
- *   evitar que el foco del teclado escape (trampa de foco).
- * - Presionar `Escape` o hacer clic en cualquier lugar fuera del menú lo cierra y
- *   devuelve el foco al FAB disparador primario.
- *
- * @example
- * ```html
- * <!-- Menú FAB en la parte inferior derecha que se abre hacia arriba -->
- * <moni-fab-menu icon="add" color="tertiary" direction="up">
- *   <moni-fab size="small" icon="edit" label="Borrador"></moni-fab>
- *   <moni-fab size="small" icon="photo_camera" label="Cámara"></moni-fab>
- * </moni-fab-menu>
- * ```
- *
- * @slot default - Los elementos `<moni-fab>` secundarios que aparecen cuando está abierto.
- *
- * @csspart trigger - El elemento disparador `<moni-fab>` primario.
- * @csspart menu    - El contenedor `<menu>` que contiene los elementos secundarios.
- */
+type FabMenuDirection = 'up' | 'down' | 'left' | 'right';
+
+/** Accessible Material 3 Expressive FAB menu / speed dial. */
 @customElement('moni-fab-menu')
 export class MoniFabMenu extends MoniElement {
 	@property({ type: Boolean, reflect: true }) open = false;
+	@property({ type: Boolean, reflect: true }) disabled = false;
 	@property({ reflect: true }) icon = 'add';
-	@property({ reflect: true })
-	size: 'small' | 'medium' | 'large' = 'medium';
-	@property({ reflect: true })
-	color: 'primary' | 'secondary' | 'tertiary' | 'surface' = 'primary';
-	@property({ reflect: true })
-	shape: 'rounded' | 'circle' = 'rounded';
-	@property({ reflect: true })
-	direction: 'up' | 'down' | 'left' | 'right' = 'up';
-	@property({ reflect: true })
-	position:
-		| 'bottom-trailing'
-		| 'bottom-leading'
-		| 'top-trailing'
-		| 'top-leading' = 'bottom-trailing';
+	@property({ reflect: true, attribute: 'close-icon' }) closeIcon = 'close';
+	@property({ reflect: true }) label = 'Abrir acciones';
+	@property({ reflect: true, attribute: 'close-label' }) closeLabel = 'Cerrar acciones';
+	@property({ reflect: true }) size: MoniFabSize = 'medium';
+	@property({ reflect: true }) color: MoniFabColor = 'primary';
+	@property({ reflect: true }) shape: 'rounded' | 'circle' = 'rounded';
+	@property({ reflect: true }) direction: FabMenuDirection = 'up';
+	@property({ reflect: true }) position: MoniFabPosition = '';
 
-	@query('moni-fab') private _trigger!: MoniFab;
-	@query('.fab-menu') private _menu!: HTMLElement;
+	@query('.trigger') private _trigger!: MoniFab;
+	@query('slot') private _slot!: HTMLSlotElement;
+	@query('.menu') private _menu!: HTMLElement;
+	@state() private _effectiveDirection: FabMenuDirection = 'up';
+	@state() private _crossAlign: 'start' | 'end' = 'end';
+	private _actions: MoniFab[] = [];
+	private _restoreFocus = false;
 
-	private _previouslyFocused: HTMLElement | null = null;
-	/**
-	 * Wrapper estático para el manejador de clics globales.
-	 * Conserva el contexto léxico `this` al ser inyectado/removido en `document`.
-	 */
-	private _onDocClick = (e: MouseEvent) => this._handleDocClick(e);
-	/**
-	 * Wrapper estático para el manejador de teclado global.
-	 * Facilita la limpieza del listener de Escape/Navegación al desmontar el componente.
-	 */
-	private _onDocKeydown = (e: KeyboardEvent) => this._handleDocKeydown(e);
-
-	/**
-	 * Hook del ciclo de vida (Lit). Se ejecuta una sola vez tras el primer renderizado.
-	 * Espera a que el Shadow DOM se materialice por completo y enlaza el evento nativo
-	 * `click` directamente sobre el FAB (Floating Action Button) principal que acciona el menú.
-	 */
-	override async firstUpdated() {
-		// Esperar a que todos los hijos terminen de renderizarse antes de enlazar los detectores
-		await this.updateComplete;
-		if (this._trigger) {
-			this._trigger.addEventListener('click', this._onTriggerClick);
+	private _onDocumentPointer = (event: PointerEvent) => {
+		if (this.open && !event.composedPath().includes(this)) this.open = false;
+	};
+	private _onDocumentClick = (event: MouseEvent) => {
+		if (this.open && !event.composedPath().includes(this)) this.open = false;
+	};
+	private _onDocumentKey = (event: KeyboardEvent) => {
+		if (!this.open) return;
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			this._restoreFocus = true;
+			this.open = false;
+			return;
 		}
-	}
+		if (!['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+		event.preventDefault();
+		const current = this._actions.indexOf(document.activeElement as MoniFab);
+		const forward = event.key === 'ArrowDown' || event.key === 'ArrowRight';
+		const next = event.key === 'Home' ? 0 : event.key === 'End' ? this._actions.length - 1 : (current + (forward ? 1 : -1) + this._actions.length) % this._actions.length;
+		this._actions[next]?.focus();
+	};
+	private _onViewportChange = () => this._placeMenu();
 
-	/**
-	 * Limpieza rigurosa de memoria (Garbage Collection).
-	 * Remueve absolutamente todos los listeners asíncronos (document y trigger local)
-	 * para evitar colisiones de eventos fantasma y pérdidas de rendimiento (memory leaks).
-	 */
 	override disconnectedCallback() {
+		this._removeGlobalListeners();
 		super.disconnectedCallback();
-		this._trigger?.removeEventListener('click', this._onTriggerClick);
-		document.removeEventListener('click', this._onDocClick, true);
-		document.removeEventListener('keydown', this._onDocKeydown, true);
 	}
 
-	override updated(changed: Map<string, unknown>): void {
-		super.updated(changed);
-		if (changed.has('open')) {
-			this._syncOpenState();
+	override updated(changed: Map<string, unknown>) {
+		if (changed.has('direction') && !this.open) this._effectiveDirection = this.direction;
+		if (!changed.has('open')) return;
+		this.dispatchEvent(new CustomEvent('moni-toggle', { detail: { open: this.open }, bubbles: true, composed: true }));
+		if (this.open) {
+			document.addEventListener('pointerdown', this._onDocumentPointer, true);
+			document.addEventListener('click', this._onDocumentClick, true);
+			document.addEventListener('keydown', this._onDocumentKey, true);
+			window.addEventListener('resize', this._onViewportChange);
+			queueMicrotask(async () => {
+				await this._placeMenu();
+				this._actions[0]?.focus();
+			});
+		} else {
+			this._removeGlobalListeners();
+			if (this._restoreFocus) queueMicrotask(() => this._trigger?.focus());
+			this._restoreFocus = false;
 		}
 	}
 
-	/**
-	 * Alterna explícitamente el estado `open` del menú. 
-	 * Se dispara exclusivamente al interactuar física o focalmente con el FAB principal.
-	 */
-	private _onTriggerClick = () => {
+	private _removeGlobalListeners() {
+		document.removeEventListener('pointerdown', this._onDocumentPointer, true);
+		document.removeEventListener('click', this._onDocumentClick, true);
+		document.removeEventListener('keydown', this._onDocumentKey, true);
+		window.removeEventListener('resize', this._onViewportChange);
+	}
+
+	private _visibleBoundary(): DOMRect {
+		let left = 0;
+		let top = 0;
+		let right = window.innerWidth;
+		let bottom = window.innerHeight;
+		let ancestor = this.parentElement;
+		while (ancestor) {
+			const style = getComputedStyle(ancestor);
+			if (/(hidden|clip|auto|scroll)/.test(`${style.overflow}${style.overflowX}${style.overflowY}`)) {
+				const rect = ancestor.getBoundingClientRect();
+				left = Math.max(left, rect.left);
+				top = Math.max(top, rect.top);
+				right = Math.min(right, rect.right);
+				bottom = Math.min(bottom, rect.bottom);
+			}
+			ancestor = ancestor.parentElement;
+		}
+		return new DOMRect(left, top, Math.max(0, right - left), Math.max(0, bottom - top));
+	}
+
+	private async _placeMenu() {
+		if (!this.open || !this._menu) return;
+		const boundary = this._visibleBoundary();
+		const opposite = { left: 'right', right: 'left', up: 'down', down: 'up' } as const;
+		const trigger = this._trigger.getBoundingClientRect();
+		const verticalPreference: Array<'up' | 'down'> =
+			trigger.top - boundary.top >= boundary.bottom - trigger.bottom
+				? ['up', 'down']
+				: ['down', 'up'];
+		const horizontalPreference: Array<'left' | 'right'> =
+			trigger.left - boundary.left >= boundary.right - trigger.right
+				? ['left', 'right']
+				: ['right', 'left'];
+		const perpendicular = this.direction === 'left' || this.direction === 'right'
+			? verticalPreference
+			: horizontalPreference;
+		const candidates = [this.direction, opposite[this.direction], ...perpendicular]
+			.filter((direction, index, all) => all.indexOf(direction) === index);
+		let best: { direction: FabMenuDirection; align: 'start' | 'end'; overflow: number } | undefined;
+
+		for (const direction of candidates) {
+			this._effectiveDirection = direction;
+			this._crossAlign = 'end';
+			await this.updateComplete;
+			let menu = this._menu.getBoundingClientRect();
+			const vertical = direction === 'up' || direction === 'down';
+			if ((vertical && menu.left < boundary.left) || (!vertical && menu.top < boundary.top)) {
+				this._crossAlign = 'start';
+				await this.updateComplete;
+				menu = this._menu.getBoundingClientRect();
+			}
+			const overflow =
+				Math.max(0, boundary.left - menu.left) +
+				Math.max(0, menu.right - boundary.right) +
+				Math.max(0, boundary.top - menu.top) +
+				Math.max(0, menu.bottom - boundary.bottom);
+			if (!best || overflow < best.overflow) {
+				best = { direction, align: this._crossAlign, overflow };
+			}
+			if (overflow <= 1) return;
+		}
+
+		if (best) {
+			this._effectiveDirection = best.direction;
+			this._crossAlign = best.align;
+		}
+	}
+
+	private _toggle = () => {
+		if (this.disabled) return;
+		this._restoreFocus = this.open;
 		this.open = !this.open;
 	};
 
-	private _syncOpenState(): void {
-		if (this.open) {
-			// Guarda el foco actual para poder restaurarlo al cerrar.
-			this._previouslyFocused = (this.getRootNode() as unknown as DocumentOrShadowRoot)
-				.activeElement as HTMLElement | null;
-			// Mueve el foco al primer elemento enfocable en el menú, o al
-			// disparador como respaldo (según el patrón de menú WAI-ARIA).
-			const first = this._firstFocusableMenuItem();
-			if (first) {
-				first.focus();
-			} else {
-				this._trigger?.focus();
-			}
-			// Instala detectores en el documento para clic fuera y Escape.
-			document.addEventListener('click', this._onDocClick, true);
-			document.addEventListener('keydown', this._onDocKeydown, true);
-		} else {
-			// Restaura el foco al disparador (o al elemento previamente enfocado).
-			const restore = this._previouslyFocused ?? this._trigger;
-			restore?.focus();
-			this._previouslyFocused = null;
-			document.removeEventListener('click', this._onDocClick, true);
-			document.removeEventListener('keydown', this._onDocKeydown, true);
+	private _slotChanged = () => {
+		this._actions.forEach(action => action.removeEventListener('click', this._selectAction));
+		this._actions = this._slot.assignedElements({ flatten: true }).filter((element): element is MoniFab => element.tagName === 'MONI-FAB');
+		this._actions.forEach((action, index) => {
+			action.style.setProperty('--_fab-menu-index', String(index));
+			action.setAttribute('role', 'menuitem');
+			action.addEventListener('click', this._selectAction);
+		});
+		if (this.open) queueMicrotask(() => this._placeMenu());
+	};
+
+	private _selectAction = () => {
+		this._restoreFocus = true;
+		this.open = false;
+	};
+
+	static override styles = [sharedStyles, css`
+		:host { display: inline-flex; position: relative; vertical-align: middle; }
+		:host([position='bottom-trailing']), :host([position='bottom-leading']),
+		:host([position='top-trailing']), :host([position='top-leading']) { position: fixed; z-index: 13; }
+		:host([position='bottom-trailing']) { inset: auto max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) auto; }
+		:host([position='bottom-leading']) { inset: auto auto max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
+		:host([position='top-trailing']) { inset: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) auto auto; }
+		:host([position='top-leading']) { inset: max(1rem, env(safe-area-inset-top)) auto auto max(1rem, env(safe-area-inset-left)); }
+
+		.wrap { display: inline-grid; place-items: center; position: relative; }
+		.menu { position: absolute; display: flex; gap: .75rem; margin: 0; padding: 0; align-items: center; pointer-events: none; visibility: hidden; }
+		:host([open]) .menu { pointer-events: auto; visibility: visible; }
+		.wrap[data-direction='up'] .menu { inset-block-end: calc(100% + 1rem); flex-direction: column-reverse; }
+		.wrap[data-direction='down'] .menu { inset-block-start: calc(100% + 1rem); flex-direction: column; }
+		.wrap:is([data-direction='up'], [data-direction='down'])[data-align='end'] .menu { inset-inline-end: 0; align-items: flex-end; }
+		.wrap:is([data-direction='up'], [data-direction='down'])[data-align='start'] .menu { inset-inline-start: 0; align-items: flex-start; }
+		.wrap[data-direction='left'] .menu { inset-inline-end: calc(100% + 1rem); flex-direction: row-reverse; }
+		.wrap[data-direction='right'] .menu { inset-inline-start: calc(100% + 1rem); flex-direction: row; }
+		.wrap:is([data-direction='left'], [data-direction='right'])[data-align='end'] .menu { inset-block-end: 0; }
+		.wrap:is([data-direction='left'], [data-direction='right'])[data-align='start'] .menu { inset-block-start: 0; }
+
+		::slotted(moni-fab) {
+			opacity: 0;
+			transform: translateY(.75rem) scale(.8);
+			transform-origin: center;
+			transition: opacity 160ms ease, transform 300ms cubic-bezier(.2,0,0,1);
+			transition-delay: 0ms;
 		}
-	}
-
-	private _handleDocClick(e: MouseEvent): void {
-		if (!this.open) return;
-		const path = e.composedPath();
-		if (!path.includes(this)) {
-			this.open = false;
+		.wrap[data-direction='down'] ::slotted(moni-fab) { transform: translateY(-.75rem) scale(.8); }
+		.wrap[data-direction='left'] ::slotted(moni-fab) { transform: translateX(.75rem) scale(.8); }
+		.wrap[data-direction='right'] ::slotted(moni-fab) { transform: translateX(-.75rem) scale(.8); }
+		:host([open]) ::slotted(moni-fab) {
+			opacity: 1;
+			transform: translate(0) scale(1);
+			transition-delay: calc(var(--_fab-menu-index, 0) * 45ms);
 		}
-	}
+		.trigger::part(icon) { transition: transform 300ms cubic-bezier(.2,0,0,1); }
+		:host([open]) .trigger::part(icon) { transform: rotate(90deg); }
+		@media (prefers-reduced-motion: reduce) { ::slotted(moni-fab), .trigger::part(icon) { transition-duration: .01ms; transition-delay: 0ms; } }
+	`];
 
-	private _handleDocKeydown(e: KeyboardEvent): void {
-		if (!this.open) return;
-		if (e.key === 'Escape') {
-			e.preventDefault();
-			this.open = false;
-		}
-	}
-
-	private _firstFocusableMenuItem(): HTMLElement | null {
-		if (!this._menu) return null;
-		const items = this._menu.querySelectorAll<HTMLElement>(
-			'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
-		);
-		return items[0] ?? null;
-	}
-
-	static override styles = [
-		sharedStyles,
-		css`
-			:host {
-				display: inline-flex;
-				font-family: var(--font);
-				position: relative;
-			}
-
-			:host([position]) {
-				position: fixed;
-				z-index: 13;
-			}
-			:host([position='bottom-trailing']) {
-				inset: auto 1rem 1rem auto;
-			}
-			:host([position='bottom-leading']) {
-				inset: auto auto 1rem 1rem;
-			}
-			:host([position='top-trailing']) {
-				inset: 1rem 1rem auto auto;
-			}
-			:host([position='top-leading']) {
-				inset: 1rem auto auto 1rem;
-			}
-
-			.wrap {
-				display: inline-flex;
-				position: relative;
-				align-items: center;
-				justify-content: center;
-			}
-
-			.fab-menu {
-				opacity: 0;
-				visibility: hidden;
-				position: absolute;
-				display: flex;
-				gap: 0.5rem;
-				padding: 0.5rem;
-				margin: 0;
-				list-style: none;
-				z-index: 14;
-				transition:
-					opacity var(--speed2),
-					transform var(--speed2);
-				transform: scale(0.9);
-			}
-
-			:host([open]) .fab-menu {
-				opacity: 1;
-				visibility: visible;
-				transform: scale(1);
-			}
-
-			/* Colocación direccional relativa al disparador */
-			:host([direction='up']) .fab-menu {
-				inset: auto auto calc(100% + 0.5rem) 0;
-				flex-direction: column-reverse;
-			}
-			:host([direction='down']) .fab-menu {
-				inset: calc(100% + 0.5rem) auto auto 0;
-			}
-			:host([direction='left']) .fab-menu {
-				inset: 0 auto 0 calc(100% + 0.5rem);
-				flex-direction: row-reverse;
-			}
-			:host([direction='right']) .fab-menu {
-				inset: 0 calc(100% + 0.5rem) 0 auto;
-				flex-direction: row;
-			}
-
-			.fab-menu > li,
-			.fab-menu > ::slotted(*) {
-				list-style: none;
-				display: block;
-			}
-		`
-	];
-
-	/**
-	 * Renderiza el speed-dial FAB como un FAB disparador + menú colapsable de FABs de acción.
-	 *
-	 * **Patrón Speed-dial:**
-	 * El FAB disparador siempre es visible. Cuando `open=true`, los elementos de acción en
-	 * el slot por defecto se revelan con una animación en cascada. Los elementos se colapsan
-	 * de nuevo con una cascada invertida.
-	 *
-	 * **Dirección de cascada:**
-	 * Cuando `placement='bottom'`, los elementos se expanden hacia arriba (índice 0 en la parte inferior).
-	 * Cuando `placement='top'`, los elementos se expanden hacia abajo.
-	 *
-	 * **`aria-expanded`:**
-	 * Se establece en el botón disparador para comunicar el estado abierto/cerrado a los lectores de pantalla.
-	 * Cada FAB de acción en el slot lleva `aria-label` que el consumidor debe proporcionar.
-	 */
 	override render() {
-		return html`<div class="wrap">
-			<!-- div role=menu permite cualquier contenido en el slot (no solo <li>) -->
-			<div class="fab-menu" role="menu" part="menu">
-				<slot></slot>
+		return html`<div class="wrap" data-direction=${this._effectiveDirection} data-align=${this._crossAlign}>
+			<div class="menu fab-menu" part="menu" role="menu" aria-hidden=${String(!this.open)}>
+				<slot @slotchange=${this._slotChanged}></slot>
 			</div>
 			<moni-fab
+				class="trigger"
 				part="trigger"
-				icon=${this.icon}
-				size=${this.size}
-				color=${this.color}
-				shape=${this.shape}
+				.icon=${this.open ? this.closeIcon : this.icon}
+				.size=${this.size}
+				.color=${this.color}
+				.shape=${this.shape}
+				.disabled=${this.disabled}
+				.accessibleLabel=${this.open ? this.closeLabel : this.label}
+				aria-haspopup="menu"
+				aria-expanded=${String(this.open)}
+				@click=${this._toggle}
 			></moni-fab>
 		</div>`;
 	}
 }
 
-declare global {
-	interface HTMLElementTagNameMap {
-		'moni-fab-menu': MoniFabMenu;
-	}
-}
-
+declare global { interface HTMLElementTagNameMap { 'moni-fab-menu': MoniFabMenu; } }
 export default MoniFabMenu;

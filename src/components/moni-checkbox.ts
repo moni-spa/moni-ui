@@ -90,6 +90,12 @@ export class MoniCheckbox extends MoniElement {
 	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
+	/** Material Symbol mostrado cuando el checkbox está desmarcado. */
+	@property({ reflect: true, attribute: 'unchecked-icon' }) uncheckedIcon = '';
+
+	/** Material Symbol mostrado cuando el checkbox está marcado. */
+	@property({ reflect: true, attribute: 'checked-icon' }) checkedIcon = '';
+
 	/**
 	 * Tamaño visual del icono del checkbox.
 	 *
@@ -188,10 +194,9 @@ export class MoniCheckbox extends MoniElement {
 				position: relative;
 			}
 
-			/* BeerCSS: span::before = the checkbox icon (absolute, overlaid on input) */
-			span::before {
+			/* Indicador visual, superpuesto al input nativo. */
+			span > i {
 				--_size: inherit;
-				content: 'check_box_outline_blank';
 				inline-size: var(--_size);
 				block-size: var(--_size);
 				box-sizing: border-box;
@@ -211,15 +216,26 @@ export class MoniCheckbox extends MoniElement {
 			}
 
 			/* Checked: filled checkbox icon */
-			input:checked + span::before {
-				content: 'check_box';
+			input:checked + span > i {
 				font-variation-settings: 'FILL' 1;
 				color: var(--primary);
 			}
 
-			/* Indeterminate */
-			input:indeterminate + span::before {
-				content: 'indeterminate_check_box';
+			/* Los iconos personalizados viven dentro de la forma del checkbox. */
+			span.custom-icons > i {
+				inline-size: calc(var(--_size) * 0.75);
+				block-size: calc(var(--_size) * 0.75);
+				inset-inline-start: calc(var(--_size) * -0.875);
+				border: 0.125rem solid var(--on-surface-variant);
+				border-radius: 0.125rem;
+				font-size: calc(var(--_size) * 0.55);
+				transition: background-color var(--speed1), border-color var(--speed1), color var(--speed1);
+			}
+
+			input:checked + span.custom-icons > i {
+				border-color: var(--primary);
+				background-color: var(--primary);
+				color: var(--on-primary);
 			}
 
 			/* BeerCSS: span::after = ripple/hover ring */
@@ -258,7 +274,7 @@ export class MoniCheckbox extends MoniElement {
 			}
 
 			/* Focus ring */
-			input:focus-visible + span::before {
+			input:focus-visible + span > i {
 				outline: 0.125rem solid var(--primary);
 				outline-offset: 0.375rem;
 			}
@@ -290,6 +306,11 @@ export class MoniCheckbox extends MoniElement {
 	 * from the label text.
 	 */
 	override render() {
+		const hasCustomIcons = Boolean(this.uncheckedIcon || this.checkedIcon);
+		const uncheckedIcon = hasCustomIcons ? this.uncheckedIcon : 'check_box_outline_blank';
+		const checkedIcon = hasCustomIcons ? this.checkedIcon : 'check_box';
+		const currentIcon = this.checked ? checkedIcon : uncheckedIcon;
+
 		return html`<label part="checkbox">
 			<input
 				type="checkbox"
@@ -299,7 +320,8 @@ export class MoniCheckbox extends MoniElement {
 				value=${ifDefined(this.value || undefined)}
 				@change=${this._onChange}
 			/>
-			<span class=${this.label ? 'has-label' : ''}>
+			<span class=${`${this.label ? 'has-label ' : ''}${hasCustomIcons ? 'custom-icons' : ''}`}>
+				<i aria-hidden="true">${currentIcon}</i>
 				${this.label
 					? html`${this.label}`
 					: html`<slot></slot>`}

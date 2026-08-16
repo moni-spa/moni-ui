@@ -40,6 +40,7 @@ import './moni-icon.js';
  * ```html
  * <moni-switch label="Modo oscuro" name="dark-mode"></moni-switch>
  * <moni-switch icon checked label="Notificaciones"></moni-switch>
+ * <moni-switch unchecked-icon="visibility_off" checked-icon="visibility" label="Visibilidad"></moni-switch>
  *
  * <script>
  *   document.querySelector('moni-switch').addEventListener('change', (e) => {
@@ -101,6 +102,24 @@ export class MoniSwitch extends MoniElement {
 	 * @default false
 	 */
 	@property({ type: Boolean, reflect: true }) icon = false;
+
+	/**
+	 * Material Symbol mostrado dentro del thumb cuando el switch está desactivado.
+	 * Al definirlo se activa automáticamente el modo de iconos internos.
+	 * Usa `close` como fallback cuando solo se establece el atributo booleano `icon`.
+	 *
+	 * @default ''
+	 */
+	@property({ reflect: true, attribute: 'unchecked-icon' }) uncheckedIcon = '';
+
+	/**
+	 * Material Symbol mostrado dentro del thumb cuando el switch está activado.
+	 * Al definirlo se activa automáticamente el modo de iconos internos.
+	 * Usa `check` como fallback cuando solo se establece el atributo booleano `icon`.
+	 *
+	 * @default ''
+	 */
+	@property({ reflect: true, attribute: 'checked-icon' }) checkedIcon = '';
 
 	/**
 	 * Reenviado al atributo nativo `<input name>` para participar en formularios.
@@ -274,27 +293,23 @@ export class MoniSwitch extends MoniElement {
 			}
 
 			/* Active (pressed) states: 28dp thumb */
-			.switch > input:active:not(:disabled) + span::before,
+			.switch > input:active:not(:disabled) + span::before {
+				--_thumb: 1.75rem;
+				/* Preserve the 16dp resting thumb's center while growing to 28dp. */
+				transform: translate(calc(-1 * var(--_track-w) - 0.125rem), -50%);
+			}
+
 			.switch.icon > input:active:not(:disabled) + span > i {
 				--_thumb: 1.75rem;
-				transform: translate(calc(-1 * var(--_track-w) + 0.25rem), -50%);
+				/* Icon thumbs rest at 24dp, so 28dp adds 2dp on each side. */
+				transform: translate(calc(-1 * var(--_track-w) + 0.125rem), -50%);
 			}
 
 			.switch > input:active:checked:not(:disabled) + span::before,
 			.switch.icon > input:active:checked:not(:disabled) + span > i {
 				--_thumb: 1.75rem;
-				transform: translate(-1.625rem, -50%);
-			}
-
-			/* Icon mode: toggle visibility of close/check icons */
-			.icon > input:checked + span > i:first-child,
-			.icon > span > i:last-child {
-				opacity: 0;
-			}
-
-			.icon > input:checked + span > i:last-child,
-			.icon > span > i:first-child {
-				opacity: 1;
+				/* Keep the checked thumb centered at 36dp while it grows. */
+				transform: translate(-1.875rem, -50%);
 			}
 
 			/* Disabled */
@@ -320,7 +335,12 @@ export class MoniSwitch extends MoniElement {
 	 * `this.checked`.
 	 */
 	override render() {
-		return html`<label class=${this.icon ? 'switch icon' : 'switch'} part="switch">
+		const hasIcons = this.icon || Boolean(this.uncheckedIcon || this.checkedIcon);
+		const uncheckedIcon = this.uncheckedIcon || (this.icon ? 'close' : '');
+		const checkedIcon = this.checkedIcon || (this.icon ? 'check' : '');
+		const currentIcon = this.checked ? checkedIcon : uncheckedIcon;
+
+		return html`<label class=${hasIcons ? 'switch icon' : 'switch'} part="switch">
 			<input
 				type="checkbox"
 				role="switch"
@@ -331,7 +351,7 @@ export class MoniSwitch extends MoniElement {
 				@change=${this._onChange}
 			/>
 			<span>
-				${this.icon ? html`<i>close</i><i>check</i>` : ''}
+				${hasIcons ? html`<i>${currentIcon}</i>` : ''}
 				${this.label
 					? html`<span class="label" part="label">&nbsp;${this.label}</span>`
 					: html`<slot></slot>`}

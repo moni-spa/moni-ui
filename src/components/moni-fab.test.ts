@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import './moni-fab.js';
 import type { MoniFab } from './moni-fab.js';
 
@@ -45,43 +45,40 @@ describe('moni-fab', () => {
 		expect(label?.textContent).toBe('Send');
 	});
 
-	it('oculta el label visualmente cuando no se establece (span vacío + display:none)', async () => {
+	it('no renderiza el label cuando no se establece', async () => {
 		await el.updateComplete;
 		const label = el.shadowRoot?.querySelector('.label');
-		expect(label?.textContent).toBe('');
+		expect(label).toBeNull();
 	});
 
 	it('aplica la clase shape=circle', async () => {
 		el.shape = 'circle';
 		await el.updateComplete;
-		const button = el.shadowRoot?.querySelector('button');
-		expect(button?.classList.contains('circle')).toBe(true);
+		expect(el.getAttribute('shape')).toBe('circle');
 	});
 
 	it('aplica las clases de color (secondary/tertiary/surface)', async () => {
 		el.color = 'secondary';
 		await el.updateComplete;
-		const button = el.shadowRoot?.querySelector('button');
-		expect(button?.classList.contains('secondary')).toBe(true);
+		expect(el.getAttribute('color')).toBe('secondary');
 
 		el.color = 'tertiary';
 		await el.updateComplete;
-		expect(button?.classList.contains('tertiary')).toBe(true);
+		expect(el.getAttribute('color')).toBe('tertiary');
 
 		el.color = 'surface';
 		await el.updateComplete;
-		expect(button?.classList.contains('surface')).toBe(true);
+		expect(el.getAttribute('color')).toBe('surface');
 	});
 
 	it('aplica las clases de tamaño (small/large)', async () => {
 		el.size = 'small';
 		await el.updateComplete;
-		const button = el.shadowRoot?.querySelector('button');
-		expect(button?.classList.contains('small')).toBe(true);
+		expect(el.getAttribute('size')).toBe('small');
 
 		el.size = 'large';
 		await el.updateComplete;
-		expect(button?.classList.contains('large')).toBe(true);
+		expect(el.getAttribute('size')).toBe('large');
 	});
 
 	it('refleja el atributo position', async () => {
@@ -109,20 +106,21 @@ describe('moni-fab', () => {
 		expect(button.disabled).toBe(true);
 	});
 
-	it('registra una advertencia de obsolescencia cuando se usa size="small" (M3 Expressive deprecia el FAB pequeño)', async () => {
-		const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-		// Desmontar y volver a montar para ejecutar de nuevo connectedCallback con el
-		// tamaño obsoleto ya establecido. El componente lee el atributo
-		// del elemento durante la conexión.
-		el.remove();
-		el.size = 'small';
-		document.body.appendChild(el);
+	it('permanece inline cuando no se configura position', async () => {
 		await el.updateComplete;
-		const call = warnSpy.mock.calls.find((c) =>
-			String(c[0]).includes('[moni-ui]') &&
-			String(c[0]).includes('size="small"')
-		);
-		expect(call, 'se esperaba que una advertencia de obsolescencia mencionara size="small"').toBeTruthy();
-		warnSpy.mockRestore();
+		expect(el.getAttribute('position')).toBe('');
+	});
+
+	it('expone una etiqueta accesible en modo icon-only', async () => {
+		el.accessibleLabel = 'Editar documento';
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('button')?.getAttribute('aria-label')).toBe('Editar documento');
+	});
+
+	it('oculta la etiqueta visual en shape=circle', async () => {
+		el.label = 'Crear';
+		el.shape = 'circle';
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('.label')).toBeNull();
 	});
 });

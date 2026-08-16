@@ -1,5 +1,7 @@
 export interface MoniEventDetail<T = unknown> {
   value?: T;
+  /** Valor textual sin los literales de una máscara de entrada. */
+  unmaskedValue?: string;
   /** Índice del elemento (para listas/colecciones) */
   index?: number;
   /** Elementos múltiples (para slots o selecciones múltiples) */

@@ -5,7 +5,7 @@
  * @contributors Moni Labs & Contributors
  */
 
-import { html, nothing } from 'lit';
+import { css, html, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { classMap } from 'lit/directives/class-map.js';
@@ -135,6 +135,12 @@ export class MoniTextarea extends MoniElement {
 	 */
 	@property({ type: Number, reflect: true }) rows = 3;
 
+	/** Hace que el textarea crezca y se reduzca según su contenido. */
+	@property({ type: Boolean, reflect: true }) autosize = false;
+
+	/** Número máximo de filas visibles cuando `autosize` está activo. Cero no impone límite. */
+	@property({ type: Number, reflect: true, attribute: 'max-rows' }) maxRows = 0;
+
 	/**
 	 * Número máximo de caracteres permitidos en el área de texto.
 	 * También habilita la visualización del contador de caracteres a menos que `noCounter` sea true.
@@ -193,6 +199,55 @@ export class MoniTextarea extends MoniElement {
 	@property({ reflect: true }) placeholder = '';
 
 	@query('textarea') private _input!: HTMLTextAreaElement;
+	private _resizeObserver?: ResizeObserver;
+
+	override connectedCallback() {
+		super.connectedCallback();
+		this._resizeObserver = new ResizeObserver(() => this._resizeTextarea());
+	}
+
+	override disconnectedCallback() {
+		this._resizeObserver?.disconnect();
+		this._resizeObserver = undefined;
+		super.disconnectedCallback();
+	}
+
+	override firstUpdated() {
+		this._resizeObserver?.observe(this._input);
+		this._resizeTextarea();
+	}
+
+	private _handleInput(event: Event) {
+		const input = event.currentTarget as HTMLTextAreaElement;
+		this.value = input.value;
+		this._internals?.setFormValue?.(this.value);
+		this._resizeTextarea();
+	}
+
+	private _resizeTextarea() {
+		const input = this._input;
+		if (!input) return;
+
+		if (!this.autosize) {
+			input.style.removeProperty('block-size');
+			input.style.removeProperty('overflow-y');
+			return;
+		}
+
+		const styles = getComputedStyle(input);
+		const lineHeight = Number.parseFloat(styles.lineHeight) || 24;
+		const padding = Number.parseFloat(styles.paddingTop) + Number.parseFloat(styles.paddingBottom);
+		const border = Number.parseFloat(styles.borderTopWidth) + Number.parseFloat(styles.borderBottomWidth);
+		const minimum = lineHeight * Math.max(1, this.rows) + padding + border;
+		const maximum = this.maxRows > 0
+			? lineHeight * Math.max(this.rows, this.maxRows) + padding + border
+			: Number.POSITIVE_INFINITY;
+
+		input.style.blockSize = 'auto';
+		const height = Math.min(maximum, Math.max(minimum, input.scrollHeight + border));
+		input.style.blockSize = `${height}px`;
+		input.style.overflowY = input.scrollHeight + border > maximum ? 'auto' : 'hidden';
+	}
 
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
@@ -204,10 +259,18 @@ export class MoniTextarea extends MoniElement {
 			if (changed.has('maxlength') && this.maxlength != null) {
 				this._input.maxLength = this.maxlength;
 			}
+			if (
+				changed.has('value') ||
+				changed.has('autosize') ||
+				changed.has('rows') ||
+				changed.has('maxRows')
+			) this._resizeTextarea();
 		}
 	}
 
-	static override styles = [sharedStyles, fieldStyles];
+	static override styles = [sharedStyles, fieldStyles, css`
+		:host([autosize]) textarea { resize: none; }
+	`];
 
 	/**
 	 * Renderiza el campo del área de texto con etiqueta, iconos de prefijo/sufijo y contador de caracteres.
@@ -302,6 +365,7 @@ export class MoniTextarea extends MoniElement {
 				.value=${this.value}
 				name=${ifDefined(this.name || undefined)}
 				class=${isActive ? 'active' : ''}
+				@input=${this._handleInput}
 			></textarea>
 			${this.label
 				? html`<label

@@ -154,6 +154,15 @@ describe('moni-chip', () => {
 		expect(text).toBe('Hello chip');
 	});
 
+	it('no reserva espacio para el slot de icono cuando está vacío', async () => {
+		el.textContent = 'Filter';
+		await el.updateComplete;
+
+		const iconSlot = el.shadowRoot?.querySelector('slot[name="icon"]') as HTMLSlotElement;
+		expect(iconSlot).toBeTruthy();
+		expect(iconSlot.hidden).toBe(true);
+	});
+
 	it('aplica la clase has-icon solo cuando hay un icono leading presente', async () => {
 		el.textContent = 'Filter';
 		await el.updateComplete;

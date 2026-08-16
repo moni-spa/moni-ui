@@ -69,7 +69,7 @@ export class MoniSegmentedButton extends MoniElement {
 	 * @default 'medium'
 	 */
 	@property({ reflect: true })
-	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
+	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'small';
 
 	/**
 	 * Oculta el icono de marca de verificación principal (leading checkmark) cuando se selecciona un segmento.
@@ -159,8 +159,18 @@ export class MoniSegmentedButton extends MoniElement {
 				width: 100%;
 			}
 
+			slot {
+				display: contents;
+			}
+
 			::slotted(moni-button-segment) {
-				flex: 1;
+				flex: 1 1 0;
+				min-inline-size: 0;
+				transition: flex-grow 300ms cubic-bezier(0.2, 0, 0, 1);
+			}
+
+			::slotted(moni-button-segment[checked]) {
+				flex-grow: 1.12;
 			}
 		`
 	];

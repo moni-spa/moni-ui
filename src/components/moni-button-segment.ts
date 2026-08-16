@@ -57,7 +57,7 @@ export class MoniButtonSegment extends MoniElement {
 	 * @default 'medium'
 	 */
 	@property({ reflect: true })
-	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
+	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'small';
 
 	/**
 	 * Deshabilita el segmento.
@@ -112,14 +112,19 @@ export class MoniButtonSegment extends MoniElement {
 			}
 
 			.button {
+				--_segment-height: 3.5rem;
+				--_segment-padding: 1.5rem;
+				--_segment-gap: 0.5rem;
+				--_segment-icon: 1.5rem;
+				--_segment-square-radius: 1rem;
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
 				box-sizing: border-box;
-				height: 2.5rem;
+				height: var(--_segment-height);
 				width: 100%;
-				padding: 0 1rem;
-				font-size: 0.875rem;
+				padding: 0 var(--_segment-padding);
+				font-size: 1rem;
 				font-weight: 500;
 				font-family: inherit;
 				color: var(--on-surface);
@@ -134,7 +139,7 @@ export class MoniButtonSegment extends MoniElement {
 					transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1),
 					box-shadow 250ms ease;
 				position: relative;
-				gap: 0.5rem;
+				gap: var(--_segment-gap);
 			}
 
 			.button::after {
@@ -149,25 +154,38 @@ export class MoniButtonSegment extends MoniElement {
 
 			/* Sizes */
 			.button.xsmall {
-				height: 1.75rem;
-				min-width: 3rem; /* 48px */
-				font-size: 0.75rem;
-				padding: 0 0.5rem;
+				--_segment-height: 2rem;
+				--_segment-padding: 0.75rem;
+				--_segment-gap: 0.25rem;
+				--_segment-icon: 1.25rem;
+				--_segment-square-radius: 0.75rem;
+				min-width: 0;
+				font-size: 0.875rem;
 			}
 			.button.small {
-				height: 2rem;
-				min-width: 3rem; /* 48px */
-				padding: 0 0.75rem;
+				--_segment-height: 2.5rem;
+				--_segment-padding: 1rem;
+				--_segment-gap: 0.5rem;
+				--_segment-icon: 1.25rem;
+				--_segment-square-radius: 0.75rem;
+				min-width: 0;
 			}
 			.button.large {
-				height: 3rem;
-				padding: 0 1.25rem;
+				--_segment-height: 6rem;
+				--_segment-padding: 3rem;
+				--_segment-gap: 0.75rem;
+				--_segment-icon: 2rem;
+				--_segment-square-radius: 1.75rem;
+				font-size: 1.5rem;
 			}
 			.button.xlarge,
 			.button.extra {
-				height: 3.5rem;
-				font-size: 1rem;
-				padding: 0 1.5rem;
+				--_segment-height: 8.5rem;
+				--_segment-padding: 4rem;
+				--_segment-gap: 1rem;
+				--_segment-icon: 2.5rem;
+				--_segment-square-radius: 1.75rem;
+				font-size: 2rem;
 			}
 
 			:host([disabled]) .button {
@@ -278,15 +296,16 @@ export class MoniButtonSegment extends MoniElement {
 
 			/* Checkmark Animation */
 			.checkmark {
+				--moni-icon-size: var(--_segment-icon);
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 1.125rem;
+				font-size: var(--_segment-icon);
 				inline-size: 0;
-				block-size: 1.125rem;
+				block-size: var(--_segment-icon);
 				opacity: 0;
 				transform: scale(0);
-				margin-inline-end: -0.5rem; /* Cancels host gap when collapsed */
+				margin-inline-end: calc(var(--_segment-gap) * -1); /* Cancels host gap when collapsed */
 				transition:
 					inline-size var(--speed2) var(--ease-standard),
 					margin-inline-end var(--speed2) var(--ease-standard),
@@ -298,7 +317,7 @@ export class MoniButtonSegment extends MoniElement {
 			}
 
 			:host([checked]:not([hide-check])) .checkmark {
-				inline-size: 1.125rem;
+				inline-size: var(--_segment-icon);
 				margin-inline-end: 0;
 				opacity: 1;
 				transform: scale(1);
@@ -309,11 +328,24 @@ export class MoniButtonSegment extends MoniElement {
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 1.125rem;
-				inline-size: 1.125rem;
-				block-size: 1.125rem;
+				font-size: var(--_segment-icon);
+				inline-size: var(--_segment-icon);
+				block-size: var(--_segment-icon);
 				color: inherit;
 				flex: none;
+			}
+
+			:host([position='first']) .button {
+				border-radius: 999px var(--_segment-square-radius) var(--_segment-square-radius) 999px;
+			}
+			:host([position='last']) .button {
+				border-radius: var(--_segment-square-radius) 999px 999px var(--_segment-square-radius);
+			}
+			:host([position='middle']) .button {
+				border-radius: var(--_segment-square-radius);
+			}
+			:host([position='solo']) .button {
+				border-radius: 999px;
 			}
 		`
 	];

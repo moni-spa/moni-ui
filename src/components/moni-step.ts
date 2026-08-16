@@ -56,6 +56,7 @@ export class MoniStep extends MoniElement {
 	@property({ type: Boolean, reflect: true }) completed = false;
 	@property({ reflect: true }) icon = '';
 	@property({ type: Number, reflect: true }) index = 0;
+	@property({ reflect: true }) orientation: 'horizontal' | 'vertical' = 'horizontal';
 
 	static override styles = [
 		sharedStyles,
@@ -75,15 +76,16 @@ export class MoniStep extends MoniElement {
 			:host(:not(:last-child))::after {
 				content: '';
 				position: absolute;
-				inset-inline-start: calc(50% + 1.25rem);
-				inset-inline-end: calc(-50% + 1.25rem);
+				inset-inline-start: calc(50% + 1rem);
+				inset-inline-end: calc(-50% + 1rem - var(--_stepper-gap, 0.5rem));
 				inset-block-start: 1rem;
 				block-size: 0.0625rem;
+				transform: translateY(-50%);
 				background-color: var(--outline-variant);
 				z-index: 0;
 			}
 
-			:host-context(moni-stepper[orientation='vertical']) {
+			:host([orientation='vertical']) {
 				flex-direction: row;
 				align-items: flex-start;
 				text-align: start;
@@ -96,13 +98,14 @@ export class MoniStep extends MoniElement {
 			   El conector va desde la parte INFERIOR del punto actual (y=2rem) hasta
 			   la parte INFERIOR del paso actual (y=100%). Esta fórmula se mantiene
 			   calibrada independientemente de la altura del paso. */
-			:host-context(moni-stepper[orientation='vertical']):host(:not(:last-child))::after {
+			:host([orientation='vertical']:not(:last-child))::after {
 				position: absolute;
 				inset-inline-start: calc(1rem - 0.03125rem);
 				inset-block-start: 2rem;
 				inset-inline-end: auto;
 				inline-size: 0.0625rem;
-				block-size: calc(100% - 2rem);
+				block-size: calc(100% - 2rem + var(--_stepper-gap, 0.5rem));
+				transform: none;
 				z-index: 0;
 				margin: 0;
 				background-color: var(--outline-variant);

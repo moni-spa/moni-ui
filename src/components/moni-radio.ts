@@ -83,6 +83,16 @@ export class MoniRadio extends MoniElement {
 	 */
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
+	/** Material Symbol mostrado cuando el radio no está seleccionado. */
+	@property({ reflect: true, attribute: 'unchecked-icon' }) uncheckedIcon = '';
+
+	/** Material Symbol mostrado cuando el radio está seleccionado. */
+	@property({ reflect: true, attribute: 'checked-icon' }) checkedIcon = '';
+
+	/** Contenedor visual de los iconos personalizados. */
+	@property({ reflect: true, attribute: 'icon-container' })
+	iconContainer: 'circle' | 'none' = 'circle';
+
 	/**
 	 * Tamaño visual del icono de radio y su área de interacción (hit area) invisible.
 	 *
@@ -177,10 +187,9 @@ export class MoniRadio extends MoniElement {
 				position: relative;
 			}
 
-			/* BeerCSS: span::before = radio icon (overlaid on input via negative inset) */
-			span::before {
+			/* Indicador visual del radio, superpuesto al input nativo. */
+			span > i {
 				--_size: inherit;
-				content: 'radio_button_unchecked';
 				inline-size: var(--_size);
 				block-size: var(--_size);
 				box-sizing: border-box;
@@ -199,9 +208,39 @@ export class MoniRadio extends MoniElement {
 				justify-content: center;
 			}
 
-			/* Checked: filled radio icon */
-			input:checked + span::before {
-				content: 'radio_button_checked';
+			/* Checked: selected radio icon */
+			input:checked + span > i {
+				color: var(--primary);
+			}
+
+			/* Los iconos personalizados viven dentro del círculo del radio. */
+			span.custom-icons > i {
+				inline-size: calc(var(--_size) * 0.75);
+				block-size: calc(var(--_size) * 0.75);
+				inset-inline-start: calc(var(--_size) * -0.875);
+				border: 0.125rem solid var(--on-surface-variant);
+				border-radius: 50%;
+				font-size: calc(var(--_size) * 0.55);
+				font-variation-settings: 'wght' 600;
+				transition: background-color var(--speed1), border-color var(--speed1), color var(--speed1);
+			}
+
+			input:checked + span.custom-icons > i {
+				border-color: var(--primary);
+				background-color: var(--primary);
+				color: var(--on-primary);
+			}
+
+			/* Variante de icono libre, sin círculo exterior. */
+			span.custom-icons.no-icon-container > i {
+				border-color: transparent;
+				background-color: transparent;
+				color: var(--on-surface-variant);
+			}
+
+			input:checked + span.custom-icons.no-icon-container > i {
+				border-color: transparent;
+				background-color: transparent;
 				color: var(--primary);
 			}
 
@@ -234,6 +273,10 @@ export class MoniRadio extends MoniElement {
 				padding-inline-start: 0.25rem;
 			}
 
+			span.has-label.no-icon-container {
+				padding-inline-start: 0;
+			}
+
 			/* Disabled */
 			input:disabled + span {
 				opacity: 0.5;
@@ -241,7 +284,7 @@ export class MoniRadio extends MoniElement {
 			}
 
 			/* Focus ring */
-			input:focus-visible + span::before {
+			input:focus-visible + span > i {
 				outline: 0.125rem solid var(--primary);
 				outline-offset: 0.375rem;
 			}
@@ -287,6 +330,16 @@ export class MoniRadio extends MoniElement {
 	 * el `<span>` y animado mediante transiciones CSS de `scale`.
 	 */
 	override render() {
+		const hasCustomIcons = Boolean(this.uncheckedIcon || this.checkedIcon);
+		const uncheckedIcon = hasCustomIcons ? this.uncheckedIcon : 'radio_button_unchecked';
+		const checkedIcon = hasCustomIcons ? this.checkedIcon : 'radio_button_checked';
+		const currentIcon = this.checked ? checkedIcon : uncheckedIcon;
+		const indicatorClasses = [
+			this.label ? 'has-label' : '',
+			hasCustomIcons ? 'custom-icons' : '',
+			hasCustomIcons && this.iconContainer === 'none' ? 'no-icon-container' : ''
+		].filter(Boolean).join(' ');
+
 		return html`<label part="radio">
 			<input
 				type="radio"
@@ -296,7 +349,8 @@ export class MoniRadio extends MoniElement {
 				value=${ifDefined(this.value || undefined)}
 				@change=${this._onChange}
 			/>
-			<span class=${this.label ? 'has-label' : ''}>
+			<span class=${indicatorClasses}>
+				<i aria-hidden="true">${currentIcon}</i>
 				${this.label
 					? html`${this.label}`
 					: html`<slot></slot>`}

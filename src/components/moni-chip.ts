@@ -325,6 +325,12 @@ export class MoniChip extends MoniElement {
 				color: inherit;
 			}
 
+			/* An empty icon slot must not become a flex item: otherwise the
+			   container gap reserves space before the label. */
+			slot.icon[hidden] {
+				display: none;
+			}
+
 			.remove {
 				display: inline-flex;
 				align-items: center;
@@ -409,6 +415,7 @@ export class MoniChip extends MoniElement {
 					name="icon"
 					part="icon"
 					class="icon"
+					?hidden=${!this._hasSlottedIcon}
 					@slotchange=${this._handleSlotChange}
 				></slot>`;
 

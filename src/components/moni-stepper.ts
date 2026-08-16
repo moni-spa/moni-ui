@@ -105,6 +105,7 @@ export class MoniStepper extends MoniElement {
 			}
 			stepElements.forEach((stepElement, stepIndex) => {
 				stepElement.index = stepIndex;
+				stepElement.orientation = this.orientation;
 				stepElement.completed = stepIndex < this.current;
 				stepElement.active = stepIndex === this.current;
 			});
@@ -115,13 +116,14 @@ export class MoniStepper extends MoniElement {
 		sharedStyles,
 		css`
 			:host {
+				--_stepper-gap: 0.5rem;
 				display: block;
 				font-family: var(--font);
 			}
 
 			.list {
 				display: flex;
-				gap: 0.5rem;
+				gap: var(--_stepper-gap);
 				padding: 0;
 				margin: 0;
 				list-style: none;

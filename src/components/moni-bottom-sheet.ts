@@ -5,7 +5,7 @@
  * @contributors Moni Labs & Contributors
  */
 
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import { customElement, property, query } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import { emitMoniEvent } from '../utils/event-emitter.js';
@@ -39,7 +39,7 @@ import { emitMoniEvent } from '../utils/event-emitter.js';
  *
  * @example
  * ```html
- * <moni-bottom-sheet title="Compartir">
+ * <moni-bottom-sheet title="Compartir" handle>
  *   <moni-list-item icon="share">Copiar enlace</moni-list-item>
  *   <moni-list-item icon="mail">Enviar por correo</moni-list-item>
  * </moni-bottom-sheet>
@@ -97,6 +97,18 @@ export class MoniBottomSheet extends MoniElement {
 	 * @default ''
 	 */
 	@property({ reflect: true }) title = '';
+
+	/**
+	 * Muestra el indicador visual de arrastre en la parte superior de la hoja.
+	 *
+	 * El asa es opcional según la especificación M3. Su indicador mide 32 × 4dp,
+	 * pero la zona interactiva ocupa todo el ancho y 48dp de alto para facilitar
+	 * el agarre. El encabezado continúa admitiendo gestos de arrastre aunque el
+	 * indicador esté oculto.
+	 *
+	 * @default false
+	 */
+	@property({ type: Boolean, reflect: true }) handle = false;
 
 	/**
 	 * Controla cómo se posiciona la hoja en el documento.
@@ -556,18 +568,26 @@ export class MoniBottomSheet extends MoniElement {
 				min-block-size: 3.5rem;
 			}
 
-			/* M3 spec: the drag handle is a 4dp tall x 32dp wide pill at
-			   the top center of the sheet. Color is on-surface-variant with
-			   40% opacity for reduced emphasis. */
+			/* The interactive drag target spans the sheet and is 48dp tall,
+			   while ::before preserves the M3 indicator at 32dp × 4dp.
+			   Negative block margins retain the previous visual position and
+			   layout spacing while the hit area extends around the indicator. */
 			.handle {
+				display: grid;
+				place-items: center;
+				inline-size: 100%;
+				block-size: 3rem;
+				margin: -0.875rem auto -0.375rem;
+				cursor: grab;
+				touch-action: none;
+			}
+			.handle::before {
+				content: '';
 				inline-size: 2rem;
 				block-size: 0.25rem;
 				background: var(--on-surface-variant);
 				opacity: 0.4;
 				border-radius: 999px;
-				margin: 0.5rem auto 1rem;
-				cursor: grab;
-				touch-action: none;
 			}
 			.handle:active {
 				cursor: grabbing;
@@ -609,7 +629,7 @@ export class MoniBottomSheet extends MoniElement {
 			@pointerup=${this._onPointerUp}
 			@pointercancel=${this._onPointerCancel}
 		>
-			<div class="handle" aria-hidden="true"></div>
+			${this.handle ? html`<div class="handle" aria-hidden="true"></div>` : nothing}
 			<header part="header">
 				<slot name="handle">${this.title}</slot>
 			</header>

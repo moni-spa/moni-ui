@@ -575,6 +575,69 @@ export class MoniMorphModal extends MoniElement {
 	}
 
 	/**
+	 * Abre el modal realizando el morph desde un elemento proporcionado directamente.
+	 * Útil cuando el trigger vive dentro de un Shadow DOM y no puede resolverse con `target`.
+	 */
+	showFrom(target: HTMLElement): void {
+		if (!target) return;
+		this._targetEl = target;
+		this.show();
+	}
+
+	/** Redimensiona y reposiciona suavemente un modal que ya está abierto. */
+	resizeTo(width: string, height: string, anchor: 'center' | 'top-left' = 'center'): void {
+		this.expandedWidth = width;
+		this.expandedHeight = height;
+		if (!this._visible || !this._panel || !this._targetEl) return;
+
+		let finalRect = this._computeFinalRect(this._targetEl.getBoundingClientRect());
+		const transformedAncestor = this.parentElement?.closest<HTMLElement>('.lab-canvas, [data-morph-coordinate-space]');
+		const transform = transformedAncestor ? getComputedStyle(transformedAncestor).transform : 'none';
+		let scaleX = 1;
+		let scaleY = 1;
+		let ancestorRect: DOMRect | undefined;
+		if (transformedAncestor && transform !== 'none') {
+			const matrix = new DOMMatrix(transform);
+			scaleX = Math.hypot(matrix.a, matrix.b) || 1;
+			scaleY = Math.hypot(matrix.c, matrix.d) || 1;
+			ancestorRect = transformedAncestor.getBoundingClientRect();
+		}
+		if (anchor === 'top-left') {
+			const current = this._panel.getBoundingClientRect();
+			let left = current.left;
+			let top = current.top;
+			if (ancestorRect) {
+				left = (current.left - ancestorRect.left) / scaleX;
+				top = (current.top - ancestorRect.top) / scaleY;
+			}
+			finalRect = new DOMRect(left, top, finalRect.width, finalRect.height);
+		} else if (anchor === 'center' && ancestorRect) {
+			const visualLeft = window.innerWidth / 2 - (finalRect.width * scaleX) / 2;
+			const visualTop = window.innerHeight / 2 - (finalRect.height * scaleY) / 2;
+			finalRect = new DOMRect(
+				(visualLeft - ancestorRect.left) / scaleX,
+				(visualTop - ancestorRect.top) / scaleY,
+				finalRect.width,
+				finalRect.height
+			);
+		}
+		this._panel.classList.add('is-animating');
+		gsap.to(this._panel, {
+			top: finalRect.top,
+			left: finalRect.left,
+			width: finalRect.width,
+			height: finalRect.height,
+			'--_panel-width': `${finalRect.width}px`,
+			'--_panel-height': `${finalRect.height}px`,
+			duration: 0.32,
+			ease: 'morph-open',
+			overwrite: true,
+			onComplete: () => this._panel?.classList.remove('is-animating'),
+			onInterrupt: () => this._panel?.classList.remove('is-animating')
+		});
+	}
+
+	/**
 	 * Solución a un caso borde de FLIP Animations:
 	 * Si el `.panel` original carece de un color de fondo sólido, la interpolación
 	 * de GSAP puede comportarse erráticamente. Este método "asciende" el árbol del DOM

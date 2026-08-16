@@ -5,10 +5,11 @@
  * @contributors Moni Labs & Contributors
  */
 
-import { html, nothing } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { css, html, nothing } from 'lit';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { classMap } from 'lit/directives/class-map.js';
+import Inputmask, { type InputmaskInstance, type InputmaskOptions } from 'inputmask';
 import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
 import { emitMoniEvent } from '../utils/event-emitter.js';
 import './moni-icon.js';
@@ -66,6 +67,8 @@ import './moni-progress.js';
 @customElement('moni-text-field')
 export class MoniTextField extends MoniElement {
 	static formAssociated = true;
+	/** Constructor original para acceder también a la API estática completa de Inputmask. */
+	static readonly Inputmask = Inputmask;
 	private _internals: ElementInternals;
 
 	constructor() {
@@ -87,10 +90,11 @@ export class MoniTextField extends MoniElement {
 
 	/**
 	 * Variante visual del campo de texto.
-	 * @type {'filled' | 'outlined'}
+	 * @type {'filled' | 'outlined' | 'underlined'}
 	 * @default 'filled'
 	 */
-	@property({ reflect: true }) variant: 'filled' | 'outlined' = 'filled';
+	@property({ reflect: true })
+	variant: 'filled' | 'outlined' | 'underlined' = 'filled';
 
 	/**
 	 * Define las dimensiones del campo de texto.
@@ -102,11 +106,11 @@ export class MoniTextField extends MoniElement {
 
 	/**
 	 * Forma del radio del borde (border-radius) del campo.
-	 * @type {'round' | 'square' | 'no-round'}
+	 * @type {'round' | 'no-round'}
 	 * @default 'no-round'
 	 */
 	@property({ reflect: true })
-	shape: 'round' | 'square' | 'no-round' = 'no-round';
+	shape: 'round' | 'no-round' = 'no-round';
 
 	/**
 	 * El tipo de input HTML nativo.
@@ -146,6 +150,14 @@ export class MoniTextField extends MoniElement {
 	 * @type {string}
 	 */
 	@property({ reflect: true }) suffix = '';
+
+	/** Icono del botón interactivo ubicado al final del campo. */
+	@property({ reflect: true, attribute: 'suffix-button-icon' }) suffixButtonIcon = '';
+
+	/** Etiqueta accesible del botón suffix. */
+	@property({ reflect: true, attribute: 'suffix-button-label' }) suffixButtonLabel = 'Acción del campo';
+
+	@state() private _hasSuffixSlot = false;
 
 	/**
 	 * Texto de ayuda mostrado debajo del campo.
@@ -190,7 +202,110 @@ export class MoniTextField extends MoniElement {
 	 */
 	@property({ reflect: true }) placeholder = '';
 
+	/**
+	 * Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `|`,
+	 * cuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT).
+	 * @example `99.999.999-K`
+	 */
+	@property({ reflect: true }) mask = '';
+
+	/** Alias integrado de Inputmask, por ejemplo `email`, `datetime`, `numeric`, `currency` o `ip`. */
+	@property({ reflect: true, attribute: 'mask-alias' }) maskAlias = '';
+
+	/** Opciones avanzadas de Inputmask. También acepta JSON mediante el atributo `mask-options`. */
+	@property({
+		attribute: 'mask-options',
+		converter: {
+			fromAttribute: (value: string | null) => {
+				if (!value) return {};
+				try { return JSON.parse(value) as InputmaskOptions; } catch { return {}; }
+			},
+			toAttribute: (value: InputmaskOptions) => JSON.stringify(value ?? {})
+		}
+	})
+	maskOptions: InputmaskOptions = {};
+
+	/** Valor actual sin los caracteres literales definidos por `mask`. */
+	get unmaskedValue(): string {
+		return this._maskInstance?.unmaskedvalue() ?? this.value;
+	}
+
 	@query('input') private _input!: HTMLInputElement;
+	private _maskInstance?: InputmaskInstance;
+
+	/** Instancia original de Inputmask aplicada al input nativo. */
+	get inputmaskInstance(): InputmaskInstance | undefined {
+		return this._maskInstance;
+	}
+
+	/** Lee o actualiza opciones de la instancia activa. */
+	maskOption(name: string): unknown;
+	maskOption(options: InputmaskOptions, noRemask?: boolean): InputmaskInstance | undefined;
+	maskOption(nameOrOptions: string | InputmaskOptions, noRemask = false): unknown {
+		if (!this._maskInstance) return undefined;
+		return typeof nameOrOptions === 'string'
+			? this._maskInstance.option(nameOrOptions)
+			: this._maskInstance.option(nameOrOptions, noRemask);
+	}
+
+	getEmptyMask(): string {
+		return this._maskInstance?.getemptymask() ?? '';
+	}
+
+	hasMaskedValue(): boolean {
+		return this._maskInstance?.hasMaskedValue() ?? false;
+	}
+
+	isMaskComplete(): boolean {
+		return this._maskInstance?.isComplete() ?? true;
+	}
+
+	isMaskValid(value?: string): boolean {
+		return this._maskInstance?.isValid(value) ?? true;
+	}
+
+	getMaskMetadata(): unknown {
+		return this._maskInstance?.getmetadata();
+	}
+
+	formatWithMask(value: string, metadata = false): string | { value: string; metadata: unknown } {
+		return this._maskInstance?.format(value, metadata) ?? value;
+	}
+
+	setMaskedValue(value: string): void {
+		if (!this._maskInstance) {
+			this.value = value;
+			return;
+		}
+		this._maskInstance.setValue(value);
+		this.value = this._input.value;
+		this._internals?.setFormValue?.(this.value);
+	}
+
+	removeMask(): void {
+		this._maskInstance?.remove();
+		this._maskInstance = undefined;
+	}
+
+	private _configureMask() {
+		this._maskInstance?.remove();
+		this._maskInstance = undefined;
+		if (!this._input || (!this.mask && !this.maskAlias)) return;
+
+		const options: InputmaskOptions = {
+			placeholder: '',
+			...this.maskOptions,
+			...(this.mask ? { mask: this.mask } : {}),
+			definitions: {
+				...(this.maskOptions.definitions ?? {}),
+				K: { validator: '[0-9Kk]', casing: 'upper' }
+			}
+		};
+		const inputmask = this.maskAlias
+			? new Inputmask(this.maskAlias, options)
+			: new Inputmask(options);
+		this._maskInstance = inputmask.mask(this._input);
+	}
 
 	/**
 	 * Sincroniza imperativamente las propiedades DOM del `<input>` nativo después de cada actualización reactiva.
@@ -207,8 +322,14 @@ export class MoniTextField extends MoniElement {
 	 */
 	override updated(changed: Map<string, unknown>) {
 		if (this._input) {
+			if (changed.has('mask') || changed.has('maskAlias') || changed.has('maskOptions')) {
+				this._configureMask();
+			}
 			if (changed.has('value')) {
 				this._input.value = this.value;
+				if (this._maskInstance && this.value !== this._input.value) {
+					this.value = this._input.value;
+				}
 				this._internals?.setFormValue?.(this.value);
 			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
@@ -219,7 +340,7 @@ export class MoniTextField extends MoniElement {
 		const target = e.target as HTMLInputElement;
 		this.value = target.value;
 		emitMoniEvent(this, 'moni-input', {
-			detail: { value: this.value, originalEvent: e }
+			detail: { value: this.value, unmaskedValue: this.unmaskedValue, originalEvent: e }
 		});
 	}
 
@@ -227,11 +348,64 @@ export class MoniTextField extends MoniElement {
 		const target = e.target as HTMLInputElement;
 		this.value = target.value;
 		emitMoniEvent(this, 'moni-change', {
-			detail: { value: this.value, originalEvent: e }
+			detail: { value: this.value, unmaskedValue: this.unmaskedValue, originalEvent: e }
 		});
 	}
 
-	static override styles = [sharedStyles, fieldStyles];
+	override disconnectedCallback() {
+		this._maskInstance?.remove();
+		this._maskInstance = undefined;
+		super.disconnectedCallback();
+	}
+
+	private _handleSuffixClick(event: Event) {
+		if (this.disabled) return;
+		this.dispatchEvent(new CustomEvent('suffix-click', {
+			detail: { originalEvent: event },
+			bubbles: true,
+			composed: true
+		}));
+	}
+
+	private _handleSuffixSlotChange(event: Event) {
+		const slot = event.currentTarget as HTMLSlotElement;
+		this._hasSuffixSlot = slot.assignedElements({ flatten: true }).length > 0;
+	}
+
+	static override styles = [sharedStyles, fieldStyles, css`
+		.suffix-action {
+			position: absolute;
+			inset-inline-end: .5rem;
+			inset-block-start: calc(var(--_middle) - 1.25rem);
+			z-index: 3;
+			display: grid;
+			place-items: center;
+			inline-size: 2.5rem;
+			block-size: 2.5rem;
+			pointer-events: auto;
+		}
+		.suffix-action[hidden] { display: none; }
+		.suffix-button {
+			all: unset;
+			box-sizing: border-box;
+			display: grid;
+			place-items: center;
+			inline-size: 2.5rem;
+			block-size: 2.5rem;
+			border-radius: 50%;
+			color: var(--on-surface-variant);
+			cursor: pointer;
+			transition: background-color 150ms ease, transform 150ms ease;
+		}
+		.suffix-button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+		.suffix-button:active { background: color-mix(in srgb, currentColor 12%, transparent); transform: scale(.92); }
+		.suffix-button:focus-visible { outline: .125rem solid var(--primary); outline-offset: .125rem; }
+		.suffix-button:disabled { opacity: .38; cursor: default; }
+		.suffix-button moni-icon { --moni-icon-size: 1.5rem; }
+		::slotted([slot='suffix']) { pointer-events: auto; }
+		.field.suffix-action-field > input { padding-inline-end: 3.5rem; }
+		.field.suffix-action-field > input:focus { padding-inline-end: 3.4375rem; }
+	`];
 
 	/**
 	 * Renderiza el campo de texto con animación de etiqueta flotante, iconos iniciales/finales, y texto de ayuda.
@@ -239,7 +413,7 @@ export class MoniTextField extends MoniElement {
 	 * **Composición de `fieldClasses`:**
 	 * - `field` — siempre presente; diseño base del campo.
 	 * - `label` — habilita el comportamiento de la etiqueta flotante vía CSS.
-	 * - `fill` / `border` — variante filled vs outlined.
+	 * - `fill` / `border` — variantes filled y outlined; underlined no agrega ninguna.
 	 * - `small` / `large` / `extra` — modificador de tamaño.
 	 * - `prefix` — desplaza la etiqueta cuando hay un icono inicial (leading) presente.
 	 * - `suffix` — reserva espacio final (trailing) para el icono/texto de sufijo.
@@ -258,7 +432,7 @@ export class MoniTextField extends MoniElement {
 	override render() {
 		const hasLeading = Boolean(this.icon) || Boolean(this.prefix);
 		const hasTrailing =
-			Boolean(this.trailingIcon) || Boolean(this.suffix);
+			Boolean(this.trailingIcon) || Boolean(this.suffix) || Boolean(this.suffixButtonIcon) || this._hasSuffixSlot;
 		const isActive = Boolean(this.value) || Boolean(this.placeholder);
 		const fieldClasses = {
 			field: true,
@@ -270,8 +444,9 @@ export class MoniTextField extends MoniElement {
 			extra: this.size === 'extra',
 			prefix: hasLeading,
 			suffix: hasTrailing,
+			'suffix-action-field': Boolean(this.suffixButtonIcon) || this._hasSuffixSlot,
 			invalid: this.error,
-			round: this.shape === 'round',
+			round: this.shape === 'round' && this.variant !== 'underlined',
 			square: this.shape === 'no-round'
 		};
 		const placeholder = this.placeholder || (this.label ? ' ' : '');
@@ -295,6 +470,17 @@ export class MoniTextField extends MoniElement {
 						style="inline-size: 1.25rem; block-size: 1.25rem; color: currentColor;"
 					></moni-progress
 				></i>`
+			: this.suffixButtonIcon
+				? html`<span class="suffix-action" part="suffix-action">
+						<button
+							type="button"
+							class="suffix-button"
+							part="suffix-button"
+							aria-label=${this.suffixButtonLabel}
+							?disabled=${this.disabled}
+							@click=${this._handleSuffixClick}
+						><moni-icon name=${this.suffixButtonIcon}></moni-icon></button>
+					</span>`
 			: this.trailingIcon
 				? html`<i class="trailing-icon" part="trailing-icon"
 						><moni-icon name="${this.trailingIcon}"></moni-icon
@@ -326,6 +512,9 @@ export class MoniTextField extends MoniElement {
 					>`
 				: nothing}
 			${trailing}
+			<span class="suffix-action" part="suffix-action" ?hidden=${Boolean(this.suffixButtonIcon) || !this._hasSuffixSlot}>
+				<slot name="suffix" @slotchange=${this._handleSuffixSlotChange}></slot>
+			</span>
 			${this.error
 				? html`<output part="helper" class="invalid"
 						>${this.errorText || this.helper}</output

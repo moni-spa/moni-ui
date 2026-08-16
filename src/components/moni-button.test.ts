@@ -18,6 +18,8 @@ describe('moni-button', () => {
 		await el.updateComplete;
 		const button = el.shadowRoot?.querySelector('button');
 		expect(button).toBeTruthy();
+		expect(el.size).toBe('small');
+		expect(el.getAttribute('size')).toBe('small');
 	});
 
 	it('renderiza un <a> cuando el href está establecido', async () => {
@@ -55,6 +57,21 @@ describe('moni-button', () => {
 		const label = el.shadowRoot?.querySelector('[part="label"]');
 		expect(label).toBeTruthy();
 		expect(el.getAttribute('shape')).toBe('square');
+	});
+
+	it('no reserva espacio para una etiqueta vacía en shape=round', async () => {
+		el.shape = 'round';
+		el.icon = 'add';
+		await el.updateComplete;
+		const label = el.shadowRoot?.querySelector('[part="label"]');
+		const button = el.shadowRoot?.querySelector('[part="button"]');
+		expect(label?.hasAttribute('hidden')).toBe(true);
+		expect(button?.classList.contains('icon-only')).toBe(true);
+
+		el.textContent = 'Agregar';
+		el.shadowRoot?.querySelector('slot:not([name])')?.dispatchEvent(new Event('slotchange'));
+		await el.updateComplete;
+		expect(label?.hasAttribute('hidden')).toBe(false);
 	});
 
 	it('aplica la clase shape=square en el botón', async () => {

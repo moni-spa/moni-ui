@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import './moni-text-field.js';
-import type { MoniTextField } from './moni-text-field.js';
+import { MoniTextField } from './moni-text-field.js';
 
 describe('moni-text-field', () => {
 	let el: MoniTextField;
@@ -50,6 +50,28 @@ describe('moni-text-field', () => {
 		expect(trailing?.textContent?.trim()).toBe('.com');
 	});
 
+	it('renderiza un botón suffix accesible y emite suffix-click', async () => {
+		el.suffixButtonIcon = 'schedule';
+		el.suffixButtonLabel = 'Elegir hora';
+		await el.updateComplete;
+		const button = el.shadowRoot?.querySelector('.suffix-button') as HTMLButtonElement;
+		expect(button.getAttribute('aria-label')).toBe('Elegir hora');
+		let fired = false;
+		el.addEventListener('suffix-click', () => { fired = true; });
+		button.click();
+		expect(fired).toBe(true);
+	});
+
+	it('acepta una acción personalizada mediante slot suffix', async () => {
+		const button = document.createElement('button');
+		button.slot = 'suffix';
+		el.appendChild(button);
+		await el.updateComplete;
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('.field')?.classList.contains('suffix-action-field')).toBe(true);
+	});
+
 	it('aplica la clase square en el contenedor de campo para shape=no-round', async () => {
 		el.shape = 'no-round';
 		await el.updateComplete;
@@ -64,11 +86,13 @@ describe('moni-text-field', () => {
 		expect(field?.classList.contains('round')).toBe(true);
 	});
 
-	it('no aplica la clase de forma (shape) en el contenedor de campo para shape=square', async () => {
-		el.shape = 'square';
+	it('renderiza underlined sin fondo, contorno completo ni forma redondeada', async () => {
+		el.variant = 'underlined';
+		el.shape = 'round';
 		await el.updateComplete;
 		const field = el.shadowRoot?.querySelector('.field');
-		expect(field?.classList.contains('square')).toBe(false);
+		expect(field?.classList.contains('fill')).toBe(false);
+		expect(field?.classList.contains('border')).toBe(false);
 		expect(field?.classList.contains('round')).toBe(false);
 	});
 
@@ -111,5 +135,97 @@ describe('moni-text-field', () => {
 		el.value = 'a@b.com';
 		await el.updateComplete;
 		expect(label?.classList.contains('active')).toBe(true);
+	});
+
+	it('formatea el valor usando una máscara y expone el valor sin formato', async () => {
+		el.mask = '99.999.999-9';
+		el.value = '123456789';
+		await el.updateComplete;
+		expect(el.value).toBe('12.345.678-9');
+		expect(el.unmaskedValue).toBe('123456789');
+	});
+
+	it('descarta caracteres que no cumplen con las reglas de la máscara', async () => {
+		el.mask = '99-aa-**';
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		input.value = '1x2Aá7b';
+		input.dispatchEvent(new Event('input', { bubbles: true }));
+		await el.updateComplete;
+		expect(el.value).toBe('12-Aá-7b');
+	});
+
+	it('permite borrar a través de los separadores de la máscara', async () => {
+		el.mask = '99.999-9';
+		el.value = '123456';
+		await el.updateComplete;
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		input.focus();
+		input.setSelectionRange(3, 3);
+		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }));
+		await el.updateComplete;
+		expect(el.value).not.toBe('12.345-6');
+		expect(el.unmaskedValue).toBe('13456');
+	});
+
+	it('permite Delete delante de un separador de la máscara', async () => {
+		el.mask = '99-99';
+		el.value = '1234';
+		await el.updateComplete;
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		input.focus();
+		input.setSelectionRange(2, 2);
+		input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete', bubbles: true, cancelable: true }));
+		await el.updateComplete;
+		expect(el.value).toBe('12-4');
+	});
+
+	it('acepta y normaliza K como dígito verificador de RUT', async () => {
+		el.mask = '99.999.999-K';
+		el.value = '12345678k';
+		await el.updateComplete;
+		expect(el.value).toBe('12.345.678-K');
+		expect(el.unmaskedValue).toBe('12345678K');
+	});
+
+	it('acepta un dígito numérico en el token verificador K', async () => {
+		el.mask = '99.999.999-K';
+		el.value = '123456785';
+		await el.updateComplete;
+		expect(el.value).toBe('12.345.678-5');
+	});
+
+	it('admite bloques opcionales y cuantificadores de Inputmask', async () => {
+		el.mask = '9{2,4}[-aa]';
+		el.value = '1234CL';
+		await el.updateComplete;
+		expect(el.value).toBe('1234-CL');
+		expect(el.unmaskedValue).toBe('1234CL');
+	});
+
+	it('admite opciones avanzadas configuradas como objeto', async () => {
+		el.mask = '9999';
+		el.maskOptions = { placeholder: '·', showMaskOnHover: false };
+		el.value = '12';
+		await el.updateComplete;
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		input.focus();
+		expect(input.value).toContain('12');
+	});
+
+	it('expone la instancia y los métodos completos de Inputmask', async () => {
+		el.mask = '999-999';
+		await el.updateComplete;
+		expect(el.inputmaskInstance).toBeTruthy();
+		expect(el.getEmptyMask()).toBe('-');
+		expect(el.isMaskValid('123-456')).toBe(true);
+		expect(el.formatWithMask('123456')).toBe('123-456');
+		el.setMaskedValue('987654');
+		expect(el.value).toBe('987-654');
+		expect(el.getMaskMetadata()).toBeTruthy();
+	});
+
+	it('expone la API estática original de Inputmask', () => {
+		expect(MoniTextField.Inputmask.format('123456', { mask: '999-999' })).toBe('123-456');
+		expect(MoniTextField.Inputmask.isValid('123-456', { mask: '999-999' })).toBe(true);
 	});
 });

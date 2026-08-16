@@ -115,4 +115,24 @@ describe('moni-fab-menu', () => {
 		await el.updateComplete;
 		expect(el.open).toBe(true);
 	});
+
+	it('cambia el icono y aria-expanded al abrir', async () => {
+		el.open = true;
+		await el.updateComplete;
+		const trigger = el.shadowRoot?.querySelector('moni-fab') as MoniFab;
+		expect(trigger.icon).toBe('close');
+		expect(trigger.getAttribute('aria-expanded')).toBe('true');
+	});
+
+	it('cierra al seleccionar una acción', async () => {
+		const action = document.createElement('moni-fab') as MoniFab;
+		el.appendChild(action);
+		await el.updateComplete;
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		el.open = true;
+		await el.updateComplete;
+		action.click();
+		await el.updateComplete;
+		expect(el.open).toBe(false);
+	});
 });

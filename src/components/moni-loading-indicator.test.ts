@@ -38,4 +38,23 @@ describe('moni-loading-indicator', () => {
 		expect(el.ariaValueMin).toBe('0');
 		expect(el.ariaValueMax).toBe('100');
 	});
+
+	it('incluye la secuencia completa de morph y rotación', () => {
+		const cssText = ((el.constructor as typeof HTMLElement & { styles: unknown[] }).styles)
+			.map((style: any) => style?.cssText ?? '')
+			.join(' ');
+		expect(cssText).toContain('@keyframes rotate-outer');
+		expect(cssText).toContain('@keyframes rotate-inner');
+		for (const shape of ['soft-burst', '9-sided-cookie', 'pentagon', 'pill', 'sunny', '4-sided-cookie', 'oval']) {
+			expect(cssText).toContain(`--_polygon-${shape}`);
+		}
+	});
+
+	it('desactiva ambas rotaciones con movimiento reducido', () => {
+		const cssText = ((el.constructor as typeof HTMLElement & { styles: unknown[] }).styles)
+			.map((style: any) => style?.cssText ?? '')
+			.join(' ');
+		expect(cssText).toContain('prefers-reduced-motion: reduce');
+		expect(cssText).toContain('animation: none');
+	});
 });

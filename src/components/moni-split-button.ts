@@ -61,7 +61,7 @@ export class MoniSplitButton extends MoniElement {
 	 * @default 'medium'
 	 */
 	@property({ reflect: true })
-	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
+	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'small';
 
 	/**
 	 * El espacio (gap) CSS entre los botones líder y posterior.
@@ -87,14 +87,101 @@ export class MoniSplitButton extends MoniElement {
 			}
 
 			.wrapper {
+				--_split-button-gap: 0.125rem;
+				--_split-height: 3.5rem;
+				--_split-leading-start: 1.5rem;
+				--_split-leading-end: 1.5rem;
+				--_split-content-gap: 0.5rem;
+				--_split-leading-icon: 1.5rem;
+				--_split-trailing-icon: 1.625rem;
+				--_split-trailing-width: 3.5rem;
+				--_split-label-size: 1rem;
+				--_split-inner-radius: 0.25rem;
 				display: inline-flex;
 				align-items: center;
-				gap: 0;
+				gap: var(--_split-button-gap);
 				width: 100%;
 			}
 
-			::slotted(*:not(:first-child)) {
-				margin-inline-start: var(--moni-button-group-connected-gap, -0.0625rem);
+			slot {
+				display: contents;
+			}
+
+			::slotted(*) {
+				margin-inline: 0;
+			}
+
+			::slotted([slot='leading-button']) {
+				--moni-button-box-sizing: border-box;
+				--moni-button-height: var(--_split-height);
+				--moni-button-min-inline-size: 0px;
+				--moni-button-padding: 0 var(--_split-leading-end) 0 var(--_split-leading-start);
+				--moni-button-gap: var(--_split-content-gap);
+				--moni-button-font-size: var(--_split-label-size);
+				--moni-button-icon-size: var(--_split-leading-icon);
+				--moni-button-border-radius: calc(var(--_split-height) / 2) var(--_split-inner-radius) var(--_split-inner-radius) calc(var(--_split-height) / 2);
+			}
+
+			::slotted([slot='trailing-button']) {
+				--moni-button-box-sizing: border-box;
+				--moni-button-height: var(--_split-height);
+				--moni-button-inline-size: var(--_split-trailing-width);
+				--moni-button-min-inline-size: var(--_split-trailing-width);
+				--moni-button-padding: 0;
+				--moni-button-gap: 0;
+				--moni-button-font-size: var(--_split-label-size);
+				--moni-button-icon-size: var(--_split-trailing-icon);
+				--moni-button-icon-offset: -0.0625rem;
+				--moni-button-border-radius: var(--_split-inner-radius) calc(var(--_split-height) / 2) calc(var(--_split-height) / 2) var(--_split-inner-radius);
+			}
+
+			::slotted([slot='trailing-button'][active]) {
+				--moni-button-icon-offset: 0px;
+			}
+
+			:host([size='xsmall']) .wrapper {
+				--_split-height: 2rem;
+				--_split-leading-start: 0.75rem;
+				--_split-leading-end: 0.625rem;
+				--_split-content-gap: 0.25rem;
+				--_split-leading-icon: 1.25rem;
+				--_split-trailing-icon: 1.375rem;
+				--_split-trailing-width: 3rem;
+				--_split-label-size: 0.875rem;
+			}
+
+			:host([size='small']) .wrapper {
+				--_split-height: 2.5rem;
+				--_split-leading-start: 1rem;
+				--_split-leading-end: 0.75rem;
+				--_split-content-gap: 0.5rem;
+				--_split-leading-icon: 1.25rem;
+				--_split-trailing-icon: 1.375rem;
+				--_split-trailing-width: 3rem;
+				--_split-label-size: 0.875rem;
+			}
+
+			:host([size='large']) .wrapper {
+				--_split-height: 6rem;
+				--_split-leading-start: 3rem;
+				--_split-leading-end: 3rem;
+				--_split-content-gap: 0.75rem;
+				--_split-leading-icon: 2rem;
+				--_split-trailing-icon: 2.375rem;
+				--_split-trailing-width: 6rem;
+				--_split-label-size: 1.5rem;
+			}
+
+			:host([size='xlarge']) .wrapper,
+			:host([size='extra']) .wrapper {
+				--_split-height: 8.5rem;
+				--_split-leading-start: 4rem;
+				--_split-leading-end: 4rem;
+				--_split-content-gap: 1rem;
+				--_split-leading-icon: 2.5rem;
+				--_split-trailing-icon: 3.125rem;
+				--_split-trailing-width: 8.5rem;
+				--_split-label-size: 2rem;
 			}
 		`
 	];
@@ -145,15 +232,18 @@ export class MoniSplitButton extends MoniElement {
 			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
 		);
 
-		const hasGap = !!this.gap;
+		const normalizedGap = this.gap.trim().toLowerCase();
+		const hasGap = !['0', '0px', '0rem', '0em'].includes(normalizedGap);
 
 		if (leading) {
+			leading.setAttribute('split-position', 'leading');
 			leading.setAttribute('shape', hasGap ? 'left-round' : 'left-round-flat');
 			leading.setAttribute('size', this.size);
 			leading.setAttribute('variant', this.variant);
 		}
 
 		if (trailing) {
+			trailing.setAttribute('split-position', 'trailing');
 			trailing.setAttribute('shape', hasGap ? 'right-round' : 'right-round-flat');
 			trailing.setAttribute('size', this.size);
 			trailing.setAttribute('variant', this.variant);
@@ -175,9 +265,9 @@ export class MoniSplitButton extends MoniElement {
 	 */
 	override render() {
 		const resolvedGap = this.getGapValue(this.gap);
-		const inlineStyles = resolvedGap
-			? `gap: ${resolvedGap}; --moni-button-group-connected-gap: 0px;`
-			: '';
+		const normalizedGap = this.gap.trim().toLowerCase();
+		const isConnected = ['0', '0px', '0rem', '0em'].includes(normalizedGap);
+		const inlineStyles = `${resolvedGap ? `--_split-button-gap: ${resolvedGap};` : ''}${isConnected ? '--_split-inner-radius: 0;' : ''}`;
 		return html`
 			<div class="wrapper" style=${inlineStyles} part="wrapper">
 				<slot name="leading-button" @slotchange=${this.handleSlotChange}></slot>

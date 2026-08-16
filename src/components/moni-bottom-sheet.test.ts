@@ -28,7 +28,23 @@ describe('moni-bottom-sheet', () => {
 		expect(dialog?.hasAttribute('open')).toBe(true);
 	});
 
+	it('muestra el div.handle únicamente cuando handle=true', async () => {
+		await el.updateComplete;
+		expect(el.handle).toBe(false);
+		expect(el.shadowRoot?.querySelector('.handle')).toBeNull();
+
+		el.handle = true;
+		await el.updateComplete;
+		expect(el.hasAttribute('handle')).toBe(true);
+		expect(el.shadowRoot?.querySelector('.handle')).toBeTruthy();
+
+		el.handle = false;
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('.handle')).toBeNull();
+	});
+
 	it('emite el evento close y establece open en false cuando se arrastra hacia abajo más allá del umbral', async () => {
+		el.handle = true;
 		el.open = true;
 		await el.updateComplete;
 
@@ -97,6 +113,7 @@ describe('moni-bottom-sheet', () => {
 	});
 
 	it('no emite el evento close cuando se arrastra hacia abajo menos del umbral', async () => {
+		el.handle = true;
 		el.open = true;
 		await el.updateComplete;
 
@@ -155,6 +172,7 @@ describe('moni-bottom-sheet', () => {
 	});
 
 	it('aumenta la altura del diálogo cuando se arrastra hacia arriba', async () => {
+		el.handle = true;
 		el.open = true;
 		await el.updateComplete;
 
@@ -216,6 +234,7 @@ describe('moni-bottom-sheet', () => {
 	});
 
 	it('se ajusta a la clase expanded cuando se arrastra hacia arriba más allá del umbral', async () => {
+		el.handle = true;
 		el.open = true;
 		await el.updateComplete;
 
@@ -318,6 +337,7 @@ describe('moni-bottom-sheet', () => {
 	});
 
 	it('cierra el bottom sheet al hacer clic fuera del diálogo (clic en el backdrop)', async () => {
+		el.handle = true;
 		el.open = true;
 		el.modal = true;
 		await el.updateComplete;
@@ -365,6 +385,7 @@ describe('moni-bottom-sheet', () => {
 	});
 
 	it('no cierra el bottom sheet al hacer clic en el backdrop si acaba de ser arrastrado', async () => {
+		el.handle = true;
 		el.open = true;
 		el.modal = true;
 		await el.updateComplete;

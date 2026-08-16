@@ -144,4 +144,30 @@ describe('moni-textarea', () => {
 		) as HTMLTextAreaElement;
 		expect(textarea.maxLength).toBe(50);
 	});
+
+	it('sincroniza el valor al escribir', async () => {
+		await el.updateComplete;
+		const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+		textarea.value = 'Texto escrito';
+		textarea.dispatchEvent(new Event('input'));
+		expect(el.value).toBe('Texto escrito');
+	});
+
+	it('activa autosize y expone max-rows', async () => {
+		el.autosize = true;
+		el.maxRows = 6;
+		await el.updateComplete;
+		expect(el.hasAttribute('autosize')).toBe(true);
+		expect(el.getAttribute('max-rows')).toBe('6');
+	});
+
+	it('retira la altura calculada al desactivar autosize', async () => {
+		el.autosize = true;
+		await el.updateComplete;
+		const textarea = el.shadowRoot?.querySelector('textarea') as HTMLTextAreaElement;
+		textarea.style.blockSize = '120px';
+		el.autosize = false;
+		await el.updateComplete;
+		expect(textarea.style.blockSize).toBe('');
+	});
 });

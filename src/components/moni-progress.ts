@@ -2,166 +2,423 @@
  * @file components/moni-progress.ts
  * @package @moni-labs/moni-ui
  * @license MIT
- * @contributors Moni Labs & Contributors
  */
 
-import { html, css, svg, nothing } from 'lit';
+import { css, html, nothing, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
-/**
- * Componente Material Design 3 Progress Indicator (Indicador de Progreso).
- *
- * Los indicadores de progreso expresan un tiempo de espera no especificado o muestran la duración
- * de un proceso. Informan a los usuarios sobre el estado de procesos en curso, como
- * cargar una aplicación, enviar un formulario o guardar actualizaciones.
- *
- * **Referencia a la especificación M3:** `m3-docs/components/progress-indicators/specs.md`
- *
- * **Variantes:**
- * - `linear` (por defecto) — Una barra horizontal que se llena de izquierda a derecha.
- * - `circular` — Un indicador circular SVG de trazo (stroke).
- * - `wavy` — Una barra de ondas animada (extensión de Moni; no en la especificación M3).
- * - `circular-wavy` — Combinación de circular + ondas (extensión de Moni).
- *
- * **Nota de compatibilidad con Shadow DOM:**
- * El progreso de BeerCSS usa pseudo-elementos `<progress>` nativos (`::before`,
- * `::after`, `::webkit-progress-value`) y `mask-image`, que son bloqueados
- * por la raíz shadow del User Agent en Chrome/Firefox. Este componente usa un envoltorio
- * `<div>` simple que replica las reglas visuales exactamente, y un elemento `<svg>`
- * para la variante circular usando animación SVG stroke-dashoffset para un soporte
- * superior entre navegadores comparado con `conic-gradient`.
- *
- * **Cálculo de porcentaje:**
- * `_pct` se calcula en `willUpdate()` como `(value / max) * 100`, restringido a
- * `[0, 100]`. Cuando `indeterminate` está establecido, `_pct` se fija en `50` para impulsar
- * la animación de bucle infinito.
- *
- * @example
- * ```html
- * <!-- Progreso lineal determinado -->
- * <moni-progress value="65" max="100"></moni-progress>
- *
- * <!-- Progreso circular indeterminado (spinner de carga) -->
- * <moni-progress variant="circular" indeterminate></moni-progress>
- * ```
- *
- * @csspart bar      - El div contenedor exterior.
- * @csspart fill     - El elemento de llenado interior (variante lineal).
- * @csspart svg      - El elemento SVG (variante circular).
- */
+export type MoniProgressVariant = 'linear' | 'circular' | 'wavy' | 'circular-wavy';
+export type MoniProgressSize = 'small' | 'medium' | 'large' | 'xlarge';
+export type MoniProgressMode = 'determinate' | 'buffer';
+
+/** Material 3 Expressive progress indicator. */
 @customElement('moni-progress')
 export class MoniProgress extends MoniElement {
-	/**
-	 * Valor de progreso actual.
-	 *
-	 * Debe estar en el rango `[0, max]`. Los valores fuera de este rango se restringen
-	 * durante el cálculo del porcentaje en `willUpdate()`. Se ignora cuando
-	 * `indeterminate` está establecido.
-	 *
-	 * @default 0
-	 */
+	/** Current progress value. */
 	@property({ type: Number, reflect: true }) value = 0;
 
-	/**
-	 * Valor máximo del rango de progreso.
-	 *
-	 * Por defecto es `100` para que el `value` pueda establecerse como porcentaje directamente.
-	 * Para rangos que no son porcentajes (ej. pasos), establece `max` al recuento total de pasos
-	 * y `value` al paso actual.
-	 *
-	 * @default 100
-	 */
+	/** Maximum progress value. */
 	@property({ type: Number, reflect: true }) max = 100;
 
-	/**
-	 * Variante visual del indicador de progreso.
-	 *
-	 * - `'linear'` (por defecto) — Barra de llenado horizontal.
-	 * - `'circular'` — Círculo SVG con animación stroke-dashoffset.
-	 * - `'wavy'` — Barra de ondas animada.
-	 * - `'circular-wavy'` — Combinación de circular y ondas.
-	 *
-	 * @default 'linear'
-	 */
-	@property({ reflect: true })
-	variant: 'linear' | 'circular' | 'wavy' | 'circular-wavy' = 'linear';
+	/** Visual indicator family. */
+	@property({ reflect: true }) variant: MoniProgressVariant = 'linear';
 
-	/**
-	 * Tamaño visual del indicador de progreso.
-	 *
-	 * - `'small'`  — Compacto; adecuado para diseños en línea o ajustados.
-	 * - `'medium'` — Tamaño estándar M3 (por defecto).
-	 * - `'large'`  — Prominente; para estados de carga a pantalla completa.
-	 *
-	 * @default 'medium'
-	 */
-	@property({ reflect: true })
-	size: 'small' | 'medium' | 'large' = 'medium';
+	/** Current M3 size token. */
+	@property({ reflect: true }) size: MoniProgressSize = 'medium';
 
-	/**
-	 * Cuando es `true`, el indicador se anima en un bucle infinito independientemente del `value`.
-	 *
-	 * Úsalo para operaciones donde el porcentaje de finalización es desconocido
-	 * (ej. peticiones de red, procesamiento de archivos). Cuando `indeterminate` está establecido,
-	 * `_pct` se fija en `50` para impulsar una animación de barrido continuo.
-	 *
-	 * @default false
-	 */
+	/** Shows the animated state used when progress cannot be measured. */
 	@property({ type: Boolean, reflect: true }) indeterminate = false;
 
-	/**
-	 * Porcentaje de llenado calculado en el rango `[0, 100]`.
-	 *
-	 * Actualizado en `willUpdate()` cada vez que cambia `value`, `max` o `indeterminate`.
-	 * Usado directamente en vinculaciones de propiedades personalizadas de CSS y atributos de trazo (stroke) SVG.
-	 *
-	 * @internal
-	 */
-	@state() private _pct = 0;
+	/** Linear progress behavior. Buffer adds loaded and pending regions. */
+	@property({ reflect: true }) mode: MoniProgressMode = 'determinate';
 
-	/**
-	 * Hook de ciclo de vida de Lit. Calcula la fracción de llenado antes de pintar.
-	 *
-	 * A diferencia de los componentes nativos, necesitamos computar explícitamente el 
-	 * progreso como un número de 0 a 100 para inyectarlo en variables CSS (Lineal) 
-	 * o calcular el `stroke-dashoffset` (Circular). 
-	 * 
-	 * Se usa `Math.max(1, this.max)` para evitar un NaN / Infinity por división entre cero.
-	 * 
-	 * @param changed - Mapa de propiedades reactivas que detonaron la actualización.
-	 */
+	/** Buffered progress value used when mode is buffer. */
+	@property({ type: Number, reflect: true, attribute: 'buffer-value' }) bufferValue = 0;
+
+	/** Shows the optional 4px M3 stop indicator at the end of a linear track. */
+	@property({ type: Boolean, reflect: true, attribute: 'stop-indicator' }) stopIndicator = false;
+
+	/** Smoothly morphs wavy indicators to flat and back without changing progress. */
+	@property({ type: Boolean, reflect: true, attribute: 'wave-transition' }) waveTransition = false;
+
+	/** Accessible name announced by assistive technology. */
+	@property({ attribute: 'aria-label' }) label = 'Progress';
+
+	@state() private _percentage = 0;
+	@state() private _reduceMotion = false;
+	private _motionQuery?: MediaQueryList;
+	private readonly _handleMotionPreference = (event: MediaQueryListEvent) => {
+		this._reduceMotion = event.matches;
+	};
+
+	override connectedCallback() {
+		super.connectedCallback();
+		if (typeof window === 'undefined' || !window.matchMedia) return;
+		this._motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		this._reduceMotion = this._motionQuery.matches;
+		this._motionQuery.addEventListener('change', this._handleMotionPreference);
+	}
+
+	override disconnectedCallback() {
+		this._motionQuery?.removeEventListener('change', this._handleMotionPreference);
+		this._motionQuery = undefined;
+		super.disconnectedCallback();
+	}
+
 	override willUpdate(changed: Map<string, unknown>) {
-		if (changed.has('value') || changed.has('max') || changed.has('indeterminate')) {
-			this._pct = this.indeterminate
-				? 50
-				: Math.max(0, Math.min(100, (this.value / Math.max(1, this.max)) * 100));
+		if (changed.has('value') || changed.has('max')) {
+			const maximum = Number.isFinite(this.max) && this.max > 0 ? this.max : 100;
+			const value = Number.isFinite(this.value) ? this.value : 0;
+			this._percentage = Math.min(100, Math.max(0, (value / maximum) * 100));
 		}
+
+		if (changed.has('variant') && !['linear', 'circular', 'wavy', 'circular-wavy'].includes(this.variant)) {
+			this.variant = 'linear';
+		}
+
+		if (changed.has('mode') && !['determinate', 'buffer'].includes(this.mode)) {
+			this.mode = 'determinate';
+		}
+	}
+
+	private get _isCircular() {
+		return this.variant === 'circular' || this.variant === 'circular-wavy';
+	}
+
+	private get _isWavy() {
+		return this.variant === 'wavy' || this.variant === 'circular-wavy';
+	}
+
+	private get _isBuffer() {
+		return !this.indeterminate && this.mode === 'buffer';
+	}
+
+	private get _bufferPercentage() {
+		const maximum = Number.isFinite(this.max) && this.max > 0 ? this.max : 100;
+		const value = Number.isFinite(this.bufferValue) ? this.bufferValue : 0;
+		return Math.max(this._percentage, Math.min(100, Math.max(0, (value / maximum) * 100)));
+	}
+
+	private _aria() {
+		return {
+			role: 'progressbar',
+			label: this.label,
+			valueNow: this.indeterminate ? nothing : this.value,
+			valueText: this.indeterminate ? 'Loading' : `${Math.round(this._percentage)}%`
+		};
+	}
+
+	private _renderLinear() {
+		const aria = this._aria();
+		const hasStarted = this._percentage > 0;
+		const isInitialProgress = hasStarted && this._percentage <= 2;
+		const bufferStart = hasStarted ? this._percentage : 0;
+		const hasBuffer = this._isBuffer && this._bufferPercentage > bufferStart;
+		const wavePath = 'M-40 7 C-35 7 -35 4 -30 4 S-25 7 -20 7 S-15 10 -10 10 S-5 7 0 7 C5 7 5 4 10 4 S15 7 20 7 S25 10 30 10 S35 7 40 7 C45 7 45 4 50 4 S55 7 60 7 S65 10 70 10 S75 7 80 7';
+		const flatWavePath = 'M-40 7 C-35 7 -35 7 -30 7 S-25 7 -20 7 S-15 7 -10 7 S-5 7 0 7 C5 7 5 7 10 7 S15 7 20 7 S25 7 30 7 S35 7 40 7 C45 7 45 7 50 7 S55 7 60 7 S65 7 70 7 S75 7 80 7';
+		return html`
+			<div
+				class="linear progress-linear ${this._isWavy ? 'wavy progress-wavy' : 'flat'} ${this.indeterminate ? 'indeterminate' : this._isBuffer ? 'buffer' : 'determinate'}"
+				part="progress"
+				role=${aria.role}
+				aria-label=${aria.label}
+				aria-valuemin="0"
+				aria-valuemax=${this.max}
+				aria-valuenow=${aria.valueNow}
+				aria-valuetext=${aria.valueText}
+				style="--_progress: ${this._percentage}%; --_p: ${this._percentage}; --_active-end: ${hasStarted ? `max(var(--_thickness), ${this._percentage}%)` : '0px'}; --_buffer-start: ${bufferStart}%; --_buffer-end: ${this._bufferPercentage}%; --_buffer-gap-start: ${hasStarted ? 'var(--_gap)' : '0px'};"
+			>
+				${this._isWavy
+					? html`<svg class="wave-svg" aria-hidden="true">
+						<defs>
+							<pattern id="progress-wave" width="40" height="14" patternUnits="userSpaceOnUse">
+								<path d=${wavePath}>
+									${this.waveTransition && !this._reduceMotion ? svg`<animate attributeName="d" values="${wavePath};${flatWavePath};${flatWavePath};${wavePath};${wavePath}" keyTimes="0;0.25;0.5;0.75;1" dur="2s" calcMode="spline" keySplines="0.2 0 0 1;0 0 1 1;0.2 0 0 1;0 0 1 1" repeatCount="indefinite"></animate>` : nothing}
+								</path>
+							</pattern>
+							${this.indeterminate ? svg`
+								<mask id="wave-active-mask">
+									<rect width="100%" height="14" fill="black"></rect>
+									<rect class="mask-window primary-window" width="8%" height="14" rx="7" fill="white"></rect>
+									<rect class="mask-window secondary-window" width="8%" height="14" rx="7" fill="white"></rect>
+								</mask>
+								<mask id="wave-track-mask">
+									<rect width="100%" height="14" fill="white"></rect>
+									<rect class="mask-window inverse-window primary-window" width="8%" height="14" rx="7" fill="black"></rect>
+									<rect class="mask-window inverse-window secondary-window" width="8%" height="14" rx="7" fill="black"></rect>
+								</mask>` : nothing}
+						</defs>
+						${this.indeterminate
+							? svg`<rect class="indeterminate-track" x="0" y="5" width="100%" height="4" rx="2" mask="url(#wave-track-mask)"></rect>
+								<rect class="wave-surface" x="0" y="0" width="100%" height="14" mask="url(#wave-active-mask)" part="indicator"></rect>`
+							: svg`<rect class="wave-window active ${isInitialProgress ? 'initial' : ''}" part="indicator" x="0" y="0" width="${this._percentage}%" height="14" rx="7" ry="7"></rect>
+								${isInitialProgress ? svg`<circle class="initial-dot" cx="7" cy="7" r="2"></circle>` : nothing}`}
+					</svg>`
+					: this.indeterminate
+						? html`<svg class="flat-indeterminate-svg" aria-hidden="true">
+							<defs>
+								<mask id="flat-active-mask">
+									<rect width="100%" height="100%" fill="black"></rect>
+									<rect class="mask-window primary-window" width="8%" height="100%" rx="7" fill="white"></rect>
+									<rect class="mask-window secondary-window" width="8%" height="100%" rx="7" fill="white"></rect>
+								</mask>
+								<mask id="flat-track-mask">
+									<rect width="100%" height="100%" fill="white"></rect>
+									<rect class="mask-window inverse-window primary-window" width="8%" height="100%" rx="7" fill="black"></rect>
+									<rect class="mask-window inverse-window secondary-window" width="8%" height="100%" rx="7" fill="black"></rect>
+								</mask>
+							</defs>
+							<rect class="flat-track-surface" width="100%" height="100%" rx="7" mask="url(#flat-track-mask)"></rect>
+							<rect class="flat-active-surface" width="100%" height="100%" mask="url(#flat-active-mask)" part="indicator"></rect>
+						</svg>`
+						: html`<span class="active" part="indicator"></span>`}
+				${hasBuffer ? html`<span class="buffer-segment" part="buffer"></span>` : nothing}
+				<span class="track track-before" part="track"></span>
+				<span class="track track-after" part="track"></span>
+				${this.stopIndicator ? html`<span class="stop" part="stop-indicator"></span>` : nothing}
+			</div>
+		`;
+	}
+
+	private _circularPath(startPercentage = 0, endPercentage = 100, amplitude = 1.6, phase = 0) {
+		const span = Math.max(0, endPercentage - startPercentage);
+		const points = Math.max(2, Math.ceil(120 * (span / 100)));
+		const center = 26;
+		const radius = 19;
+		const waves = 8;
+		const commands: string[] = [];
+		for (let index = 0; index <= points; index++) {
+			const percentage = startPercentage + (index / points) * span;
+			const angle = (percentage / 100) * Math.PI * 2 - Math.PI / 2;
+			// Keep the wave phase tied to the absolute angle. Otherwise every partial
+			// segment draws all eight waves again and its geometry changes with value.
+			const r = radius + Math.sin(((percentage / 100) * waves + phase) * Math.PI * 2) * amplitude;
+			const x = center + Math.cos(angle) * r;
+			const y = center + Math.sin(angle) * r;
+			commands.push(`${index === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`);
+		}
+		return commands.join(' ');
+	}
+
+	private _circularWaveFrames(endPercentage: number) {
+		const amplitudes = this.waveTransition ? [1.6, 0, 0, 1.6, 1.6] : [1.6, 1.6, 1.6, 1.6, 1.6];
+		return [0, 0.25, 0.5, 0.75, 1]
+			.map((phase, index) => this._circularPath(0, endPercentage, amplitudes[index], phase))
+			.join(';');
+	}
+
+	private _circularGapPercentage() {
+		const metrics = {
+			small: { size: 40, thickness: 4 },
+			medium: { size: 44, thickness: 8 },
+			large: { size: 48, thickness: 4 },
+			xlarge: { size: 52, thickness: 8 }
+		} as const;
+		const { size, thickness } = metrics[this.size];
+		const radiusInPixels = (19 / 52) * size;
+		const circumference = Math.PI * 2 * radiusInPixels;
+
+		// The center lines need the requested 4px gap plus one complete stroke
+		// width, because the two round caps extend half a stroke at each end.
+		return ((4 + thickness) / circumference) * 100;
+	}
+
+	private _renderCircular() {
+		const aria = this._aria();
+		const gap = this._circularGapPercentage();
+		const halfGap = gap / 2;
+		const isEmpty = this._percentage <= 0;
+		const isComplete = this._percentage >= 100;
+		const bufferPercentage = this._isBuffer ? this._bufferPercentage : this._percentage;
+		const bufferIsComplete = bufferPercentage >= 100;
+		const activeEnd = isComplete ? 100 : Math.max(0, this._percentage - halfGap);
+		const bufferStart = isEmpty ? 0 : Math.min(100, this._percentage + halfGap);
+		const bufferEnd = bufferIsComplete ? 100 - gap : Math.max(bufferStart, bufferPercentage - halfGap);
+		const hasBuffer = this._isBuffer && bufferPercentage > this._percentage && bufferEnd > bufferStart;
+		const contentEnd = hasBuffer ? bufferPercentage : this._percentage;
+		const contentIsEmpty = contentEnd <= 0;
+		const trackStart = contentIsEmpty ? 0 : Math.min(100, contentEnd + halfGap);
+		const trackEnd = contentIsEmpty ? 100 : Math.max(trackStart, 100 - gap);
+		const trackSpace = contentIsEmpty ? 100 : Math.max(0, 100 - gap - trackStart);
+		const trackOpacity = contentIsEmpty ? 1 : Math.min(1, trackSpace / gap);
+		const hasTrack = contentEnd < 100;
+		const fullWavyPath = this._circularPath();
+		const fullWaveFrames = this._circularWaveFrames(100);
+		const activePath = this._circularPath(0, activeEnd);
+		const flatActivePath = this._circularPath(0, Math.max(0.01, activeEnd), 0);
+		const activeWaveFrames = this._circularWaveFrames(isComplete ? 100 : activeEnd);
+		const bufferPath = hasBuffer ? this._circularPath(bufferStart, bufferEnd, 0) : '';
+		const trackPath = hasTrack ? this._circularPath(trackStart, trackEnd, 0) : '';
+		return html`
+			<div
+				class="circular progress-circular ${this._isWavy ? 'wavy' : 'flat'} ${this.indeterminate ? 'indeterminate' : this._isBuffer ? 'buffer' : 'determinate'}"
+				part="progress"
+				role=${aria.role}
+				aria-label=${aria.label}
+				aria-valuemin="0"
+				aria-valuemax=${this.max}
+				aria-valuenow=${aria.valueNow}
+				aria-valuetext=${aria.valueText}
+				style="--_progress: ${this._percentage}; --_p: ${this._percentage};"
+			>
+				<svg part="svg" viewBox="0 0 52 52" aria-hidden="true">
+					${this.indeterminate && this._isWavy ? svg`<defs>
+						<mask id="circular-wavy-track-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="52" height="52">
+							<circle class="window-mask" cx="26" cy="26" r="19" pathLength="100" transform="rotate(-90 26 26)" stroke="white" stroke-dasharray="56 44" stroke-dashoffset="-28">
+								${!this._reduceMotion ? svg`
+									<animate attributeName="stroke-dasharray" values="56 44;0 100;56 44" keyTimes="0;0.5;1" dur="3.2s" calcMode="spline" keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1" repeatCount="indefinite"></animate>
+									<animate attributeName="stroke-dashoffset" values="-28;-102;-128" keyTimes="0;0.5;1" dur="3.2s" calcMode="spline" keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1" repeatCount="indefinite"></animate>
+								` : nothing}
+							</circle>
+						</mask>
+						<mask id="circular-wavy-active-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="52" height="52">
+							<circle class="window-mask" cx="26" cy="26" r="19" pathLength="100" transform="rotate(-90 26 26)" stroke="white" stroke-dasharray="12 88" stroke-dashoffset="0">
+								${!this._reduceMotion ? svg`
+									<animate attributeName="stroke-dasharray" values="12 88;68 32;12 88" keyTimes="0;0.5;1" dur="3.2s" calcMode="spline" keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1" repeatCount="indefinite"></animate>
+									<animate attributeName="stroke-dashoffset" values="0;-18;-100" keyTimes="0;0.5;1" dur="3.2s" calcMode="spline" keySplines="0.25 0.1 0.25 1;0.25 0.1 0.25 1" repeatCount="indefinite"></animate>
+								` : nothing}
+							</circle>
+						</mask>
+					</defs>` : nothing}
+					${this.indeterminate
+						? svg`<circle class="track" part="track" cx="26" cy="26" r="19" pathLength="100" mask=${this._isWavy ? 'url(#circular-wavy-track-mask)' : nothing}></circle>`
+						: hasTrack
+							? svg`<path class="track" part="track" d=${trackPath} style="opacity: ${trackOpacity}"></path>`
+							: nothing}
+					${hasBuffer ? svg`<path class="buffer-segment" part="buffer" d=${bufferPath}></path>` : nothing}
+					${this._isWavy
+						? this.indeterminate
+							? svg`<path class="active" part="indicator" d=${fullWavyPath} pathLength="100" mask="url(#circular-wavy-active-mask)">
+								${!this._reduceMotion ? svg`<animate
+									attributeName="d"
+									values=${fullWaveFrames}
+									keyTimes="0;0.25;0.5;0.75;1"
+									dur="1s"
+									calcMode="linear"
+									repeatCount="indefinite"
+								></animate>` : nothing}
+							</path>`
+							: !isEmpty
+								? svg`<path class="active" part="indicator" d=${isComplete ? fullWavyPath : activePath}>
+									${!this._reduceMotion ? svg`<animate
+										attributeName="d"
+										values=${activeWaveFrames}
+										keyTimes="0;0.25;0.5;0.75;1"
+										dur="1s"
+										calcMode="linear"
+										repeatCount="indefinite"
+									></animate>` : nothing}
+								</path>`
+								: nothing
+						: isComplete
+							? svg`<circle class="active" part="indicator" cx="26" cy="26" r="19"></circle>`
+							: !isEmpty
+								? svg`<path class="active" part="indicator" d=${flatActivePath}></path>`
+								: nothing}
+				</svg>
+			</div>
+		`;
+	}
+
+	override render() {
+		return this._isCircular ? this._renderCircular() : this._renderLinear();
 	}
 
 	static override styles = [
 		sharedStyles,
 		css`
-			/* ─── Keyframes — identical to BeerCSS ─── */
-			@keyframes to-linear-progress {
-				0% { inset-inline-start: -50%; inline-size: 50%; }
-				25% { inset-inline-start: 30%; inline-size: 60%; }
-				100% { inset-inline-start: 110%; inline-size: 10%; }
+			@keyframes linear-indeterminate-primary {
+				0% { inset-inline-start: -145.167%; inline-size: 8%; }
+				20% { inset-inline-start: -113.333%; inline-size: 48%; }
+				60% { inset-inline-start: 56.333%; inline-size: 78%; }
+				100% { inset-inline-start: 100%; inline-size: 8%; }
 			}
 
-			@keyframes to-rotate {
-				0%   { transform: rotate(0deg); }
-				100% { transform: rotate(360deg); }
+			@keyframes linear-indeterminate-secondary {
+				0% { inset-inline-start: -54.888%; inline-size: 8%; }
+				20% { inset-inline-start: -20%; inline-size: 48%; }
+				60% { inset-inline-start: 60%; inline-size: 78%; }
+				100% { inset-inline-start: 160%; inline-size: 8%; }
+			}
+
+			@keyframes circular-rotate { to { transform: rotate(360deg); } }
+			@keyframes circular-grow {
+				0% { stroke-dasharray: 12 88; stroke-dashoffset: 0; }
+				50% { stroke-dasharray: 68 32; stroke-dashoffset: -18; }
+				100% { stroke-dasharray: 12 88; stroke-dashoffset: -100; }
+			}
+			@keyframes circular-track-grow {
+				0% {
+					stroke-dasharray: 60 40;
+					stroke-dashoffset: -26;
+				}
+				50% {
+					stroke-dasharray: 4 96;
+					stroke-dashoffset: -100;
+				}
+				100% {
+					stroke-dasharray: 60 40;
+					stroke-dashoffset: -126;
+				}
+			}
+
+			@keyframes wave-phase {
+				to { transform: translateX(40px); }
+			}
+
+			@keyframes buffer-dots {
+				to { mask-position: calc(var(--_thickness) * -2) 0; }
+			}
+
+			@keyframes circular-buffer-dots {
+				to { stroke-dashoffset: calc(var(--_thickness) * 2); }
+			}
+
+			@keyframes wavy-indeterminate-primary {
+				0% { transform: translateX(-145.167%); width: 8%; }
+				20% { transform: translateX(-113.333%); width: 48%; }
+				60% { transform: translateX(56.333%); width: 78%; }
+				100% { transform: translateX(100%); width: 8%; }
+			}
+
+			@keyframes wavy-indeterminate-secondary {
+				0% { transform: translateX(-54.888%); width: 8%; }
+				20% { transform: translateX(-20%); width: 48%; }
+				60% { transform: translateX(60%); width: 78%; }
+				100% { transform: translateX(160%); width: 8%; }
 			}
 
 			:host {
-				--_size: 0.25rem;
-				--_circular-size: 2.5rem;
+				--_active-color: var(--moni-progress-active, var(--primary));
+				--_track-color: var(--moni-progress-track, var(--secondary-container, var(--active)));
+				--_gap: 4px;
+				--_stop: 4px;
+				--_thickness: 4px;
+				--_linear-height: 4px;
+				--_circular-size: 40px;
 				display: inline-flex;
-				align-items: center;
-				justify-content: center;
 				inline-size: 100%;
-				color: var(--primary);
+				color: var(--_active-color);
+				contain: layout style;
+			}
+
+			:host([size='medium']) {
+				--_thickness: 8px;
+				--_linear-height: 8px;
+				--_circular-size: 44px;
+			}
+
+			:host([size='large']) {
+				--_thickness: 4px;
+				--_linear-height: 10px;
+				--_circular-size: 48px;
+			}
+
+			:host([size='xlarge']) {
+				--_thickness: 8px;
+				--_linear-height: 14px;
+				--_circular-size: 52px;
 			}
 
 			:host([variant='circular']),
@@ -170,284 +427,218 @@ export class MoniProgress extends MoniElement {
 				block-size: var(--_circular-size);
 			}
 
-			:host([size='small']) { --_size: 0.25rem; --_circular-size: 1.5rem; }
-			:host([size='large']) { --_size: 0.45rem; --_circular-size: 3.5rem; }
-
-			/* ─── Linear / Wavy wrapper ─── */
-			.progress-linear {
+			.linear {
 				position: relative;
 				inline-size: 100%;
-				block-size: var(--_size);
-				background-color: var(--active);
-				border-radius: 1rem;
+				block-size: var(--_linear-height);
 				overflow: hidden;
 			}
 
-			.progress-linear > .value {
+			.linear > span {
 				position: absolute;
-				inset-block: 0;
+				inset-block-start: 50%;
+				transform: translateY(-50%);
+			}
+
+			.linear > .active {
 				inset-inline-start: 0;
-				inline-size: calc(var(--_p, 0) * 1%);
-				background-color: currentColor;
-				border-radius: inherit;
-				transition: inline-size var(--speed2) ease;
+				inline-size: var(--_active-end);
+				block-size: var(--_thickness);
+				background: var(--_active-color);
+				border-radius: 999px;
+				transition: inline-size 300ms cubic-bezier(0.2, 0, 0, 1);
 			}
 
-			/* Indeterminate linear: sliding bar via absolute animation */
-			.progress-linear.indeterminate > .value {
-				inline-size: 50%;
-				animation: to-linear-progress 3.2s ease infinite;
-				transition: none;
+			.linear .track {
+				inset-inline-start: min(100%, calc(var(--_active-end) + var(--_gap)));
+				inset-inline-end: 0;
+				block-size: 4px;
+				background: var(--_track-color);
+				border-radius: 999px;
+				transition: inset-inline-start 300ms cubic-bezier(0.2, 0, 0, 1);
 			}
 
-			/* ─── Wavy ─── */
-			.progress-wavy {
-				position: relative;
+			.linear .buffer-segment {
+				inset-inline-start: min(100%, calc(var(--_buffer-start) + var(--_buffer-gap-start)));
+				inset-inline-end: max(0%, calc(100% - var(--_buffer-end)));
+				block-size: var(--_thickness);
+				background: var(--_track-color);
+				border-radius: 999px;
+				transition: inset-inline-start 300ms cubic-bezier(0.2, 0, 0, 1), inset-inline-end 300ms cubic-bezier(0.2, 0, 0, 1);
+			}
+
+			.linear.buffer .track-after {
+				inset-inline-start: min(100%, calc(var(--_buffer-end) + var(--_gap)));
+				background-color: var(--_track-color);
+				mask-image: radial-gradient(circle, #000 0, #000 calc(var(--_thickness) / 2), transparent calc(var(--_thickness) / 2));
+				mask-size: calc(var(--_thickness) * 2) 100%;
+				mask-repeat: repeat;
+				animation: buffer-dots 250ms linear infinite;
+			}
+
+			.linear .track-before {
+				display: none;
+				inset-inline-start: 0;
+			}
+
+			.linear .stop {
+				inset-inline-end: 0;
+				inline-size: var(--_stop);
+				block-size: var(--_stop);
+				background: var(--_active-color);
+				border-radius: 50%;
+			}
+
+			.linear.wavy {
+				block-size: calc(var(--_thickness) + 6px);
+			}
+
+			.wave-svg {
+				position: absolute;
+				inset-inline: 0;
+				inset-block-start: 50%;
 				inline-size: 100%;
-				block-size: calc(var(--_size) * 2);
-				background: none;
-				overflow: visible;
+				block-size: 14px;
+				transform: translateY(-50%);
+				overflow: hidden;
+				z-index: 1;
 			}
 
-			/* Wavy uses an SVG filter for the wave shape */
-			.progress-wavy > svg {
+			.wave-svg pattern path {
+				fill: none;
+				stroke: var(--_active-color);
+				stroke-width: var(--_thickness);
+				stroke-linecap: round;
+				/* BeerCSS uses a one-second translation embedded in wavy.svg. */
+				animation: wave-phase 1s linear infinite;
+			}
+
+			.wave-window {
+				fill: url(#progress-wave);
+				width: var(--_active-end);
+				transition: width 300ms cubic-bezier(0.2, 0, 0, 1);
+			}
+
+			.wave-window.initial { visibility: hidden; }
+			.initial-dot {
+				fill: var(--_active-color);
+				r: calc(var(--_thickness) / 2);
+			}
+
+			.wave-surface { fill: url(#progress-wave); }
+			.indeterminate-track {
+				fill: var(--_track-color);
+				y: calc(7px - var(--_thickness) / 2);
+				height: var(--_thickness);
+			}
+			.mask-window { transform-box: view-box; }
+			.inverse-window {
+				stroke: black;
+				stroke-width: calc(var(--_gap) * 2);
+			}
+			.primary-window {
+				animation: wavy-indeterminate-primary 2.1s linear infinite;
+			}
+			.secondary-window {
+				animation: wavy-indeterminate-secondary 2.1s linear 1.15s infinite backwards;
+			}
+
+			.flat-indeterminate-svg {
 				position: absolute;
 				inset: 0;
 				inline-size: 100%;
 				block-size: 100%;
+				overflow: hidden;
+				z-index: 1;
 			}
+			.flat-track-surface { fill: var(--_track-color); }
+			.flat-active-surface { fill: var(--_active-color); }
 
-			/* ─── Circular: SVG ─── */
-			.progress-circular {
+			.linear.flat.indeterminate > .track { display: none; }
+			.linear.wavy.indeterminate > .track { display: none; }
+			.linear.indeterminate .stop { display: none; }
+
+			.linear.indeterminate::after { display: none; }
+
+			.circular,
+			.circular svg {
 				inline-size: var(--_circular-size);
 				block-size: var(--_circular-size);
-				position: relative;
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
 			}
 
-			.progress-circular > svg {
-				inline-size: 100%;
-				block-size: 100%;
-				transform: rotate(-90deg);
-			}
-
-			.progress-circular.indeterminate {
-				animation: to-rotate 1s linear infinite;
-			}
-
-			.progress-circular .track {
+			.circular svg { overflow: visible; }
+			.circular :is(circle, path) {
 				fill: none;
-				stroke: var(--active);
-				stroke-width: 4;
-			}
-
-			.progress-circular .value {
-				fill: none;
-				stroke: currentColor;
-				stroke-width: 4;
 				stroke-linecap: round;
-				transition: stroke-dashoffset var(--speed2) ease;
+				stroke-width: var(--_thickness);
+				vector-effect: non-scaling-stroke;
 			}
 
-			/* Indeterminate circular: large visible arc that rotates */
-			.progress-circular.indeterminate .value {
-				stroke-dasharray: 80 100;
+			.circular .window-mask {
+				stroke-width: 12;
+				stroke-linecap: round;
+				vector-effect: none;
+			}
+
+			.circular .track {
+				stroke: var(--_track-color);
+				transition: opacity 300ms cubic-bezier(0.2, 0, 0, 1);
+			}
+
+			.circular .buffer-segment {
+				stroke: var(--_track-color);
+			}
+
+			.circular.buffer .track {
+				stroke-dasharray: 0.01px calc(var(--_thickness) * 2);
+				animation: circular-buffer-dots 250ms linear infinite;
+			}
+
+			.circular .active {
+				stroke: var(--_active-color);
+				stroke-dashoffset: 0;
+				transition: stroke-dasharray 300ms cubic-bezier(0.2, 0, 0, 1);
+			}
+
+			.circular.indeterminate .track { display: none; }
+			.circular.indeterminate svg { animation: circular-rotate 1s linear infinite; }
+			.circular.indeterminate .active {
+				animation: circular-grow 3.2s ease infinite;
 				transition: none;
 			}
+			.circular.wavy.indeterminate .active {
+				animation: none;
+			}
+			.circular.wavy.indeterminate .track {
+				display: block;
+				animation: none;
+			}
 
-			/* ─── part exposure ─── */
-			.progress-linear,
-			.progress-wavy,
-			.progress-circular {
-				flex: none;
+			@media (prefers-reduced-motion: reduce) {
+				.linear .active,
+				.linear .track,
+				.circular .active { transition: none; }
+				.linear.flat.indeterminate > .active {
+					animation: none;
+					inset-inline-start: 0;
+					inline-size: 40%;
+				}
+				.linear.indeterminate::after { display: none; }
+				.mask-window { animation: none; }
+				.primary-window { transform: translateX(0); width: 40%; }
+				.secondary-window { visibility: hidden; }
+				.wave-svg pattern path { animation: none; }
+				.circular.indeterminate svg,
+				.circular.indeterminate .active { animation: none; }
+				.circular.wavy.indeterminate .track { animation: none; }
+				.circular.indeterminate .active { stroke-dasharray: 28 72 !important; }
+				.circular.wavy.indeterminate .track {
+					stroke-dasharray: 44 56 !important;
+					stroke-dashoffset: -42 !important;
+				}
 			}
 		`
 	];
-
-	/**
-	 * Motor de Renderizado: Linear Progress Bar.
-	 * 
-	 * Renderiza un contenedor horizontal clásico. Pasa el porcentaje computado
-	 * como variable CSS `--_p` para que el navegador lo interpole usando `transform: scaleX`.
-	 * Expone los atributos ARIA completos para lectores de pantalla.
-	 */
-	private _renderLinear() {
-		const isIndet = this.indeterminate;
-		return html`
-			<div
-				class="progress-linear${isIndet ? ' indeterminate' : ''}"
-				part="progress"
-				role="progressbar"
-				aria-valuenow=${isIndet ? nothing : this.value}
-				aria-valuemin="0"
-				aria-valuemax=${this.max}
-				style="--_p: ${this._pct};"
-			>
-				<div class="value"></div>
-			</div>
-		`;
-	}
-
-	/**
-	 * Motor de Renderizado: Wavy Progress Bar (Estilo BeerCSS/Material You).
-	 * 
-	 * Utiliza un `<svg>` con una animación de `clip-path` y ondas sinusoidales
-	 * inyectadas directamente. Ajusta matemáticamente el ancho y la posición de la onda
-	 * dependiendo de si está en modo indeterminado (infinito) o con un progreso específico (`_pct`).
-	 */
-	private _renderWavy() {
-		// BeerCSS wavy uses an SVG mask. We replicate with an SVG clipPath wave.
-		const isIndet = this.indeterminate;
-		const w = 200;
-		const h = 8;
-		const fill = this.indeterminate ? 50 : this._pct;
-		const trackW = (w * 1).toFixed(1);
-		const fillW = ((w * fill) / 100).toFixed(1);
-		return html`
-			<div
-				class="progress-wavy"
-				part="progress"
-				role="progressbar"
-				aria-valuenow=${isIndet ? nothing : this.value}
-				aria-valuemin="0"
-				aria-valuemax=${this.max}
-				style="--_p: ${this._pct};"
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 ${w} ${h}"
-					preserveAspectRatio="none"
-					aria-hidden="true"
-				>
-					<!-- Track wave (background) -->
-					<path
-						d="M0,4 Q5,0 10,4 Q15,8 20,4 Q25,0 30,4 Q35,8 40,4 Q45,0 50,4 Q55,8 60,4 Q65,0 70,4 Q75,8 80,4 Q85,0 90,4 Q95,8 100,4 Q105,0 110,4 Q115,8 120,4 Q125,0 130,4 Q135,8 140,4 Q145,0 150,4 Q155,8 160,4 Q165,0 170,4 Q175,8 180,4 Q185,0 190,4 Q195,8 200,4"
-						fill="none"
-						stroke="var(--active)"
-						stroke-width="3"
-					/>
-					<!-- Value wave (fill) — clipped to fill width -->
-					<clipPath id="wavy-clip-${this._instanceId}">
-						<rect x="0" y="0" width="${isIndet ? trackW : fillW}" height="${h}">
-							${isIndet
-								? svg`<animate
-										attributeName="x"
-										from="-${w}"
-										to="${w}"
-										dur="3.2s"
-										repeatCount="indefinite"
-									/>`
-								: nothing}
-						</rect>
-					</clipPath>
-					<path
-						d="M0,4 Q5,0 10,4 Q15,8 20,4 Q25,0 30,4 Q35,8 40,4 Q45,0 50,4 Q55,8 60,4 Q65,0 70,4 Q75,8 80,4 Q85,0 90,4 Q95,8 100,4 Q105,0 110,4 Q115,8 120,4 Q125,0 130,4 Q135,8 140,4 Q145,0 150,4 Q155,8 160,4 Q165,0 170,4 Q175,8 180,4 Q185,0 190,4 Q195,8 200,4"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="3"
-						clip-path="url(#wavy-clip-${this._instanceId})"
-					/>
-				</svg>
-			</div>
-		`;
-	}
-
-	/**
-	 * Algoritmo de renderizado para el spinner circular.
-	 * Utiliza la técnica de SVG `stroke-dasharray` y `stroke-dashoffset` para animar o
-	 * fijar el arco de progreso sin utilizar gradientes CSS cónicos (mejor compatibilidad).
-	 *
-	 * Matemáticas del círculo:
-	 * Perímetro = 2 * π * radio.
-	 * Para r=20, Perímetro ≈ 125.66. El porcentaje vacío se resta para desplazar (offset) el trazo.
-	 */
-	private _renderCircular(withWavy = false) {
-		const isIndet = this.indeterminate;
-		// SVG circle math: r=20, circumference = 2π*20 ≈ 125.66
-		const r = 20;
-		const circ = 2 * Math.PI * r;
-		const dashOffset = isIndet
-			? circ * 0.5  // show ~50% arc for indeterminate
-			: circ * (1 - this._pct / 100);
-
-		return html`
-			<div
-				class="progress-circular${isIndet ? ' indeterminate' : ''}"
-				part="progress"
-				role="progressbar"
-				aria-valuenow=${isIndet ? nothing : this.value}
-				aria-valuemin="0"
-				aria-valuemax=${this.max}
-			>
-				<svg
-					xmlns="http://www.w3.org/2000/svg"
-					viewBox="0 0 48 48"
-					aria-hidden="true"
-				>
-					${withWavy
-						? svg`
-							<!-- Circular wavy uses a scalloped clip path to emulate BeerCSS wavy-circle mask -->
-							<defs>
-								<clipPath id="wavy-circle-clip-${this._instanceId}">
-									<path d="M24,4 Q28,2 32,4 Q36,2 40,4 Q44,6 44,10 Q46,14 44,18 Q46,22 44,26 Q46,30 44,34 Q44,38 40,40 Q36,44 32,44 Q28,46 24,44 Q20,46 16,44 Q12,44 8,40 Q4,38 4,34 Q2,30 4,26 Q2,22 4,18 Q2,14 4,10 Q4,6 8,4 Q12,2 16,4 Q20,2 24,4Z"/>
-								</clipPath>
-							</defs>
-							<circle class="track" cx="24" cy="24" r="${r}" clip-path="url(#wavy-circle-clip-${this._instanceId})"/>
-							<circle
-								class="value"
-								cx="24" cy="24" r="${r}"
-								stroke-dasharray="${isIndet ? `${circ * 0.5} ${circ * 0.5}` : `${circ - dashOffset} ${dashOffset}`}"
-								stroke-dashoffset="0"
-								clip-path="url(#wavy-circle-clip-${this._instanceId})"
-							/>`
-						: svg`
-							<circle class="track" cx="24" cy="24" r="${r}"/>
-							<circle
-								class="value"
-								cx="24" cy="24" r="${r}"
-								stroke-dasharray="${isIndet ? `${circ * 0.5} ${circ * 0.5}` : `${circ - dashOffset} ${dashOffset}`}"
-								stroke-dashoffset="0"
-							/>`}
-				</svg>
-			</div>
-		`;
-	}
-
-	/** ID único por instancia para los IDs de SVG clipPath */
-	private readonly _instanceId = Math.random().toString(36).slice(2, 8);
-
-	/**
-	 * Despacha el renderizado al sub-renderizador privado apropiado basado en `variant`.
-	 *
-	 * **¿Por qué sub-renderizadores separados?**
-	 * Cada variante de progreso tiene una estructura DOM fundamentalmente diferente:
-	 * - Lineal: un `<div>` con un `<div>` de llenado escalado por una propiedad personalizada CSS.
-	 * - Wavy (Ondulado): un `<svg>` con un `<clipPath>` animado para la máscara de onda sinusoidal.
-	 * - Circular: un `<svg>` con `stroke-dasharray`/`stroke-dashoffset` para el arco.
-	 *
-	 * Fusionar los tres en una sola plantilla crearía un marcado profundamente condicional;
-	 * dividir en `_renderLinear()`, `_renderWavy()` y `_renderCircular()` mantiene
-	 * cada variante auto-contenida y permite una exposición específica de `@csspart` por variante.
-	 *
-	 * **`_instanceId`:**
-	 * Los IDs de `<clipPath>` SVG deben ser únicos por documento; `_instanceId` es un
-	 * sufijo aleatorio generado una vez en el momento de la instanciación para evitar colisiones de IDs cuando
-	 * hay múltiples elementos `<moni-progress>` en la misma página.
-	 */
-	override render() {
-		switch (this.variant) {
-			case 'circular':
-				return this._renderCircular(false);
-			case 'circular-wavy':
-				return this._renderCircular(true);
-			case 'wavy':
-				return this._renderWavy();
-			default:
-				return this._renderLinear();
-		}
-	}
 }
 
 declare global {

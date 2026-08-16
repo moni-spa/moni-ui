@@ -213,6 +213,17 @@ export class MoniLoadingIndicator extends MoniElement {
 					background-color: CanvasText !important;
 				}
 			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.container.animate .active-indicator-wrapper,
+				.container.animate .active-indicator {
+					animation: none;
+				}
+
+				.active-indicator {
+					clip-path: var(--_polygon-soft-burst);
+				}
+			}
 		`
 	];
 

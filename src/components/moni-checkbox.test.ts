@@ -48,7 +48,7 @@ describe('moni-checkbox', () => {
 		el.label = 'Accept terms';
 		await el.updateComplete;
 		const span = el.shadowRoot?.querySelector('span');
-		expect(span?.textContent?.trim()).toBe('Accept terms');
+		expect(span?.textContent).toContain('Accept terms');
 	});
 
 	it('reenvía disabled al input', async () => {
@@ -74,5 +74,47 @@ describe('moni-checkbox', () => {
 		el.disabled = true;
 		await el.updateComplete;
 		expect(el.hasAttribute('disabled')).toBe(true);
+	});
+
+	it('permite personalizar los iconos desmarcado y marcado', async () => {
+		el.uncheckedIcon = 'radio_button_unchecked';
+		el.checkedIcon = 'task_alt';
+		await el.updateComplete;
+		const icon = el.shadowRoot?.querySelector('span > i');
+		expect(icon?.textContent).toBe('radio_button_unchecked');
+
+		el.checked = true;
+		await el.updateComplete;
+		expect(icon?.textContent).toBe('task_alt');
+	});
+
+	it('no agrega un icono predeterminado al estado personalizado vacío', async () => {
+		el.uncheckedIcon = 'close';
+		el.checked = true;
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('span > i')?.textContent).toBe('');
+
+		el.checked = false;
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('span > i')?.textContent).toBe('close');
+	});
+
+	it('conserva la forma exterior al usar iconos personalizados', async () => {
+		el.checkedIcon = 'done';
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('span')?.classList.contains('custom-icons')).toBe(true);
+	});
+
+	it('actualiza el icono personalizado al alternar mediante el input', async () => {
+		el.checked = true;
+		el.uncheckedIcon = 'close';
+		el.checkedIcon = 'check';
+		await el.updateComplete;
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		input.checked = false;
+		input.dispatchEvent(new Event('change'));
+		await el.updateComplete;
+		expect(el.checked).toBe(false);
+		expect(el.shadowRoot?.querySelector('span > i')?.textContent).toBe('close');
 	});
 });

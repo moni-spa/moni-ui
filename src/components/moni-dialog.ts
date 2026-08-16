@@ -189,7 +189,9 @@ export class MoniDialog extends MoniElement {
 				--_padding: 1.5rem;
 				--_top: calc(var(--_padding) + env(safe-area-inset-top, 0));
 				--_bottom: calc(var(--_padding) + env(safe-area-inset-bottom, 0));
-				display: block;
+				display: grid;
+				grid-template-rows: auto minmax(0, 1fr) auto;
+				box-sizing: border-box;
 				visibility: hidden;
 				border: none;
 				opacity: 0;
@@ -204,17 +206,18 @@ export class MoniDialog extends MoniElement {
 				max-inline-size: 100%;
 				max-block-size: 80%;
 				overflow-x: hidden;
-				overflow-y: auto;
+				overflow-y: hidden;
 				transition: all var(--speed3), 0s background-color;
 				border-radius: 1.75rem;
-				transform: translate(-50%, -4rem);
+				transform: translate(-50%, -4rem) scale(var(--moni-dialog-scale, 1));
+				transform-origin: top center;
 				outline: none;
 			}
 
 			dialog[open] {
 				visibility: visible;
 				opacity: 1;
-				transform: translate(-50%, 0);
+				transform: translate(-50%, 0) scale(var(--moni-dialog-scale, 1));
 			}
 
 			dialog::backdrop {
@@ -334,8 +337,28 @@ export class MoniDialog extends MoniElement {
 			header {
 				min-block-size: 3rem;
 			}
+			[part='content'] {
+				min-block-size: 0;
+				overflow-x: hidden;
+				overflow-y: auto;
+				overscroll-behavior: contain;
+			}
 			footer {
 				min-block-size: 3.5rem;
+				position: relative;
+				z-index: 1;
+				background: inherit;
+			}
+
+			@media (max-width: 37.5rem), (max-height: 37.5rem) {
+				dialog:is(.small, .medium, .large):not(.top, .right, .bottom, .left, .max) {
+					--_padding: 1rem;
+					inline-size: calc(100vw - 2rem);
+					min-inline-size: 0;
+					max-inline-size: 35rem;
+					max-block-size: calc(100dvh - 2rem);
+					inset-block-start: 1rem;
+				}
 			}
 		`
 	];

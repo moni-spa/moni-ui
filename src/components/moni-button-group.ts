@@ -75,7 +75,7 @@ export class MoniButtonGroup extends MoniElement {
 	 * @default 'medium'
 	 */
 	@property({ reflect: true })
-	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
+	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'small';
 
 	/**
 	 * Permite que múltiples botones estén activos a la vez (solo aplica a grupos seleccionables).
@@ -130,6 +130,10 @@ export class MoniButtonGroup extends MoniElement {
 				display: inline-flex;
 				align-items: center;
 				width: 100%;
+			}
+
+			slot {
+				display: contents;
 			}
 
 			:host([variant='standard']) .group-container {
@@ -202,13 +206,16 @@ export class MoniButtonGroup extends MoniElement {
 			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
 		);
 
+		const normalizedGap = this.gap.trim().toLowerCase();
+		const hasConnectedGap = !['0', '0px', '0rem', '0em'].includes(normalizedGap);
+
 		buttons.forEach((btn, index) => {
 			// Propagate size
 			btn.setAttribute('size', this.size);
 
 			// Propagate shape for connected variant
 			if (this.variant === 'connected') {
-				if (this.gap) {
+				if (hasConnectedGap) {
 					if (buttons.length === 1) {
 						btn.setAttribute('shape', 'round');
 					} else if (index === 0) {
@@ -348,9 +355,9 @@ export class MoniButtonGroup extends MoniElement {
 	 */
 	override render() {
 		const resolvedGap = this.getGapValue(this.gap);
-		const inlineStyles = resolvedGap
-			? `gap: ${resolvedGap}; --moni-button-group-connected-gap: 0px;`
-			: '';
+		const normalizedGap = this.gap.trim().toLowerCase();
+		const isConnected = ['0', '0px', '0rem', '0em'].includes(normalizedGap);
+		const inlineStyles = resolvedGap ? `gap: ${resolvedGap};` : isConnected ? 'gap: 0;' : '';
 		// M3 connected button group a11y: role="group" by default. Consumers
 		// can override via the `role` attribute (e.g. "toolbar" for app
 		// actions) and provide an aria-label or aria-labelledby.

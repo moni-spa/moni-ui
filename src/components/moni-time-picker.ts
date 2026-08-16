@@ -55,6 +55,10 @@ export class MoniTimePicker extends MoniElement {
 	@property({ type: Boolean, reflect: true, attribute: 'use-24-hour' }) use24Hour = false;
 	@property({ reflect: true }) mode: 'dial' | 'input' = 'dial';
 	@property({ reflect: true }) orientation: 'vertical' | 'horizontal' | 'auto' = 'auto';
+	@property({ type: Boolean, reflect: true, attribute: 'hide-mode-toggle' }) hideModeToggle = false;
+	@property({ type: Boolean, reflect: true, attribute: 'hide-headline' }) hideHeadline = false;
+	@property({ reflect: true, attribute: 'hour-label' }) hourLabel = 'Hora';
+	@property({ reflect: true, attribute: 'minute-label' }) minuteLabel = 'Minuto';
 
 	@state() private activeSelection: 'hour' | 'minute' = 'hour';
 	@state() private period: 'AM' | 'PM' = 'AM';
@@ -291,18 +295,23 @@ export class MoniTimePicker extends MoniElement {
 		sharedStyles,
 		css`
 			:host {
+				--_display-size: 6rem;
 				display: inline-flex;
 				flex-direction: column;
 				background-color: transparent;
-				inline-size: 20.5rem;
+				inline-size: min(20.5rem, 100%);
+				max-inline-size: 100%;
+				box-sizing: border-box;
+				container-type: inline-size;
 				color: var(--on-surface);
 				font-family: var(--font);
 				user-select: none;
 			}
+			:host([use-24-hour]) { --_display-size: 7.125rem; }
 
 			/* Forced orientations */
 			:host([orientation="vertical"]) {
-				inline-size: 20.5rem;
+				inline-size: min(20.5rem, 100%);
 			}
 			:host([orientation="vertical"]) .main-content {
 				flex-direction: column;
@@ -327,21 +336,31 @@ export class MoniTimePicker extends MoniElement {
 				display: flex;
 				flex-direction: column;
 				gap: 1rem;
+				min-inline-size: 0;
 			}
+			:host([mode='input']) .main-content {
+				margin-block: auto;
+				justify-content: center;
+				align-items: center;
+			}
+			.main-content > * { min-inline-size: 0; }
+			.clock-container { flex: none; }
 
-			/* Auto Responsive Layout */
-			@media (min-width: 32rem) {
-				:host([orientation="auto"]) .main-content,
+			/* Auto stays vertical because the component can live inside a narrow
+			   dialog even when the browser viewport itself is wide. Consumers that
+			   reserve enough inline space can opt into horizontal explicitly. */
+			@media (min-width: 48rem) {
+				:host([orientation='auto']),
+				:host(:not([orientation])) {
+					inline-size: min(40rem, 100%);
+				}
+				:host([orientation='auto']) .main-content,
 				:host(:not([orientation])) .main-content {
 					flex-direction: row;
 					align-items: center;
 					gap: 2rem;
 				}
-				:host([orientation="auto"]),
-				:host(:not([orientation])) {
-					inline-size: auto;
-				}
-				:host([orientation="auto"]) .left-pane,
+				:host([orientation='auto']) .left-pane,
 				:host(:not([orientation])) .left-pane {
 					display: flex;
 					flex-direction: column;
@@ -380,15 +399,17 @@ export class MoniTimePicker extends MoniElement {
 			.time-display-container {
 				display: flex;
 				align-items: center;
-				justify-content: space-between;
+				justify-content: center;
 				margin-bottom: 1.5rem;
 				gap: 0.75rem;
 			}
 
 			.time-display {
-				display: flex;
+				display: grid;
+				grid-template-columns: var(--_display-size) 1.5rem var(--_display-size);
 				align-items: center;
-				flex: 1;
+				justify-content: center;
+				flex: none;
 				background-color: transparent;
 			}
 
@@ -396,7 +417,7 @@ export class MoniTimePicker extends MoniElement {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				width: 6rem;
+				width: 100%;
 				height: 5rem;
 				border-radius: 0.5rem;
 				background-color: var(--surface-container-highest);
@@ -409,9 +430,7 @@ export class MoniTimePicker extends MoniElement {
 				text-align: center;
 			}
 
-			:host([use-24-hour]) .display-box {
-				width: 7.125rem;
-			}
+			:host([use-24-hour]) .display-box { width: 100%; }
 
 			.display-box:hover:not(.active) {
 				background-color: var(--active);
@@ -459,6 +478,7 @@ export class MoniTimePicker extends MoniElement {
 			.ampm-toggle {
 				display: flex;
 				flex-direction: column;
+				flex: 0 0 3.25rem;
 				border: 0.0625rem solid var(--outline);
 				border-radius: 0.5rem;
 				overflow: hidden;
@@ -502,6 +522,15 @@ export class MoniTimePicker extends MoniElement {
 				background-color: var(--surface-container-highest);
 				touch-action: none;
 				cursor: pointer;
+			}
+
+			@container (max-width: 18rem) {
+				:host { --_display-size: clamp(4.5rem, 35cqi, 6rem); }
+				:host([use-24-hour]) { --_display-size: clamp(4.75rem, 38cqi, 7.125rem); }
+				.time-display-container { gap: .375rem; margin-block-end: 1rem; }
+				.display-box { block-size: 4rem; font-size: 2.75rem; }
+				.separator { inline-size: 1rem; font-size: 2.25rem; line-height: 4rem; }
+				.clock-container { margin-block: .25rem 1rem; }
 			}
 
 			/* Center dot */
@@ -615,21 +644,24 @@ export class MoniTimePicker extends MoniElement {
 
 			/* Manual Input Mode specific styling */
 			.input-labels {
-				display: flex;
-				justify-content: space-between;
-				gap: 0.75rem;
+				display: grid;
+				grid-template-columns: var(--_display-size) 1.5rem var(--_display-size);
+				justify-content: center;
 				margin-top: -1rem;
 				margin-bottom: 1.5rem;
 				color: var(--on-surface-variant);
 				font-size: 0.75rem;
 				font-weight: 400;
-				padding-inline-end: 4rem; /* Leave room for AM/PM offset */
+				padding: 0;
+				inline-size: 100%;
 			}
 
 			.input-labels > span {
-				flex: 1;
 				text-align: center;
 			}
+			.input-labels > span:first-child { grid-column: 1; }
+			.input-labels > span:last-child { grid-column: 3; }
+			:host([mode='input']) .input-labels { margin-block-end: 0; }
 
 			/* Bottom bar */
 			.bottom-actions {
@@ -838,9 +870,9 @@ export class MoniTimePicker extends MoniElement {
 		return html`
 			<div class="main-content">
 				<div class="left-pane">
-					<div class="picker-header">
+					${this.hideHeadline ? '' : html`<div class="picker-header">
 						${this.mode === 'dial' ? 'Select time' : 'Enter time'}
-					</div>
+					</div>`}
 
 					<div class="time-display-container">
 						<div class="time-display">
@@ -898,8 +930,8 @@ export class MoniTimePicker extends MoniElement {
 					${this.mode === 'input'
 						? html`
 								<div class="input-labels">
-									<span>Hour</span>
-									<span>Minute</span>
+									<span>${this.hourLabel}</span>
+									<span>${this.minuteLabel}</span>
 								</div>
 							`
 						: ''}
@@ -908,11 +940,11 @@ export class MoniTimePicker extends MoniElement {
 				${this.mode === 'dial' ? this.renderDialClockFace() : ''}
 			</div>
 
-			<div class="bottom-actions">
+			${this.hideModeToggle ? '' : html`<div class="bottom-actions">
 				<button class="mode-toggle-btn" @click=${this.toggleMode} aria-label="Toggle input mode">
 					<moni-icon name=${this.mode === 'dial' ? 'keyboard' : 'schedule'}></moni-icon>
 				</button>
-			</div>
+			</div>`}
 		`;
 	}
 }

@@ -481,8 +481,7 @@ export const fieldStyles = css`
 		transition: none;
 		flex: auto;
 	}
-	.field.label.border:not(.fill) > :focus + label::after,
-	.field.label.border:not(.fill) > input.active + label::after {
+	.field.label.border:not(.fill) > :focus + label::after {
 		/* On focus, the notch line becomes primary-colored. */
 		border-block-start: 0.125rem solid var(--primary);
 	}
@@ -491,73 +490,45 @@ export const fieldStyles = css`
 	/* When the label is lifted, a clip-path cuts a gap in the top border of the
 	   input element itself, creating the appearance of the label floating within
 	   the border's top edge. The clip-path dimensions account for label width. */
-	.field.label.border:not(.fill)
+	.field.label.border.square:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
-	.field.label.border:not(.fill) > select,
-	.field.label.border:not(.fill) > input.active,
-	.field.label.border:not(.fill) > select.active {
-		clip-path: polygon(
-			-2% -2%,
-			0.75rem -2%,
-			0.75rem 0.5rem,
-			calc(100% - 1rem) 0.5rem,
-			calc(100% - 1rem) -2%,
-			102% -2%,
-			102% 102%,
-			-2% 102%
-		);
+	.field.label.border.square:not(.fill) > select,
+	.field.label.border.square:not(.fill) > input.active,
+	.field.label.border.square:not(.fill) > select.active {
+		clip-path: polygon(-2% -2%,.75rem -2%,.75rem .5rem,calc(100% - 1rem) .5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	/* Prefix variant: clip starts further right to clear the leading icon text. */
-	.field.label.border.prefix:not(.fill)
+	.field.label.border.prefix.square:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
-	.field.label.border.prefix:not(.fill) > select,
-	.field.label.border.prefix:not(.fill) > input.active,
-	.field.label.border.prefix:not(.fill) > select.active {
-		clip-path: polygon(
-			-2% -2%,
-			2.5rem -2%,
-			2.5rem 0.5rem,
-			calc(100% - 1rem) 0.5rem,
-			calc(100% - 1rem) -2%,
-			102% -2%,
-			102% 102%,
-			-2% 102%
-		);
+	.field.label.border.prefix.square:not(.fill) > select,
+	.field.label.border.prefix.square:not(.fill) > input.active,
+	.field.label.border.prefix.square:not(.fill) > select.active {
+		clip-path: polygon(-2% -2%,.75rem -2%,.75rem .5rem,calc(100% - 1rem) .5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	/* Round and square border fields use a wider notch to clear the curved border. */
 	.field.label.border[class*='round']:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
 	.field.label.border[class*='round']:not(.fill) > select,
-	.field.label.border.square:not(.fill)
+	.field.label.border:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
-	.field.label.border.square:not(.fill) > select {
-		clip-path: polygon(
-			-2% -2%,
-			1.25rem -2%,
-			1.25rem 0.5rem,
-			calc(100% - 2rem) 0.5rem,
-			calc(100% - 2rem) -2%,
-			102% -2%,
-			102% 102%,
-			-2% 102%
-		);
+	.field.label.border:not(.fill) > select {
+		clip-path: polygon(-2% -2%,1.25rem -2%,1.25rem .5rem,calc(100% - 2rem) .5rem,calc(100% - 2rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	.field.label.border.prefix[class*='round']:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
 	.field.label.border.prefix[class*='round']:not(.fill) > select,
-	.field.label.border.prefix.square:not(.fill)
+	.field.label.border.prefix:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
-	.field.label.border.prefix.square:not(.fill) > select {
-		clip-path: polygon(-2% -2%, 1.25rem -2%, 1.25rem 0.5rem, calc(100% - 2rem) 0.5rem, calc(100% - 2rem) -2%, 102% -2%, 102% 102%, -2% 102%);
+	.field.label.border.prefix:not(.fill) > select {
+		clip-path: polygon(-2% -2%,1.25rem -2%,1.25rem .5rem,calc(100% - 2rem) .5rem,calc(100% - 2rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	/* ─── Label color changes ─────────────────────────────────────────────────── */
 	/* On focus: label turns primary-colored to draw attention. */
-	.field.label > :focus + label,
-	.field.label > input.active + label {
+	.field.label > :focus + label {
 		color: var(--primary);
 	}
 

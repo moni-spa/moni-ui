@@ -115,6 +115,10 @@ Puedes controlar el tema de color, densidad, fuentes y esquinas de forma reactiv
 
 ¿Deseas agregar nuevos componentes web, ajustar estilos o reportar bugs? Lee nuestra [Guía de Contribución y Estándar de Código (CONTRIBUTING.md)](file:///c:/Users/MonitasNET/Desktop/Codigo/Moni/packages/moni-ui/CONTRIBUTING.md) para comprender el flujo de desarrollo, estándares Lit/TypeScript y convenciones Git.
 
+## Publicación 📦
+
+Los pull requests y pushes se validan automáticamente. Un push a `main` publica en npm únicamente cuando la versión de `package.json` todavía no existe en el registro. Consulta la [guía de publicación automática](docs/PUBLISHING.md) para configurar npm Trusted Publishing y versionar releases.
+
 ---
 
 ## Licencia 📄

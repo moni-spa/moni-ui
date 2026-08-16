@@ -45,9 +45,21 @@ describe('moni-button-group', () => {
 		await btn2.updateComplete;
 		await btn3.updateComplete;
 
-		expect(btn1.getAttribute('shape')).toBe('left-round-flat');
-		expect(btn2.getAttribute('shape')).toBe('no-round');
-		expect(btn3.getAttribute('shape')).toBe('right-round-flat');
+		expect(btn1.getAttribute('shape')).toBe('left-round');
+		expect(btn2.getAttribute('shape')).toBe('inner-round');
+		expect(btn3.getAttribute('shape')).toBe('right-round');
+	});
+
+	it('permite un grupo completamente unido con gap cero', async () => {
+		group.variant = 'connected';
+		group.gap = '0';
+		const btn1 = document.createElement('moni-button') as MoniButton;
+		const btn2 = document.createElement('moni-button') as MoniButton;
+		group.append(btn1, btn2);
+		await group.updateComplete;
+		await Promise.all([btn1.updateComplete, btn2.updateComplete]);
+		expect(btn1.shape).toBe('left-round-flat');
+		expect(btn2.shape).toBe('right-round-flat');
 	});
 
 	it('usa formas redondeadas para la variante connected cuando se establece un gap', async () => {

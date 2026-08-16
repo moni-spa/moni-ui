@@ -85,6 +85,7 @@ type DropdownNode = OptionNode | GroupNode;
  *
  * @fires moni-change - Burbujea y está compuesto. Se dispara cuando el valor seleccionado cambia.
  *                      Lee `element.value` (o `element.values` para `multiple`).
+ * @fires moni-select-open - Se dispara al abrirse para que los demás selects cierren sus menús.
  *
  * @example
  * ```html
@@ -228,10 +229,16 @@ export class MoniSelect extends MoniElement {
 
 	/**
 	 * Estrategia de posicionamiento para el menú desplegable.
-	 * @type {'absolute' | 'fixed'}
+	 *
+	 * - `'absolute'`: permanece en el contexto de posicionamiento del select.
+	 * - `'fixed'`: usa coordenadas del viewport, pero conserva su contexto de apilamiento.
+	 * - `'body'`: usa la capa superior nativa (Popover API) para escapar de `overflow`,
+	 *   diálogos, bottom sheets y contextos de apilamiento.
+	 *
+	 * @type {'absolute' | 'fixed' | 'body'}
 	 * @default 'absolute'
 	 */
-	@property({ reflect: true }) positioning: 'absolute' | 'fixed' = 'absolute';
+	@property({ reflect: true }) positioning: 'absolute' | 'fixed' | 'body' = 'absolute';
 
 	/**
 	 * Ubicación preferida del menú desplegable con respecto al disparador (trigger).
@@ -250,17 +257,31 @@ export class MoniSelect extends MoniElement {
 	 */
 	@property({ reflect: true, attribute: 'dropdown-width' }) dropdownWidth = 'trigger';
 
+	/**
+	 * Límite manual opcional para la altura del menú.
+	 *
+	 * Acepta cualquier longitud CSS válida, por ejemplo `240px`, `40vh` o
+	 * `calc(100vh - 8rem)`. El valor nunca supera el límite automático calculado
+	 * según el viewport, la posición del campo y el tope predeterminado de 75vh.
+	 * Una cadena vacía conserva el cálculo automático.
+	 *
+	 * @default ''
+	 */
+	@property({ reflect: true, attribute: 'dropdown-max-height' }) dropdownMaxHeight = '';
+
 	@state() private _open = false;
 	@state() private _searchQuery = '';
 	@state() private _actualPlacement: 'top' | 'bottom' | 'left' | 'right' = 'bottom';
 	@state() private _parsedOptions: DropdownNode[] = [];
 	@state() private _activeIndex = -1;
 	@state() private _menuStyle = '';
+	@state() private _menuMaxHeight = '75vh';
 	@state() private _useInlineCategories = false;
 	@state() private _drilldownPath: GroupNode[] = [];
 
 	@query('slot') private _slot!: HTMLSlotElement;
 	@query('input') private _input!: HTMLInputElement;
+	@query('.dropdown-menu') private _menu?: HTMLElement;
 
 	static override styles = [
 		sharedStyles,
@@ -314,6 +335,13 @@ export class MoniSelect extends MoniElement {
 				transform: scale(1) translateY(0);
 			}
 
+			/* positioning="body" promotes the menu to the browser's top layer.
+			   Reset the Popover UA box while retaining Shadow DOM styles. */
+			.dropdown-menu[popover] {
+				margin: 0;
+				border: 0;
+			}
+
 			.dropdown-menu.placement-top {
 				top: auto;
 				bottom: 100%;
@@ -355,13 +383,15 @@ export class MoniSelect extends MoniElement {
 				transform: scale(1) translateX(0);
 			}
 
-			.dropdown-menu.open.searching,
-			.dropdown-menu.open.inline-categories {
-				max-height: 250px;
+			.dropdown-menu.open.scrollable {
+				overflow-x: hidden;
 				overflow-y: auto;
+				overscroll-behavior: contain;
 			}
 
-			.dropdown-menu.open:not(.searching):not(.inline-categories) {
+			/* Desktop category flyouts need visible overflow. If the root list no
+			   longer fits, the component switches to the inline drilldown layout. */
+			.dropdown-menu.open:not(.scrollable) {
 				overflow: visible;
 			}
 
@@ -518,6 +548,10 @@ export class MoniSelect extends MoniElement {
 				visibility: hidden;
 				position: absolute;
 				top: 0;
+				/* Intermediate flyouts must keep overflow visible so deeper
+				   subcategories are never clipped. Oversized trees switch to the
+				   scrollable inline drilldown layout before rendering. */
+				overflow: visible;
 				background-color: var(--surface-container-highest);
 				box-shadow: var(--elevate3);
 				border-radius: 0.5rem;
@@ -596,8 +630,11 @@ export class MoniSelect extends MoniElement {
 	override connectedCallback() {
 		super.connectedCallback();
 		document.addEventListener('click', this._handleOutsideClick);
+		document.addEventListener('moni-select-open', this._handlePeerOpen as EventListener);
 		window.addEventListener('scroll', this._handleScroll, { capture: true });
 		window.addEventListener('resize', this._handleResize);
+		window.visualViewport?.addEventListener('scroll', this._handleScroll);
+		window.visualViewport?.addEventListener('resize', this._handleResize);
 	}
 
 	/**
@@ -606,10 +643,14 @@ export class MoniSelect extends MoniElement {
 	 * o llamadas accidentales cuando el select ya fue destruido del DOM.
 	 */
 	override disconnectedCallback() {
+		this._hideBodyPopover();
 		super.disconnectedCallback();
 		document.removeEventListener('click', this._handleOutsideClick);
+		document.removeEventListener('moni-select-open', this._handlePeerOpen as EventListener);
 		window.removeEventListener('scroll', this._handleScroll, { capture: true });
 		window.removeEventListener('resize', this._handleResize);
+		window.visualViewport?.removeEventListener('scroll', this._handleScroll);
+		window.visualViewport?.removeEventListener('resize', this._handleResize);
 	}
 
 	/**
@@ -631,6 +672,22 @@ export class MoniSelect extends MoniElement {
 			changedProperties.has('_parsedOptions')
 		) {
 			this._updateWrapperHeight();
+		}
+		if (
+			this._open &&
+			(changedProperties.has('positioning') ||
+				changedProperties.has('placement') ||
+				changedProperties.has('dropdownWidth') ||
+				changedProperties.has('dropdownMaxHeight'))
+		) {
+			this._updateMenuPosition();
+		}
+		if (
+			changedProperties.has('_open') ||
+			changedProperties.has('positioning') ||
+			changedProperties.has('sheet')
+		) {
+			this._syncBodyPopover();
 		}
 	}
 
@@ -671,6 +728,46 @@ export class MoniSelect extends MoniElement {
 		}
 	};
 
+	/** Cierra este menú cuando otro `<moni-select>` anuncia que va a abrirse. */
+	private _handlePeerOpen = (e: Event) => {
+		const source = (e as CustomEvent<{ item?: MoniSelect }>).detail?.item;
+		if (source && source !== this && this._open) {
+			this._closeDropdown();
+		}
+	};
+
+	/**
+	 * Sincroniza el modo `positioning="body"` con la Popover API. Un popover
+	 * permanece en este Shadow DOM para conservar estilos y listeners, pero el
+	 * navegador lo promueve a la capa superior, fuera de cualquier `overflow`.
+	 */
+	private _syncBodyPopover() {
+		const menu = this._menu;
+		if (!menu || typeof menu.showPopover !== 'function') return;
+
+		const shouldBeOpen = this._open && !this.sheet && this.positioning === 'body';
+		try {
+			const isOpen = menu.matches(':popover-open');
+			if (shouldBeOpen && !isOpen) {
+				menu.showPopover();
+			} else if (!shouldBeOpen && isOpen) {
+				menu.hidePopover();
+			}
+		} catch {
+			/* Browsers without a complete Popover implementation use fixed fallback. */
+		}
+	}
+
+	private _hideBodyPopover() {
+		const menu = this._menu;
+		if (!menu || typeof menu.hidePopover !== 'function') return;
+		try {
+			if (menu.matches(':popover-open')) menu.hidePopover();
+		} catch {
+			/* No-op during teardown or in partial DOM implementations. */
+		}
+	}
+
 	/**
 	 * Motor de Cálculo de Colisiones de la Interfaz (Collision Detection).
 	 * 
@@ -682,6 +779,161 @@ export class MoniSelect extends MoniElement {
 	 *    la posición (ej: si `bottom` desborda, lo abre hacia `top`).
 	 * 4. Actualiza `_actualPlacement` con la dirección segura calculada.
 	 */
+	private _getViewportMetrics() {
+		const viewport = window.visualViewport;
+		const top = viewport?.offsetTop ?? 0;
+		const left = viewport?.offsetLeft ?? 0;
+		const height = viewport?.height ?? window.innerHeight;
+		const width = viewport?.width ?? window.innerWidth;
+		return { top, left, height, width, bottom: top + height, right: left + width };
+	}
+
+	/**
+	 * Calcula el espacio vertical en una dirección. Además del espacio físico,
+	 * descuenta la posición del trigger del presupuesto de 75% del viewport:
+	 * `75vh - offset del campo`, tal como se espera para campos a media pantalla.
+	 */
+	private _getDirectionalAvailableHeight(
+		direction: 'top' | 'bottom',
+		rect: DOMRectReadOnly
+	): number {
+		const viewport = this._getViewportMetrics();
+		const gap = 8;
+		const viewportCap = viewport.height * 0.75;
+
+		if (direction === 'bottom') {
+			const physicalSpace = viewport.bottom - rect.bottom - gap;
+			const triggerOffset = rect.bottom - viewport.top + gap;
+			return Math.max(0, Math.floor(Math.min(
+				viewportCap,
+				physicalSpace,
+				viewportCap - triggerOffset
+			)));
+		}
+
+		const physicalSpace = rect.top - viewport.top - gap;
+		const triggerOffset = viewport.bottom - rect.top + gap;
+		return Math.max(0, Math.floor(Math.min(
+			viewportCap,
+			physicalSpace,
+			viewportCap - triggerOffset
+		)));
+	}
+
+	private _normalizeManualMaxHeight(): string {
+		const raw = this.dropdownMaxHeight.trim();
+		if (!raw) return '';
+		const normalized = /^\d+(?:\.\d+)?$/.test(raw) ? `${raw}px` : raw;
+		if (
+			typeof CSS !== 'undefined' &&
+			typeof CSS.supports === 'function' &&
+			!CSS.supports('max-height', normalized)
+		) {
+			return '';
+		}
+		return normalized;
+	}
+
+	/** Convierte las unidades manuales comunes a px para el motor de colisiones. */
+	private _resolveManualMaxHeightPx(value: string, viewportHeight: number): number | null {
+		const match = value.match(/^(\d+(?:\.\d+)?)(px|vh|dvh|svh|lvh|%|rem)$/i);
+		if (!match) return null;
+		const amount = Number(match[1]);
+		const unit = match[2].toLowerCase();
+		if (unit === 'px') return amount;
+		if (unit === 'rem') {
+			const rootSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+			return amount * rootSize;
+		}
+		return viewportHeight * (amount / 100);
+	}
+
+	private _getMenuHeightConstraint(
+		rect: DOMRectReadOnly,
+		placement = this._actualPlacement
+	): { css: string; px: number } {
+		const viewport = this._getViewportMetrics();
+		const automatic = placement === 'top' || placement === 'bottom'
+			? this._getDirectionalAvailableHeight(placement, rect)
+			: Math.max(0, Math.floor(Math.min(viewport.height * 0.75, viewport.height - 16)));
+		const manualCss = this._normalizeManualMaxHeight();
+		const manualPx = manualCss
+			? this._resolveManualMaxHeightPx(manualCss, viewport.height)
+			: null;
+		const px = manualPx === null ? automatic : Math.min(automatic, manualPx);
+
+		return {
+			css: manualCss ? `min(${automatic}px, ${manualCss})` : `${automatic}px`,
+			px: Math.max(0, px)
+		};
+	}
+
+	private _estimateDesiredMenuHeight(): number {
+		const viewport = this._getViewportMetrics();
+		const itemCount = this._searchQuery
+			? this._getFilteredOptions().length
+			: this._parsedOptions.length;
+		let desired = Math.min(viewport.height * 0.75, Math.max(48, itemCount * 40 + 8));
+		const manual = this._normalizeManualMaxHeight();
+		const manualPx = manual
+			? this._resolveManualMaxHeightPx(manual, viewport.height)
+			: null;
+		if (manualPx !== null) desired = Math.min(desired, manualPx);
+		return desired;
+	}
+
+	/** Profundidad máxima de flyouts necesaria para representar el árbol. */
+	private _getGroupDepth(nodes: DropdownNode[]): number {
+		return nodes.reduce((depth, node) => {
+			if (node.type === 'option') return depth;
+			return Math.max(depth, 1 + this._getGroupDepth(node.children));
+		}, 0);
+	}
+
+	/** Detecta cualquier nivel cuya lista directa necesitaría scroll propio. */
+	private _hasOversizedGroupPanel(nodes: DropdownNode[], maxHeight: number): boolean {
+		return nodes.some(node => {
+			if (node.type === 'option') return false;
+			const panelHeight = node.children.length * 40 + 8;
+			return panelHeight > maxHeight || this._hasOversizedGroupPanel(node.children, maxHeight);
+		});
+	}
+
+	/**
+	 * Mide el espacio horizontal real para flyouts. En modo local también
+	 * intersecta ancestros con overflow para no diseñar submenús fuera de una
+	 * región que terminaría recortándolos. `body` ignora esos ancestros porque
+	 * se renderiza en la top layer.
+	 */
+	private _getAvailableFlyoutWidth(rect: DOMRectReadOnly): number {
+		const viewport = this._getViewportMetrics();
+		let boundaryLeft = viewport.left;
+		let boundaryRight = viewport.right;
+
+		if (this.positioning !== 'body') {
+			let current: Node | null = this;
+			while (current) {
+				const parent: Node | null = current.parentNode instanceof ShadowRoot
+					? current.parentNode.host
+					: current.parentNode;
+				if (parent instanceof HTMLElement) {
+					const styles = getComputedStyle(parent);
+					if (/(auto|scroll|hidden|clip)/.test(styles.overflowX)) {
+						const parentRect = parent.getBoundingClientRect();
+						boundaryLeft = Math.max(boundaryLeft, parentRect.left);
+						boundaryRight = Math.min(boundaryRight, parentRect.right);
+					}
+				}
+				current = parent;
+			}
+		}
+
+		return Math.max(
+			0,
+			Math.max(boundaryRight - rect.right, rect.left - boundaryLeft)
+		);
+	}
+
 	private _determineActualPlacement() {
 		if (this.sheet) {
 			this._actualPlacement = 'bottom';
@@ -689,44 +941,37 @@ export class MoniSelect extends MoniElement {
 		}
 
 		const rect = this.getBoundingClientRect();
-		const viewportHeight = window.innerHeight;
-		const viewportWidth = window.innerWidth;
-		const spaceBelow = viewportHeight - rect.bottom;
-		const spaceAbove = rect.top;
-		const spaceRight = viewportWidth - rect.right;
-		const spaceLeft = rect.left;
-		const menuHeight = 260; // 250px max-height + 10px buffer
-		const menuWidth = 180; // Estimated menu width buffer
+		const viewport = this._getViewportMetrics();
+		const spaceBelow = this._getDirectionalAvailableHeight('bottom', rect);
+		const spaceAbove = this._getDirectionalAvailableHeight('top', rect);
+		const spaceRight = viewport.right - rect.right;
+		const spaceLeft = rect.left - viewport.left;
+		const menuHeight = this._estimateDesiredMenuHeight();
+		const menuWidth = 180;
 
 		let preferred = this.placement;
 		if (preferred === 'auto') {
-			preferred = spaceBelow >= menuHeight ? 'bottom' : (spaceAbove > spaceBelow ? 'top' : 'bottom');
+			preferred = spaceBelow >= menuHeight
+				? 'bottom'
+				: (spaceAbove > spaceBelow ? 'top' : 'bottom');
 		}
 
 		if (preferred === 'top') {
-			if (spaceAbove < menuHeight && spaceBelow > spaceAbove) {
-				this._actualPlacement = 'bottom';
-			} else {
-				this._actualPlacement = 'top';
-			}
+			this._actualPlacement = spaceAbove < menuHeight && spaceBelow > spaceAbove
+				? 'bottom'
+				: 'top';
 		} else if (preferred === 'bottom') {
-			if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-				this._actualPlacement = 'top';
-			} else {
-				this._actualPlacement = 'bottom';
-			}
+			this._actualPlacement = spaceBelow < menuHeight && spaceAbove > spaceBelow
+				? 'top'
+				: 'bottom';
 		} else if (preferred === 'left') {
-			if (spaceLeft < menuWidth && spaceRight > spaceLeft) {
-				this._actualPlacement = 'right';
-			} else {
-				this._actualPlacement = 'left';
-			}
+			this._actualPlacement = spaceLeft < menuWidth && spaceRight > spaceLeft
+				? 'right'
+				: 'left';
 		} else if (preferred === 'right') {
-			if (spaceRight < menuWidth && spaceLeft > spaceRight) {
-				this._actualPlacement = 'left';
-			} else {
-				this._actualPlacement = 'right';
-			}
+			this._actualPlacement = spaceRight < menuWidth && spaceLeft > spaceRight
+				? 'left'
+				: 'right';
 		}
 	}
 
@@ -762,12 +1007,32 @@ export class MoniSelect extends MoniElement {
 	 */
 	private _updateMenuPosition() {
 		if (!this._open || this.sheet) return;
-		
+
 		this._determineActualPlacement();
-
-		if (this.positioning !== 'fixed') return;
-
 		const rect = this.getBoundingClientRect();
+		const viewport = this._getViewportMetrics();
+		const constraint = this._getMenuHeightConstraint(rect);
+		this._menuMaxHeight = constraint.css;
+
+		const hasGroups = this._parsedOptions.some(node => node.type === 'group');
+		const estimatedRootHeight = this._parsedOptions.length * 40 + 8;
+		const groupDepth = this._getGroupDepth(this._parsedOptions);
+		const requiredFlyoutWidth = groupDepth * 160;
+		const availableFlyoutWidth = this._getAvailableFlyoutWidth(rect);
+		const lacksFlyoutSpace =
+			viewport.width < 600 ||
+			(hasGroups && availableFlyoutWidth < requiredFlyoutWidth);
+		const needsVerticalDrilldown = hasGroups && (
+			estimatedRootHeight > constraint.px ||
+			this._hasOversizedGroupPanel(this._parsedOptions, constraint.px)
+		);
+		this._useInlineCategories = lacksFlyoutSpace || needsVerticalDrilldown;
+
+		if (this.positioning !== 'fixed' && this.positioning !== 'body') {
+			this._menuStyle = '';
+			return;
+		}
+
 		let widthStyle = '';
 		if (this.dropdownWidth === 'trigger') {
 			widthStyle = `width: ${rect.width}px;`;
@@ -795,44 +1060,49 @@ export class MoniSelect extends MoniElement {
 				bottom: auto;
 				right: auto;
 			`;
-		} else if (this._actualPlacement === 'left') {
-			this._menuStyle = `
-				position: fixed;
-				top: ${rect.top}px;
-				right: ${window.innerWidth - rect.left + 4}px;
-				${widthStyle}
-				left: auto;
-				bottom: auto;
-			`;
-		} else if (this._actualPlacement === 'right') {
-			this._menuStyle = `
-				position: fixed;
-				top: ${rect.top}px;
-				left: ${rect.right + 4}px;
-				${widthStyle}
-				right: auto;
-				bottom: auto;
-			`;
+		} else {
+			const sideTop = Math.max(
+				viewport.top + 8,
+				Math.min(rect.top, viewport.bottom - constraint.px - 8)
+			);
+			if (this._actualPlacement === 'left') {
+				this._menuStyle = `
+					position: fixed;
+					top: ${sideTop}px;
+					right: ${window.innerWidth - rect.left + 4}px;
+					${widthStyle}
+					left: auto;
+					bottom: auto;
+				`;
+			} else {
+				this._menuStyle = `
+					position: fixed;
+					top: ${sideTop}px;
+					left: ${rect.right + 4}px;
+					${widthStyle}
+					right: auto;
+					bottom: auto;
+				`;
+			}
 		}
 	}
 
 	/**
-	 * Devuelve un string de estilos inline para el menú desplegable.
-	 * Si la posición es `fixed` (calculada dinámicamente para evadir overflow),
-	 * retorna el bloque de coordenadas generado por `_updateMenuPosition`.
-	 * Si no, asigna anchos basados en la propiedad `dropdownWidth` (auto, trigger, custom).
+	 * Devuelve las coordenadas, el ancho y la restricción dinámica de altura del
+	 * menú. `body` comparte coordenadas fixed, pero se pinta en la capa superior.
 	 */
 	private _getMenuStyle() {
-		if (this.positioning === 'fixed') {
-			return this._menuStyle;
+		const constraintStyle = `max-height: ${this._menuMaxHeight}; --_select-menu-max-height: ${this._menuMaxHeight};`;
+		if (this.positioning === 'fixed' || this.positioning === 'body') {
+			return `${this._menuStyle} ${constraintStyle}`;
 		}
 
 		if (this.dropdownWidth === 'auto') {
-			return 'width: max-content; min-width: 160px; max-width: 320px;';
+			return `width: max-content; min-width: 160px; max-width: 320px; ${constraintStyle}`;
 		} else if (this.dropdownWidth !== 'trigger') {
-			return `width: ${this.dropdownWidth};`;
+			return `width: ${this.dropdownWidth}; ${constraintStyle}`;
 		}
-		return '';
+		return constraintStyle;
 	}
 
 	/**
@@ -936,44 +1206,29 @@ export class MoniSelect extends MoniElement {
 	 * Despliega el menú del select y coordina la accesibilidad, posicionamiento y foco inicial.
 	 */
 	private _openDropdown() {
+		if (this.disabled || this._open) return;
+
 		this._open = true;
 		this._activeIndex = -1;
 		this._drilldownPath = [];
+		// La búsqueda siempre comienza limpia, aunque exista un valor seleccionado.
+		this._searchQuery = '';
 
-		// Calculamos la dirección del menú emergente en base al espacio disponible en la pantalla
-		this._determineActualPlacement();
+		// El evento global permite que cualquier otro select abierto se cierre,
+		// incluso cuando la apertura vino del teclado o del icono trailing.
+		emitMoniEvent(this, 'moni-select-open', { detail: { item: this } });
 
-		// Medimos dinámicamente si hay espacio suficiente para renderizar submenús laterales (Desktop).
-		// Si es móvil (<600px) o no hay 160px de espacio libre a los lados, forzamos un diseño plano ("inline categories")
-		// para evitar que los submenús se salgan del viewport.
-		const rect = this.getBoundingClientRect();
-		const spaceOnRight = window.innerWidth - rect.right;
-		const spaceOnLeft = rect.left;
-		this._useInlineCategories = window.innerWidth < 600 || (spaceOnRight < 160 && spaceOnLeft < 160);
+		this._updateMenuPosition();
 
-		// Si el menú tiene position="fixed", necesitamos computar y aplicar las coordenadas absolutas en pixels
-		if (this.positioning === 'fixed') {
-			this._updateMenuPosition();
-		}
-		
-		// Lógica especial si el componente está configurado como "searchable" (Input filtrable)
 		if (this.searchable) {
-			const selectedOpt = this._findOptionByValue(this.value);
-			this._searchQuery = selectedOpt ? selectedOpt.label : '';
-			
-			// Esperamos un tick para que el input o bottom-sheet sea renderizado antes de solicitar el foco
+			// Esperamos un tick para que el input o sheet esté renderizado antes de enfocarlo.
 			setTimeout(() => {
+				if (!this._open) return;
 				if (this._input && !this.sheet) {
-					// Foco en el input principal (Desktop) y seleccionamos todo el texto para fácil reemplazo
 					this._input.focus();
-					this._input.select();
 				} else if (this.sheet) {
-					// Foco en la caja de búsqueda inyectada dentro del bottom-sheet (Mobile)
 					const sheetInput = this.shadowRoot?.querySelector('.sheet-search-input') as HTMLInputElement;
-					if (sheetInput) {
-						sheetInput.focus();
-						sheetInput.select();
-					}
+					sheetInput?.focus();
 				}
 			}, 50);
 		}
@@ -984,9 +1239,10 @@ export class MoniSelect extends MoniElement {
 	 * para que la próxima vez que se abra, la lista muestre todas las opciones por defecto.
 	 */
 	private _closeDropdown() {
+		if (!this._open) return;
 		this._open = false;
 		this._searchQuery = '';
-		this.requestUpdate();
+		this._hideBodyPopover();
 	}
 
 	private _findOptionByValue(value: string): OptionNode | undefined {
@@ -1004,8 +1260,8 @@ export class MoniSelect extends MoniElement {
 	 */
 	private _onSearchInput(e: Event) {
 		const query = (e.target as HTMLInputElement).value;
+		if (!this._open) this._openDropdown();
 		this._searchQuery = query;
-		this._open = true;
 		this._activeIndex = -1;
 
 		if (this.clearable && query.trim() === '') {
@@ -1406,13 +1662,18 @@ export class MoniSelect extends MoniElement {
 					><moni-icon name="${this.trailingIcon}"></moni-icon
 				></i>`;
 
+		const hasGroups = this._parsedOptions.some(node => node.type === 'group');
+		const usesFlyoutSubmenus = hasGroups && !this._searchQuery && !this._useInlineCategories;
 		const menuClasses = {
 			'dropdown-menu': true,
 			open: this._open,
+			scrollable: !usesFlyoutSubmenus,
 			searching: Boolean(this._searchQuery),
 			'inline-categories': this._useInlineCategories,
 			'placement-top': this._actualPlacement === 'top',
-			'placement-bottom': this._actualPlacement === 'bottom'
+			'placement-bottom': this._actualPlacement === 'bottom',
+			'placement-left': this._actualPlacement === 'left',
+			'placement-right': this._actualPlacement === 'right'
 		};
 
 		return html`<div class=${classMap(fieldClasses)} part="field">
@@ -1465,9 +1726,10 @@ export class MoniSelect extends MoniElement {
 					</div>
 				`
 				: html`
-					<ul 
-						class=${classMap(menuClasses)} 
+					<ul
+						class=${classMap(menuClasses)}
 						part="menu"
+						popover=${this.positioning === 'body' ? 'manual' : nothing}
 						style=${this._getMenuStyle()}
 					>
 						${this._renderOptionsList(filtered)}

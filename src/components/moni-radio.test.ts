@@ -48,7 +48,7 @@ describe('moni-radio', () => {
 		el.label = 'Option A';
 		await el.updateComplete;
 		const span = el.shadowRoot?.querySelector('span');
-		expect(span?.textContent?.trim()).toBe('Option A');
+		expect(span?.textContent).toContain('Option A');
 	});
 
 	it('reenvía disabled al input', async () => {
@@ -82,5 +82,45 @@ describe('moni-radio', () => {
 			'input'
 		) as HTMLInputElement;
 		expect(input.value).toBe('a');
+	});
+
+	it('permite personalizar los iconos no seleccionado y seleccionado', async () => {
+		el.uncheckedIcon = 'close';
+		el.checkedIcon = 'done';
+		await el.updateComplete;
+		const icon = el.shadowRoot?.querySelector('span > i');
+		expect(icon?.textContent).toBe('close');
+
+		el.checked = true;
+		await el.updateComplete;
+		expect(icon?.textContent).toBe('done');
+	});
+
+	it('conserva el círculo y no agrega un icono al estado personalizado vacío', async () => {
+		el.checkedIcon = 'done';
+		await el.updateComplete;
+		const span = el.shadowRoot?.querySelector('span');
+		expect(span?.classList.contains('custom-icons')).toBe(true);
+		expect(span?.querySelector('i')?.textContent).toBe('');
+	});
+
+	it('permite mostrar el icono personalizado sin círculo exterior', async () => {
+		el.checkedIcon = 'favorite';
+		el.iconContainer = 'none';
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('span')?.classList.contains('no-icon-container')).toBe(true);
+		expect(el.getAttribute('icon-container')).toBe('none');
+	});
+
+	it('actualiza el icono personalizado al seleccionar el radio', async () => {
+		el.uncheckedIcon = 'close';
+		el.checkedIcon = 'done';
+		await el.updateComplete;
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		input.checked = true;
+		input.dispatchEvent(new Event('change'));
+		await el.updateComplete;
+		expect(el.checked).toBe(true);
+		expect(el.shadowRoot?.querySelector('span > i')?.textContent).toBe('done');
 	});
 });

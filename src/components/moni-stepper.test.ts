@@ -30,6 +30,19 @@ describe('moni-stepper / moni-step', () => {
 		expect(el.getAttribute('orientation')).toBe('vertical');
 	});
 
+	it('propaga la orientación vertical a cada paso', async () => {
+		const step1 = document.createElement('moni-step') as MoniStep;
+		const step2 = document.createElement('moni-step') as MoniStep;
+		el.append(step1, step2);
+		el.orientation = 'vertical';
+		await el.updateComplete;
+		await Promise.resolve();
+		await Promise.all([step1.updateComplete, step2.updateComplete]);
+		expect(step1.orientation).toBe('vertical');
+		expect(step1.getAttribute('orientation')).toBe('vertical');
+		expect(step2.orientation).toBe('vertical');
+	});
+
 	it('refleja el atributo current como un número', async () => {
 		el.current = 2;
 		await el.updateComplete;

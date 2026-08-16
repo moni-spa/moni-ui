@@ -6,7 +6,7 @@
  */
 
 import { html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import './moni-icon.js';
@@ -64,6 +64,7 @@ import './moni-progress.js';
  */
 @customElement('moni-button')
 export class MoniButton extends MoniElement {
+	@state() private _hasLabel = false;
 	private static _deprecationWarned = false;
 
 	/**
@@ -89,7 +90,7 @@ export class MoniButton extends MoniElement {
 	 * @default 'medium'
 	 */
 	@property({ reflect: true })
-	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'medium';
+	size: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'extra' = 'small';
 
 	/**
 	 * Forma de las esquinas del botón.
@@ -164,6 +165,7 @@ export class MoniButton extends MoniElement {
 
 	override connectedCallback(): void {
 		super.connectedCallback();
+		this._hasLabel = this._hasDefaultSlotContent(this.childNodes);
 		if (MoniButton._deprecationWarned) return;
 		if (this.size === 'extra') {
 			MoniButton._deprecationWarned = true;
@@ -173,6 +175,18 @@ export class MoniButton extends MoniElement {
 					'See m3-docs/components/buttons/overview.md § Sizes.'
 			);
 		}
+	}
+
+	private _hasDefaultSlotContent(nodes: Iterable<Node>) {
+		return Array.from(nodes).some((node) => {
+			if (node.nodeType === Node.TEXT_NODE) return Boolean(node.textContent?.trim());
+			return node instanceof Element && !node.hasAttribute('slot');
+		});
+	}
+
+	private _handleLabelSlotChange(event: Event) {
+		const slot = event.currentTarget as HTMLSlotElement;
+		this._hasLabel = this._hasDefaultSlotContent(slot.assignedNodes({ flatten: true }));
 	}
 
 	static override styles = [
@@ -187,18 +201,20 @@ export class MoniButton extends MoniElement {
 			}
 
 			.button {
-				box-sizing: content-box;
+				box-sizing: var(--moni-button-box-sizing, border-box);
 				display: inline-flex;
+				--_button-visual-height: 3.5rem;
 				align-items: center;
 				justify-content: center;
-				block-size: 2.5rem;
-				font-size: 0.875rem;
+				--_button-icon-size: var(--moni-button-icon-size, 1.5rem);
+				block-size: var(--moni-button-height, 3.5rem);
+				font-size: var(--moni-button-font-size, 1rem);
 				font-weight: 500;
 				color: var(--on-primary);
-				padding: 0 1rem;
+				padding: var(--moni-button-padding, 0 1.5rem);
 				background-color: var(--primary);
 				border: 0.0625rem solid transparent;
-				border-radius: 1.25rem;
+				border-radius: 999px;
 				transition:
 					transform 250ms cubic-bezier(0.2, 0, 0, 1),
 					border-radius 200ms cubic-bezier(0.2, 0, 0, 1),
@@ -206,7 +222,7 @@ export class MoniButton extends MoniElement {
 					background-color 200ms cubic-bezier(0.2, 0, 0, 1),
 					box-shadow 200ms cubic-bezier(0.2, 0, 0, 1);
 				user-select: none;
-				gap: 0.5rem;
+				gap: var(--moni-button-gap, 0.5rem);
 				line-height: normal;
 				font-family: inherit;
 				cursor: pointer;
@@ -229,25 +245,38 @@ export class MoniButton extends MoniElement {
 
 			/* Sizes */
 			.button.xsmall {
-				block-size: 1.75rem;
-				min-inline-size: 3rem; /* 48px */
-				font-size: 0.75rem;
-				padding: 0 0.75rem; /* 12dp; keeps 48dp touch target */
+				--_button-visual-height: 2rem;
+				--_button-icon-size: var(--moni-button-icon-size, 1.25rem);
+				block-size: var(--moni-button-height, 2rem);
+				min-inline-size: var(--moni-button-min-inline-size, 0);
+				font-size: var(--moni-button-font-size, 0.875rem);
+				padding: var(--moni-button-padding, 0 0.75rem); /* 12dp; keeps 48dp touch target */
+				gap: var(--moni-button-gap, 0.25rem);
 			}
 			.button.small {
-				block-size: 2rem;
-				min-inline-size: 3rem; /* 48px */
-				padding: 0 1rem; /* 16dp per M3 Expressive */
+				--_button-visual-height: 2.5rem;
+				--_button-icon-size: var(--moni-button-icon-size, 1.25rem);
+				block-size: var(--moni-button-height, 2.5rem);
+				min-inline-size: var(--moni-button-min-inline-size, 0);
+				padding: var(--moni-button-padding, 0 1rem);
+				gap: var(--moni-button-gap, 0.5rem);
 			}
 			.button.large {
-				block-size: 3rem;
-				padding: 0 1.25rem;
+				--_button-visual-height: 6rem;
+				--_button-icon-size: var(--moni-button-icon-size, 2rem);
+				block-size: var(--moni-button-height, 6rem);
+				font-size: var(--moni-button-font-size, 1.5rem);
+				padding: var(--moni-button-padding, 0 3rem);
+				gap: var(--moni-button-gap, 0.75rem);
 			}
 			.button.xlarge,
 			.button.extra {
-				block-size: 3.5rem;
-				font-size: 1rem;
-				padding: 0 1.5rem;
+				--_button-visual-height: 8.5rem;
+				--_button-icon-size: var(--moni-button-icon-size, 2.5rem);
+				block-size: var(--moni-button-height, 8.5rem);
+				font-size: var(--moni-button-font-size, 2rem);
+				padding: var(--moni-button-padding, 0 4rem);
+				gap: var(--moni-button-gap, 1rem);
 			}
 
 			/* Shapes */
@@ -256,8 +285,14 @@ export class MoniButton extends MoniElement {
 			.button.circle {
 				padding: 0 !important;
 				border-radius: 50%;
-				inline-size: 2.5rem;
+				inline-size: var(--moni-button-height, 3.5rem);
+				min-inline-size: var(--moni-button-height, 3.5rem);
 				aspect-ratio: 1;
+			}
+			.button.round.icon-only {
+				inline-size: var(--moni-button-height, var(--_button-visual-height));
+				min-inline-size: var(--moni-button-height, var(--_button-visual-height));
+				padding-inline: 0;
 			}
 			.button.no-round {
 				border-radius: 0;
@@ -273,15 +308,6 @@ export class MoniButton extends MoniElement {
 			.button.square.xlarge,
 			.button.square.extra {
 				border-radius: 1.75rem;
-			}
-			.button.circle.small {
-				inline-size: 2rem;
-			}
-			.button.circle.large {
-				inline-size: 3rem;
-			}
-			.button.circle.extra {
-				inline-size: 3.5rem;
 			}
 			.button.left-round {
 				border-radius: 1.25rem 0.5rem 0.5rem 1.25rem;
@@ -578,7 +604,6 @@ export class MoniButton extends MoniElement {
 			.button.transparent {
 				color: var(--primary);
 				background-color: transparent;
-				padding: 0 0.75rem;
 			}
 			.button.elevated {
 				background-color: var(--surface-container-low, var(--surface));
@@ -635,20 +660,6 @@ export class MoniButton extends MoniElement {
 			.button.active:not(:disabled) {
 				background-color: var(--primary-container);
 				color: var(--on-primary-container);
-				padding-inline: 1.5rem;
-			}
-			.button.xsmall.active:not(:disabled) {
-				padding-inline: 0.875rem;
-			}
-			.button.small.active:not(:disabled) {
-				padding-inline: 1.125rem;
-			}
-			.button.large.active:not(:disabled) {
-				padding-inline: 1.75rem;
-			}
-			.button.xlarge.active:not(:disabled),
-			.button.extra.active:not(:disabled) {
-				padding-inline: 2rem;
 			}
 			.button.fill.active:not(:disabled) {
 				background-color: var(--secondary);
@@ -677,11 +688,68 @@ export class MoniButton extends MoniElement {
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
-				font-size: 1.125rem;
-				inline-size: 1.125rem;
-				block-size: 1.125rem;
+				font-size: var(--_button-icon-size);
+				inline-size: var(--_button-icon-size);
+				block-size: var(--_button-icon-size);
 				flex: none;
 				color: inherit;
+			}
+
+			.icon {
+				--moni-icon-size: var(--_button-icon-size);
+				font-size: var(--_button-icon-size);
+				inline-size: var(--_button-icon-size);
+				block-size: var(--_button-icon-size);
+				transform: translateX(var(--moni-button-icon-offset, 0));
+			}
+
+			.button.left-round {
+				border-radius: 999px var(--_button-square-radius, 1rem) var(--_button-square-radius, 1rem) 999px;
+			}
+			.button.right-round {
+				border-radius: var(--_button-square-radius, 1rem) 999px 999px var(--_button-square-radius, 1rem);
+			}
+			.button.top-round {
+				border-radius: 999px 999px var(--_button-square-radius, 1rem) var(--_button-square-radius, 1rem);
+			}
+			.button.bottom-round {
+				border-radius: var(--_button-square-radius, 1rem) var(--_button-square-radius, 1rem) 999px 999px;
+			}
+			.button.left-round-flat {
+				border-radius: 999px 0 0 999px;
+			}
+			.button.right-round-flat {
+				border-radius: 0 999px 999px 0;
+			}
+			.button.top-round-flat {
+				border-radius: 999px 999px 0 0;
+			}
+			.button.bottom-round-flat {
+				border-radius: 0 0 999px 999px;
+			}
+
+			.button.xsmall,
+			.button.small {
+				--_button-square-radius: 0.75rem;
+			}
+			.button.large,
+			.button.xlarge,
+			.button.extra {
+				--_button-square-radius: 1.75rem;
+			}
+
+			:host([split-position]) .button {
+				inline-size: var(--moni-button-inline-size);
+				min-inline-size: var(--moni-button-min-inline-size);
+				border-radius: var(--moni-button-border-radius);
+			}
+
+			slot {
+				display: contents;
+			}
+
+			[part='label'][hidden] {
+				display: none;
 			}
 
 			/* Loading spinner */
@@ -764,7 +832,8 @@ export class MoniButton extends MoniElement {
 			variantClass,
 			this.size,
 			activeShape,
-			this.active ? 'active' : ''
+			this.active ? 'active' : '',
+			!this._hasLabel && (this.icon || this.iconTrailing || this.loading) ? 'icon-only' : ''
 		]
 			.filter(Boolean)
 			.join(' ');
@@ -790,7 +859,7 @@ export class MoniButton extends MoniElement {
 			: html`<slot name="icon-trailing" part="icon-trailing"></slot>`;
 
 		const content = html`${iconEl}
-			<span part="label" style=${this.loading ? 'opacity: 0.5;' : ''}><slot></slot></span>
+			<span part="label" ?hidden=${!this._hasLabel} style=${this.loading ? 'opacity: 0.5;' : ''}><slot @slotchange=${this._handleLabelSlotChange}></slot></span>
 			${trailingIconEl}`;
 
 		if (this.href) {
