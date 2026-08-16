@@ -52,9 +52,9 @@ Sin bundler, carga la distribución minificada completa:
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.min.css"
+  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/browser/moni-ui.min.css"
 >
-<script src="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/browser/moni-ui.iife.min.js"></script>
 
 <moni-button variant="filled">Comenzar</moni-button>
 ```
@@ -63,11 +63,36 @@ También existe una distribución ESM:
 
 ```html
 <script type="module">
-  import 'https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.min.js';
+  import 'https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/browser/moni-ui.min.js';
 </script>
 ```
 
 Los archivos `.gz` y `.br` se publican junto al JavaScript y CSS para servidores que gestionen `Content-Encoding` explícitamente.
+
+### CDN modular con import map
+
+Para descargar únicamente los componentes utilizados, declara sus rutas en un import map:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/moni-ui.min.css"
+>
+<script type="importmap">
+{
+  "imports": {
+    "@moni-ui/button": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-button.js",
+    "@moni-ui/text-field": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-text-field.js"
+  }
+}
+</script>
+<script type="module">
+  import '@moni-ui/button';
+  import '@moni-ui/text-field';
+</script>
+```
+
+El mapa completo se publica en `dist/cdn/importmap.json`. Los módulos comparten chunks internos, por lo que Lit y las utilidades comunes se descargan una sola vez.
 
 ---
 

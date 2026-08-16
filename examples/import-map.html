@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moni UI — import map</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/moni-ui.min.css"
+  >
+  <script type="importmap">
+  {
+    "imports": {
+      "@moni-ui/button": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-button.js",
+      "@moni-ui/progress": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-progress.js",
+      "@moni-ui/shape": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-shape.js"
+    }
+  }
+  </script>
+  <script type="module">
+    import '@moni-ui/button';
+    import '@moni-ui/progress';
+    import '@moni-ui/shape';
+
+    await Promise.all([
+      customElements.whenDefined('moni-button'),
+      customElements.whenDefined('moni-progress'),
+      customElements.whenDefined('moni-shape'),
+    ]);
+    document.querySelector('#status').textContent = '3 componentes cargados bajo demanda';
+  </script>
+  <style>
+    body {
+      display: grid;
+      place-items: center;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--moni-on-surface, #1d1b20);
+      background: var(--moni-surface, #fffbfe);
+      font-family: system-ui, sans-serif;
+    }
+    main { display: grid; justify-items: center; gap: 24px; width: min(90vw, 480px); text-align: center; }
+    moni-progress { width: 100%; }
+  </style>
+</head>
+<body>
+  <main>
+    <p id="status">Cargando módulos…</p>
+    <moni-shape name="sunny" size="large"></moni-shape>
+    <moni-progress variant="wavy" value="64"></moni-progress>
+    <moni-button variant="filled">Solo lo necesario</moni-button>
+  </main>
+</body>
+</html>
