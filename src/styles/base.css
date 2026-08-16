@@ -118,24 +118,44 @@ h6,
 	background-size: 200px 200px;
 }
 
-/* Scrollbar discreto */
+/* Material 3 scrollbar for document-level scroll containers. */
+* {
+	scrollbar-width: thin;
+	scrollbar-color:
+		var(--moni-scrollbar-thumb, color-mix(in srgb, var(--moni-on-surface-variant, #49454f) 38%, transparent))
+		var(--moni-scrollbar-track, transparent);
+}
+
 *::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+	width: var(--moni-scrollbar-size, 0.625rem);
+	height: var(--moni-scrollbar-size, 0.625rem);
 }
 
 *::-webkit-scrollbar-track {
-	background: transparent;
+	background: var(--moni-scrollbar-track, transparent);
+	border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb {
-	background: var(--color-outline-variant);
-	border-radius: 4px;
+	min-height: 2.5rem;
+	background: var(--moni-scrollbar-thumb, color-mix(in srgb, var(--moni-on-surface-variant, #49454f) 38%, transparent));
+	background-clip: padding-box;
+	border: 0.1875rem solid transparent;
+	border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-	background: var(--color-outline);
+	background: var(--moni-scrollbar-thumb-hover, color-mix(in srgb, var(--moni-on-surface-variant, #49454f) 62%, transparent));
+	background-clip: padding-box;
+	border-width: 0.125rem;
 }
+
+*::-webkit-scrollbar-thumb:active {
+	background: var(--moni-scrollbar-thumb-active, color-mix(in srgb, var(--moni-primary, #6750a4) 76%, transparent));
+	background-clip: padding-box;
+}
+
+*::-webkit-scrollbar-corner { background: transparent; }
 
 /* Focus visible */
 :focus-visible {

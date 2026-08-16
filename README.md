@@ -52,9 +52,9 @@ Sin bundler, carga la distribución minificada completa:
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/browser/moni-ui.min.css"
+  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.3/dist/browser/moni-ui.min.css"
 >
-<script src="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/browser/moni-ui.iife.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.3/dist/browser/moni-ui.iife.min.js"></script>
 
 <moni-button variant="filled">Comenzar</moni-button>
 ```
@@ -63,7 +63,7 @@ También existe una distribución ESM:
 
 ```html
 <script type="module">
-  import 'https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/browser/moni-ui.min.js';
+  import 'https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.3/dist/browser/moni-ui.min.js';
 </script>
 ```
 
@@ -76,13 +76,13 @@ Para descargar únicamente los componentes utilizados, declara sus rutas en un i
 ```html
 <link
   rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/moni-ui.min.css"
+  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.3/dist/cdn/moni-ui.min.css"
 >
 <script type="importmap">
 {
   "imports": {
-    "@moni-ui/button": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-button.js",
-    "@moni-ui/text-field": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.2/dist/cdn/components/moni-text-field.js"
+    "@moni-ui/button": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.3/dist/cdn/components/moni-button.js",
+    "@moni-ui/text-field": "https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.3/dist/cdn/components/moni-text-field.js"
   }
 }
 </script>

@@ -206,6 +206,62 @@ export const sharedStyles = css`
 		--ease-emphasized: cubic-bezier(0.3, 0, 0, 1);
 		--duration-fast: 150ms;
 		--duration-normal: 250ms;
+
+		/* ─── Material 3 scrollbar ─── */
+		--_scrollbar-size: var(--moni-scrollbar-size, 0.625rem);
+		--_scrollbar-track: var(--moni-scrollbar-track, transparent);
+		--_scrollbar-thumb: var(
+			--moni-scrollbar-thumb,
+			color-mix(in srgb, var(--on-surface-variant) 38%, transparent)
+		);
+		--_scrollbar-thumb-hover: var(
+			--moni-scrollbar-thumb-hover,
+			color-mix(in srgb, var(--on-surface-variant) 62%, transparent)
+		);
+		--_scrollbar-thumb-active: var(
+			--moni-scrollbar-thumb-active,
+			color-mix(in srgb, var(--primary) 76%, transparent)
+		);
+	}
+
+	/* Firefox uses its native thin geometry and the same Material color roles. */
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: var(--_scrollbar-thumb) var(--_scrollbar-track);
+	}
+
+	/* Chromium, Safari and Edge: 4px pill inside a 10px interaction gutter. */
+	*::-webkit-scrollbar {
+		inline-size: var(--_scrollbar-size);
+		block-size: var(--_scrollbar-size);
+	}
+
+	*::-webkit-scrollbar-track {
+		background: var(--_scrollbar-track);
+		border-radius: 999px;
+	}
+
+	*::-webkit-scrollbar-thumb {
+		min-block-size: 2.5rem;
+		background: var(--_scrollbar-thumb);
+		background-clip: padding-box;
+		border: 0.1875rem solid transparent;
+		border-radius: 999px;
+	}
+
+	*::-webkit-scrollbar-thumb:hover {
+		background: var(--_scrollbar-thumb-hover);
+		background-clip: padding-box;
+		border-width: 0.125rem;
+	}
+
+	*::-webkit-scrollbar-thumb:active {
+		background: var(--_scrollbar-thumb-active);
+		background-clip: padding-box;
+	}
+
+	*::-webkit-scrollbar-corner {
+		background: transparent;
 	}
 
 	/* ─── 4. Utility classes ─────────────────────────────────────────────── */
