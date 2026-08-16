@@ -10,6 +10,21 @@
     },
     {
       "kind": "javascript-module",
+      "path": "dist/browser.js",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "dist/web-components.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "dist/index.js",
       "declarations": [],
       "exports": [
@@ -414,9 +429,30 @@
     },
     {
       "kind": "javascript-module",
+      "path": "scripts/build-browser.js",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
       "path": "scripts/build.js",
       "declarations": [],
       "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/browser.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/web-components.js"
+          }
+        }
+      ]
     },
     {
       "kind": "javascript-module",
@@ -3104,6 +3140,462 @@
       "path": "src/types/events.ts",
       "declarations": [],
       "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/utils/color.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "hexToHsl",
+          "return": {
+            "type": {
+              "text": ""
+            }
+          },
+          "parameters": [
+            {
+              "name": "hex",
+              "type": {
+                "text": "string"
+              },
+              "description": "A 6-digit hex color, with or without the `#` prefix.\n  Examples: `'#4f46e5'`, `'4f46e5'`."
+            }
+          ],
+          "description": "Converts a 6-digit hex color string to the HSL color model.\n\nNormalizes the input (strips optional `#`), parses each 8-bit RGB channel\ninto a [0, 1] float, then applies the standard RGB→HSL algorithm:\n\n - Lightness  = (max + min) / 2\n - Saturation = delta / (2 − max − min)  if L > 0.5\n              = delta / (max + min)       otherwise\n - Hue        = derived from which channel is the maximum\n\nWhen the color is achromatic (r = g = b), hue and saturation are both 0."
+        },
+        {
+          "kind": "function",
+          "name": "hslToHex",
+          "return": {
+            "type": {
+              "text": ""
+            }
+          },
+          "parameters": [
+            {
+              "name": "{ h, s, l }",
+              "type": {
+                "text": "HSL"
+              }
+            },
+            {
+              "description": "An {@link HSL}object where `h` ∈ [0, 360), `s` ∈ [0, 100], `l` ∈ [0, 100].\n * ",
+              "name": "hsl"
+            }
+          ],
+          "description": "Converts an HSL color to a 6-digit hex string.\n\nUses the CSS Color Level 4 reference algorithm. Internally computes R, G,\nand B via a piecewise function `f(n)` that maps chroma sector offsets to\nindividual channel values."
+        },
+        {
+          "kind": "function",
+          "name": "generateScheme",
+          "return": {
+            "type": {
+              "text": ""
+            }
+          },
+          "parameters": [
+            {
+              "name": "seedHex",
+              "type": {
+                "text": "string"
+              },
+              "description": "The source/brand color as a hex string. The `#` prefix\n  is optional (e.g. `'#4f46e5'` or `'4f46e5'`)."
+            },
+            {
+              "name": "mode",
+              "default": "'light'",
+              "type": {
+                "text": "'light' | 'dark'"
+              },
+              "description": "Color scheme polarity. `'light'` produces light backgrounds\n  with dark text; `'dark'` inverts the tone mapping.\n  Defaults to `'light'`."
+            },
+            {
+              "name": "contrast",
+              "default": "'standard'",
+              "type": {
+                "text": "ContrastLevel"
+              },
+              "description": "WCAG contrast enhancement level. Defaults to `'standard'`."
+            }
+          ],
+          "description": "Generates a complete Material Design 3 color scheme from a seed hex color.\n\nUses `SchemeTonalSpot` — the standard M3 dynamic color algorithm — which\nderives all 27 color roles from a single source hue while respecting the\ntarget lightness/contrast requirements for each role.\n\n**Algorithm pipeline:**\n1. Parse `seedHex` → ARGB integer via `argbFromHex`.\n2. Convert ARGB → HCT (Hue–Chroma–Tone) color space.\n3. Construct a `SchemeTonalSpot` with the requested mode and contrast level.\n4. Extract each scheme role via `hexFromArgb` and build the ColorScheme."
+        },
+        {
+          "kind": "function",
+          "name": "applySchemeToDocument",
+          "parameters": [
+            {
+              "name": "scheme",
+              "type": {
+                "text": "ColorScheme"
+              },
+              "description": "The color scheme to apply, as produced by {@link generateScheme}.\n * "
+            },
+            {
+              "name": "mode",
+              "type": {
+                "text": "'light' | 'dark'"
+              },
+              "description": "The resolved mode (`'light'` or `'dark'`); written to `data-theme`."
+            },
+            {
+              "name": "doc",
+              "type": {
+                "text": "Document"
+              },
+              "description": "The `Document` to target. Pass `document` in normal usage;\n  accepts a custom document for iframe or SSR scenarios."
+            }
+          ],
+          "description": "Writes a ColorScheme to the document root as CSS custom properties.\n\nFor each color role in the scheme, **three aliases** are set on\n`document.documentElement` so every context can consume the tokens:\n\n| Namespace prefix     | Example                          | Consumer              |\n|----------------------|----------------------------------|-----------------------|\n| `--md-sys-color-`    | `--md-sys-color-primary`         | MD3 spec / third-party|\n| `--moni-`            | `--moni-primary`                 | Moni components       |\n| `--` (bare)          | `--primary`                      | BeerCSS / legacy      |\n\ncamelCase role names are converted to kebab-case automatically\n(e.g. `primaryContainer` → `primary-container`).\n\nAdditionally sets `data-theme=\"light|dark\"` on `<html>` so CSS can use\n`:root[data-theme='dark']` selectors for any additional overrides.\n\n**Side effects:** Mutates `doc.documentElement.style` and attributes.\nThis function should only be called in browser environments."
+        },
+        {
+          "kind": "function",
+          "name": "getDefaultSeed",
+          "return": {
+            "type": {
+              "text": ""
+            }
+          },
+          "description": "Returns the default seed color used by the Moni design system.\n\nThe default seed is a deep indigo (`#4f46e5`) that maps to a material-spec\nprimary hue of roughly 243°. It was chosen because it:\n - Generates accessible contrast ratios in both light and dark modes.\n - Feels brand-neutral enough to serve as a placeholder before users\n   customize their color."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "hexToHsl",
+          "declaration": {
+            "name": "hexToHsl",
+            "module": "src/utils/color.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "hslToHex",
+          "declaration": {
+            "name": "hslToHex",
+            "module": "src/utils/color.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "generateScheme",
+          "declaration": {
+            "name": "generateScheme",
+            "module": "src/utils/color.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "applySchemeToDocument",
+          "declaration": {
+            "name": "applySchemeToDocument",
+            "module": "src/utils/color.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getDefaultSeed",
+          "declaration": {
+            "name": "getDefaultSeed",
+            "module": "src/utils/color.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/utils/event-emitter.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "emitMoniEvent",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "parameters": [
+            {
+              "name": "element",
+              "type": {
+                "text": "HTMLElement"
+              }
+            },
+            {
+              "name": "eventName",
+              "type": {
+                "text": "string"
+              }
+            },
+            {
+              "name": "options",
+              "optional": true,
+              "type": {
+                "text": "EventEmitterOptions<T>"
+              }
+            }
+          ],
+          "description": "Helper para emitir Custom Events estandarizados en la librería moni-ui.\nAsegura que los eventos crucen el Shadow DOM por defecto y unifican el `detail`."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "emitMoniEvent",
+          "declaration": {
+            "name": "emitMoniEvent",
+            "module": "src/utils/event-emitter.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/utils/theme.svelte.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Reactive singleton that orchestrates the full Moni visual theme.\n\n`ThemeEngine` is responsible for:\n 1. Loading persisted settings from `localStorage` on construction.\n 2. Listening to OS `prefers-color-scheme` changes when mode is `'system'`.\n 3. Generating the full 27-role `ColorScheme` from the current seed color.\n 4. Writing all CSS custom properties to the document root.\n 5. Persisting settings to `localStorage` on every user-initiated change.\n\n**Reactivity:** Public fields `settings`, `resolvedMode`, and `scheme` are\nSvelte 5 `$state` runes. Any Svelte template reading these fields will\nautomatically re-render when they change.\n\n**Singleton pattern:** Do not instantiate this class directly. Always use\ngetThemeEngine, which returns a module-level singleton and ensures\nexactly one engine exists per page lifecycle.\n\n**SSR compatibility:** The constructor is safe to call in a server context —\nall DOM/window access is guarded and skipped when unavailable.",
+          "name": "ThemeEngine",
+          "members": [
+            {
+              "kind": "field",
+              "name": "settings",
+              "description": "The complete set of current user preferences.\n\nMutate via the setter methods (e.g. `setMode`, `setSeedColor`) rather\nthan directly, to ensure DOM updates and persistence are triggered."
+            },
+            {
+              "kind": "field",
+              "name": "resolvedMode",
+              "description": "The resolved light/dark mode after applying the `'system'` logic.\n\nAlways either `'light'` or `'dark'` — never `'system'`. Use this value\nfor icon toggling, conditional rendering, and `aria-*` attributes."
+            },
+            {
+              "kind": "field",
+              "name": "scheme",
+              "description": "The currently active 27-role color scheme, derived from `settings.seedColor`,\n`resolvedMode`, and `settings.contrast`.\n\nReactive: re-assigned every time apply runs."
+            },
+            {
+              "kind": "field",
+              "name": "mediaQuery",
+              "type": {
+                "text": "MediaQueryList | null"
+              },
+              "privacy": "private",
+              "default": "null",
+              "description": "The OS `prefers-color-scheme` media query list.\nUsed to listen for system-level dark mode changes when mode is `'system'`.\n`null` in SSR or when `window` is unavailable."
+            },
+            {
+              "kind": "field",
+              "name": "bound",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false",
+              "description": "Guard flag to prevent attaching duplicate `'change'` listeners to\nmediaQuery if `bindSystem` is called more than once."
+            },
+            {
+              "kind": "method",
+              "name": "bindSystem",
+              "privacy": "private",
+              "description": "Attaches a listener to the OS color-scheme media query.\n\nCalls apply whenever the OS switches between light and dark mode,\nbut only when `settings.mode === 'system'` — the effective mode check\ninside `apply` handles the conditional logic.\n\nIdempotent: calling this method multiple times is safe; the `bound` flag\nensures only one listener is ever attached."
+            },
+            {
+              "kind": "method",
+              "name": "getEffectiveMode",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": ""
+                }
+              },
+              "description": "Resolves the effective polarity (`'light'` or `'dark'`) from `settings.mode`.\n\nWhen mode is `'system'`, defers to getSystemMode which reads the\nOS media query. Otherwise returns the explicit mode directly."
+            },
+            {
+              "kind": "method",
+              "name": "apply",
+              "description": "Regenerates the color scheme and applies all theme tokens to the document.\n\nThis is the central \"render\" method of the engine. It:\n 1. Resolves the effective mode (`'light'` | `'dark'`).\n 2. Generates a fresh ColorScheme from the current seed and contrast.\n 3. Writes all 81 CSS custom properties (3 namespaces × 27 roles) to `<html>`.\n 4. Sets `--moni-spacing-density`, `--moni-radius-base`, `--moni-font-sans`,\n    `--moni-font-title`, and `--moni-grain-opacity`.\n 5. Toggles the `moni-reduce-motion` class on `<html>`.\n\n**Side effects:** Mutates `document.documentElement.style` and `classList`.\nNo-op in SSR (`typeof document === 'undefined'`)."
+            },
+            {
+              "kind": "method",
+              "name": "persist",
+              "description": "Persists the current settings to `localStorage` and re-applies the theme.\n\nCalled internally by all setter methods after mutating `settings`.\nNo-op when `localStorage` is unavailable (SSR, private browsing, quota exceeded)."
+            },
+            {
+              "kind": "method",
+              "name": "setMode",
+              "parameters": [
+                {
+                  "name": "mode",
+                  "type": {
+                    "text": "ThemeMode"
+                  },
+                  "description": "`'light'`, `'dark'`, or `'system'` (follows OS preference)."
+                }
+              ],
+              "description": "Updates the color scheme polarity."
+            },
+            {
+              "kind": "method",
+              "name": "setSeedColor",
+              "parameters": [
+                {
+                  "name": "color",
+                  "type": {
+                    "text": "string"
+                  },
+                  "description": "A hex color string, with or without the `#` prefix\n  (e.g. `'#4f46e5'` or `'4f46e5'`)."
+                }
+              ],
+              "description": "Updates the seed color used to generate the full color scheme.\n\nAutomatically prepends `#` if the value doesn't already have one,\nensuring the stored value is always a valid 7-character hex string."
+            },
+            {
+              "kind": "method",
+              "name": "setContrast",
+              "parameters": [
+                {
+                  "name": "contrast",
+                  "type": {
+                    "text": "ContrastLevel"
+                  },
+                  "description": "`'standard'` (AA), `'medium'` (enhanced), or `'high'` (AAA)."
+                }
+              ],
+              "description": "Updates the WCAG contrast enhancement level for the generated palette."
+            },
+            {
+              "kind": "method",
+              "name": "setDensity",
+              "parameters": [
+                {
+                  "name": "density",
+                  "type": {
+                    "text": "ThemeDensity"
+                  },
+                  "description": "`'compact'`, `'default'`, `'comfortable'`, or `'spacious'`."
+                }
+              ],
+              "description": "Updates the spacing density multiplier."
+            },
+            {
+              "kind": "method",
+              "name": "setRadius",
+              "parameters": [
+                {
+                  "name": "radius",
+                  "type": {
+                    "text": "ThemeRadius"
+                  },
+                  "description": "`'sharp'` (0px), `'default'` (12px), or `'rounded'` (20px)."
+                }
+              ],
+              "description": "Updates the global border-radius style."
+            },
+            {
+              "kind": "method",
+              "name": "setFont",
+              "parameters": [
+                {
+                  "name": "font",
+                  "type": {
+                    "text": "ThemeFont"
+                  },
+                  "description": "One of `'geist'` | `'inter'` | `'roboto'` | `'instrument'`."
+                }
+              ],
+              "description": "Updates the body/UI typeface."
+            },
+            {
+              "kind": "method",
+              "name": "setTitleFont",
+              "parameters": [
+                {
+                  "name": "font",
+                  "type": {
+                    "text": "ThemeFont"
+                  },
+                  "description": "One of `'geist'` | `'inter'` | `'roboto'` | `'instrument'`."
+                }
+              ],
+              "description": "Updates the display/title typeface."
+            },
+            {
+              "kind": "method",
+              "name": "setGrainOpacity",
+              "parameters": [
+                {
+                  "name": "opacity",
+                  "type": {
+                    "text": "number"
+                  },
+                  "description": "A number in the range [0, 1]."
+                }
+              ],
+              "description": "Updates the grain texture opacity.\n\nThe value is clamped to [0, 1] before storing. Setting to `0` effectively\ndisables the grain overlay without removing the element from the DOM."
+            },
+            {
+              "kind": "method",
+              "name": "setReduceMotion",
+              "parameters": [
+                {
+                  "name": "reduce",
+                  "type": {
+                    "text": "boolean"
+                  },
+                  "description": "`true` to disable motion, `false` to restore it."
+                }
+              ],
+              "description": "Enables or disables user-initiated motion reduction.\n\nWhen `true`, the `moni-reduce-motion` class is added to `<html>`, which\nCSS components use to disable non-essential transitions and animations.\nThis is separate from `prefers-reduced-motion` (OS-level) and allows\nusers to opt in without changing their OS settings."
+            },
+            {
+              "kind": "method",
+              "name": "reset",
+              "description": "Resets all settings to factory defaults and re-applies the theme.\n\nThe reset is also persisted to `localStorage` so subsequent page loads\nstart from defaults rather than the old stored values."
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "getThemeEngine",
+          "return": {
+            "type": {
+              "text": ""
+            }
+          },
+          "description": "Returns the module-level ThemeEngine singleton, creating it on first call.\n\nThis is the **recommended** entry point for all consumers. Calling this\nfunction multiple times always returns the same instance."
+        },
+        {
+          "kind": "function",
+          "name": "resetThemeEngine",
+          "description": "Destroys the module-level singleton, forcing the next call to\ngetThemeEngine to create a fresh instance.\n\n**Intended for test isolation only.** Do not call this in application code,\nas it will cause components sharing the singleton to lose their reference."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ThemeEngine",
+          "declaration": {
+            "name": "ThemeEngine",
+            "module": "src/utils/theme.svelte.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getThemeEngine",
+          "declaration": {
+            "name": "getThemeEngine",
+            "module": "src/utils/theme.svelte.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "resetThemeEngine",
+          "declaration": {
+            "name": "resetThemeEngine",
+            "module": "src/utils/theme.svelte.ts"
+          }
+        }
+      ]
     },
     {
       "kind": "javascript-module",
@@ -18073,462 +18565,6 @@
           "declaration": {
             "name": "MoniTypography",
             "module": "src/components/moni-typography.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/utils/color.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "hexToHsl",
-          "return": {
-            "type": {
-              "text": ""
-            }
-          },
-          "parameters": [
-            {
-              "name": "hex",
-              "type": {
-                "text": "string"
-              },
-              "description": "A 6-digit hex color, with or without the `#` prefix.\n  Examples: `'#4f46e5'`, `'4f46e5'`."
-            }
-          ],
-          "description": "Converts a 6-digit hex color string to the HSL color model.\n\nNormalizes the input (strips optional `#`), parses each 8-bit RGB channel\ninto a [0, 1] float, then applies the standard RGB→HSL algorithm:\n\n - Lightness  = (max + min) / 2\n - Saturation = delta / (2 − max − min)  if L > 0.5\n              = delta / (max + min)       otherwise\n - Hue        = derived from which channel is the maximum\n\nWhen the color is achromatic (r = g = b), hue and saturation are both 0."
-        },
-        {
-          "kind": "function",
-          "name": "hslToHex",
-          "return": {
-            "type": {
-              "text": ""
-            }
-          },
-          "parameters": [
-            {
-              "name": "{ h, s, l }",
-              "type": {
-                "text": "HSL"
-              }
-            },
-            {
-              "description": "An {@link HSL}object where `h` ∈ [0, 360), `s` ∈ [0, 100], `l` ∈ [0, 100].\n * ",
-              "name": "hsl"
-            }
-          ],
-          "description": "Converts an HSL color to a 6-digit hex string.\n\nUses the CSS Color Level 4 reference algorithm. Internally computes R, G,\nand B via a piecewise function `f(n)` that maps chroma sector offsets to\nindividual channel values."
-        },
-        {
-          "kind": "function",
-          "name": "generateScheme",
-          "return": {
-            "type": {
-              "text": ""
-            }
-          },
-          "parameters": [
-            {
-              "name": "seedHex",
-              "type": {
-                "text": "string"
-              },
-              "description": "The source/brand color as a hex string. The `#` prefix\n  is optional (e.g. `'#4f46e5'` or `'4f46e5'`)."
-            },
-            {
-              "name": "mode",
-              "default": "'light'",
-              "type": {
-                "text": "'light' | 'dark'"
-              },
-              "description": "Color scheme polarity. `'light'` produces light backgrounds\n  with dark text; `'dark'` inverts the tone mapping.\n  Defaults to `'light'`."
-            },
-            {
-              "name": "contrast",
-              "default": "'standard'",
-              "type": {
-                "text": "ContrastLevel"
-              },
-              "description": "WCAG contrast enhancement level. Defaults to `'standard'`."
-            }
-          ],
-          "description": "Generates a complete Material Design 3 color scheme from a seed hex color.\n\nUses `SchemeTonalSpot` — the standard M3 dynamic color algorithm — which\nderives all 27 color roles from a single source hue while respecting the\ntarget lightness/contrast requirements for each role.\n\n**Algorithm pipeline:**\n1. Parse `seedHex` → ARGB integer via `argbFromHex`.\n2. Convert ARGB → HCT (Hue–Chroma–Tone) color space.\n3. Construct a `SchemeTonalSpot` with the requested mode and contrast level.\n4. Extract each scheme role via `hexFromArgb` and build the ColorScheme."
-        },
-        {
-          "kind": "function",
-          "name": "applySchemeToDocument",
-          "parameters": [
-            {
-              "name": "scheme",
-              "type": {
-                "text": "ColorScheme"
-              },
-              "description": "The color scheme to apply, as produced by {@link generateScheme}.\n * "
-            },
-            {
-              "name": "mode",
-              "type": {
-                "text": "'light' | 'dark'"
-              },
-              "description": "The resolved mode (`'light'` or `'dark'`); written to `data-theme`."
-            },
-            {
-              "name": "doc",
-              "type": {
-                "text": "Document"
-              },
-              "description": "The `Document` to target. Pass `document` in normal usage;\n  accepts a custom document for iframe or SSR scenarios."
-            }
-          ],
-          "description": "Writes a ColorScheme to the document root as CSS custom properties.\n\nFor each color role in the scheme, **three aliases** are set on\n`document.documentElement` so every context can consume the tokens:\n\n| Namespace prefix     | Example                          | Consumer              |\n|----------------------|----------------------------------|-----------------------|\n| `--md-sys-color-`    | `--md-sys-color-primary`         | MD3 spec / third-party|\n| `--moni-`            | `--moni-primary`                 | Moni components       |\n| `--` (bare)          | `--primary`                      | BeerCSS / legacy      |\n\ncamelCase role names are converted to kebab-case automatically\n(e.g. `primaryContainer` → `primary-container`).\n\nAdditionally sets `data-theme=\"light|dark\"` on `<html>` so CSS can use\n`:root[data-theme='dark']` selectors for any additional overrides.\n\n**Side effects:** Mutates `doc.documentElement.style` and attributes.\nThis function should only be called in browser environments."
-        },
-        {
-          "kind": "function",
-          "name": "getDefaultSeed",
-          "return": {
-            "type": {
-              "text": ""
-            }
-          },
-          "description": "Returns the default seed color used by the Moni design system.\n\nThe default seed is a deep indigo (`#4f46e5`) that maps to a material-spec\nprimary hue of roughly 243°. It was chosen because it:\n - Generates accessible contrast ratios in both light and dark modes.\n - Feels brand-neutral enough to serve as a placeholder before users\n   customize their color."
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "hexToHsl",
-          "declaration": {
-            "name": "hexToHsl",
-            "module": "src/utils/color.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "hslToHex",
-          "declaration": {
-            "name": "hslToHex",
-            "module": "src/utils/color.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "generateScheme",
-          "declaration": {
-            "name": "generateScheme",
-            "module": "src/utils/color.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "applySchemeToDocument",
-          "declaration": {
-            "name": "applySchemeToDocument",
-            "module": "src/utils/color.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "getDefaultSeed",
-          "declaration": {
-            "name": "getDefaultSeed",
-            "module": "src/utils/color.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/utils/event-emitter.ts",
-      "declarations": [
-        {
-          "kind": "function",
-          "name": "emitMoniEvent",
-          "return": {
-            "type": {
-              "text": "boolean"
-            }
-          },
-          "parameters": [
-            {
-              "name": "element",
-              "type": {
-                "text": "HTMLElement"
-              }
-            },
-            {
-              "name": "eventName",
-              "type": {
-                "text": "string"
-              }
-            },
-            {
-              "name": "options",
-              "optional": true,
-              "type": {
-                "text": "EventEmitterOptions<T>"
-              }
-            }
-          ],
-          "description": "Helper para emitir Custom Events estandarizados en la librería moni-ui.\nAsegura que los eventos crucen el Shadow DOM por defecto y unifican el `detail`."
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "emitMoniEvent",
-          "declaration": {
-            "name": "emitMoniEvent",
-            "module": "src/utils/event-emitter.ts"
-          }
-        }
-      ]
-    },
-    {
-      "kind": "javascript-module",
-      "path": "src/utils/theme.svelte.ts",
-      "declarations": [
-        {
-          "kind": "class",
-          "description": "Reactive singleton that orchestrates the full Moni visual theme.\n\n`ThemeEngine` is responsible for:\n 1. Loading persisted settings from `localStorage` on construction.\n 2. Listening to OS `prefers-color-scheme` changes when mode is `'system'`.\n 3. Generating the full 27-role `ColorScheme` from the current seed color.\n 4. Writing all CSS custom properties to the document root.\n 5. Persisting settings to `localStorage` on every user-initiated change.\n\n**Reactivity:** Public fields `settings`, `resolvedMode`, and `scheme` are\nSvelte 5 `$state` runes. Any Svelte template reading these fields will\nautomatically re-render when they change.\n\n**Singleton pattern:** Do not instantiate this class directly. Always use\ngetThemeEngine, which returns a module-level singleton and ensures\nexactly one engine exists per page lifecycle.\n\n**SSR compatibility:** The constructor is safe to call in a server context —\nall DOM/window access is guarded and skipped when unavailable.",
-          "name": "ThemeEngine",
-          "members": [
-            {
-              "kind": "field",
-              "name": "settings",
-              "description": "The complete set of current user preferences.\n\nMutate via the setter methods (e.g. `setMode`, `setSeedColor`) rather\nthan directly, to ensure DOM updates and persistence are triggered."
-            },
-            {
-              "kind": "field",
-              "name": "resolvedMode",
-              "description": "The resolved light/dark mode after applying the `'system'` logic.\n\nAlways either `'light'` or `'dark'` — never `'system'`. Use this value\nfor icon toggling, conditional rendering, and `aria-*` attributes."
-            },
-            {
-              "kind": "field",
-              "name": "scheme",
-              "description": "The currently active 27-role color scheme, derived from `settings.seedColor`,\n`resolvedMode`, and `settings.contrast`.\n\nReactive: re-assigned every time apply runs."
-            },
-            {
-              "kind": "field",
-              "name": "mediaQuery",
-              "type": {
-                "text": "MediaQueryList | null"
-              },
-              "privacy": "private",
-              "default": "null",
-              "description": "The OS `prefers-color-scheme` media query list.\nUsed to listen for system-level dark mode changes when mode is `'system'`.\n`null` in SSR or when `window` is unavailable."
-            },
-            {
-              "kind": "field",
-              "name": "bound",
-              "type": {
-                "text": "boolean"
-              },
-              "privacy": "private",
-              "default": "false",
-              "description": "Guard flag to prevent attaching duplicate `'change'` listeners to\nmediaQuery if `bindSystem` is called more than once."
-            },
-            {
-              "kind": "method",
-              "name": "bindSystem",
-              "privacy": "private",
-              "description": "Attaches a listener to the OS color-scheme media query.\n\nCalls apply whenever the OS switches between light and dark mode,\nbut only when `settings.mode === 'system'` — the effective mode check\ninside `apply` handles the conditional logic.\n\nIdempotent: calling this method multiple times is safe; the `bound` flag\nensures only one listener is ever attached."
-            },
-            {
-              "kind": "method",
-              "name": "getEffectiveMode",
-              "privacy": "private",
-              "return": {
-                "type": {
-                  "text": ""
-                }
-              },
-              "description": "Resolves the effective polarity (`'light'` or `'dark'`) from `settings.mode`.\n\nWhen mode is `'system'`, defers to getSystemMode which reads the\nOS media query. Otherwise returns the explicit mode directly."
-            },
-            {
-              "kind": "method",
-              "name": "apply",
-              "description": "Regenerates the color scheme and applies all theme tokens to the document.\n\nThis is the central \"render\" method of the engine. It:\n 1. Resolves the effective mode (`'light'` | `'dark'`).\n 2. Generates a fresh ColorScheme from the current seed and contrast.\n 3. Writes all 81 CSS custom properties (3 namespaces × 27 roles) to `<html>`.\n 4. Sets `--moni-spacing-density`, `--moni-radius-base`, `--moni-font-sans`,\n    `--moni-font-title`, and `--moni-grain-opacity`.\n 5. Toggles the `moni-reduce-motion` class on `<html>`.\n\n**Side effects:** Mutates `document.documentElement.style` and `classList`.\nNo-op in SSR (`typeof document === 'undefined'`)."
-            },
-            {
-              "kind": "method",
-              "name": "persist",
-              "description": "Persists the current settings to `localStorage` and re-applies the theme.\n\nCalled internally by all setter methods after mutating `settings`.\nNo-op when `localStorage` is unavailable (SSR, private browsing, quota exceeded)."
-            },
-            {
-              "kind": "method",
-              "name": "setMode",
-              "parameters": [
-                {
-                  "name": "mode",
-                  "type": {
-                    "text": "ThemeMode"
-                  },
-                  "description": "`'light'`, `'dark'`, or `'system'` (follows OS preference)."
-                }
-              ],
-              "description": "Updates the color scheme polarity."
-            },
-            {
-              "kind": "method",
-              "name": "setSeedColor",
-              "parameters": [
-                {
-                  "name": "color",
-                  "type": {
-                    "text": "string"
-                  },
-                  "description": "A hex color string, with or without the `#` prefix\n  (e.g. `'#4f46e5'` or `'4f46e5'`)."
-                }
-              ],
-              "description": "Updates the seed color used to generate the full color scheme.\n\nAutomatically prepends `#` if the value doesn't already have one,\nensuring the stored value is always a valid 7-character hex string."
-            },
-            {
-              "kind": "method",
-              "name": "setContrast",
-              "parameters": [
-                {
-                  "name": "contrast",
-                  "type": {
-                    "text": "ContrastLevel"
-                  },
-                  "description": "`'standard'` (AA), `'medium'` (enhanced), or `'high'` (AAA)."
-                }
-              ],
-              "description": "Updates the WCAG contrast enhancement level for the generated palette."
-            },
-            {
-              "kind": "method",
-              "name": "setDensity",
-              "parameters": [
-                {
-                  "name": "density",
-                  "type": {
-                    "text": "ThemeDensity"
-                  },
-                  "description": "`'compact'`, `'default'`, `'comfortable'`, or `'spacious'`."
-                }
-              ],
-              "description": "Updates the spacing density multiplier."
-            },
-            {
-              "kind": "method",
-              "name": "setRadius",
-              "parameters": [
-                {
-                  "name": "radius",
-                  "type": {
-                    "text": "ThemeRadius"
-                  },
-                  "description": "`'sharp'` (0px), `'default'` (12px), or `'rounded'` (20px)."
-                }
-              ],
-              "description": "Updates the global border-radius style."
-            },
-            {
-              "kind": "method",
-              "name": "setFont",
-              "parameters": [
-                {
-                  "name": "font",
-                  "type": {
-                    "text": "ThemeFont"
-                  },
-                  "description": "One of `'geist'` | `'inter'` | `'roboto'` | `'instrument'`."
-                }
-              ],
-              "description": "Updates the body/UI typeface."
-            },
-            {
-              "kind": "method",
-              "name": "setTitleFont",
-              "parameters": [
-                {
-                  "name": "font",
-                  "type": {
-                    "text": "ThemeFont"
-                  },
-                  "description": "One of `'geist'` | `'inter'` | `'roboto'` | `'instrument'`."
-                }
-              ],
-              "description": "Updates the display/title typeface."
-            },
-            {
-              "kind": "method",
-              "name": "setGrainOpacity",
-              "parameters": [
-                {
-                  "name": "opacity",
-                  "type": {
-                    "text": "number"
-                  },
-                  "description": "A number in the range [0, 1]."
-                }
-              ],
-              "description": "Updates the grain texture opacity.\n\nThe value is clamped to [0, 1] before storing. Setting to `0` effectively\ndisables the grain overlay without removing the element from the DOM."
-            },
-            {
-              "kind": "method",
-              "name": "setReduceMotion",
-              "parameters": [
-                {
-                  "name": "reduce",
-                  "type": {
-                    "text": "boolean"
-                  },
-                  "description": "`true` to disable motion, `false` to restore it."
-                }
-              ],
-              "description": "Enables or disables user-initiated motion reduction.\n\nWhen `true`, the `moni-reduce-motion` class is added to `<html>`, which\nCSS components use to disable non-essential transitions and animations.\nThis is separate from `prefers-reduced-motion` (OS-level) and allows\nusers to opt in without changing their OS settings."
-            },
-            {
-              "kind": "method",
-              "name": "reset",
-              "description": "Resets all settings to factory defaults and re-applies the theme.\n\nThe reset is also persisted to `localStorage` so subsequent page loads\nstart from defaults rather than the old stored values."
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "getThemeEngine",
-          "return": {
-            "type": {
-              "text": ""
-            }
-          },
-          "description": "Returns the module-level ThemeEngine singleton, creating it on first call.\n\nThis is the **recommended** entry point for all consumers. Calling this\nfunction multiple times always returns the same instance."
-        },
-        {
-          "kind": "function",
-          "name": "resetThemeEngine",
-          "description": "Destroys the module-level singleton, forcing the next call to\ngetThemeEngine to create a fresh instance.\n\n**Intended for test isolation only.** Do not call this in application code,\nas it will cause components sharing the singleton to lose their reference."
-        }
-      ],
-      "exports": [
-        {
-          "kind": "js",
-          "name": "ThemeEngine",
-          "declaration": {
-            "name": "ThemeEngine",
-            "module": "src/utils/theme.svelte.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "getThemeEngine",
-          "declaration": {
-            "name": "getThemeEngine",
-            "module": "src/utils/theme.svelte.ts"
-          }
-        },
-        {
-          "kind": "js",
-          "name": "resetThemeEngine",
-          "declaration": {
-            "name": "resetThemeEngine",
-            "module": "src/utils/theme.svelte.ts"
           }
         }
       ]

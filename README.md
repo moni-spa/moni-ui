@@ -45,6 +45,30 @@ Importa el tema de variables base en tu archivo CSS global:
 @import '@moni-labs/moni-ui/styles';
 ```
 
+### Uso directo en el navegador (CDN)
+
+Sin bundler, carga la distribución minificada completa:
+
+```html
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.min.css"
+>
+<script src="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.iife.min.js"></script>
+
+<moni-button variant="filled">Comenzar</moni-button>
+```
+
+También existe una distribución ESM:
+
+```html
+<script type="module">
+  import 'https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.min.js';
+</script>
+```
+
+Los archivos `.gz` y `.br` se publican junto al JavaScript y CSS para servidores que gestionen `Content-Encoding` explícitamente.
+
 ---
 
 ## Guía del Componente Core: Botón Expresivo (`<moni-button>`) 🧩

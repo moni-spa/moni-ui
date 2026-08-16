@@ -73,4 +73,13 @@ try {
 	console.warn('⚠️ Failed to generate custom-elements.json. Analyzer might not be fully configured.');
 }
 
+// 7. Build minified ESM/IIFE browser distributions and compressed variants
+console.log('🌐 Building browser distribution...');
+try {
+	execSync('node scripts/build-browser.js', { cwd: rootDir, stdio: 'inherit' });
+} catch (error) {
+	console.error('❌ Browser distribution build failed.');
+	process.exit(1);
+}
+
 console.log('✅ Build completed successfully!');
