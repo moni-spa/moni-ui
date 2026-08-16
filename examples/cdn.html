@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moni UI — prueba CDN</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.min.css"
+  >
+  <script
+    src="https://cdn.jsdelivr.net/npm/@moni-labs/moni-ui@0.4.1/dist/browser/moni-ui.iife.min.js"
+    defer
+  ></script>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: clamp(24px, 6vw, 72px);
+      color: var(--moni-on-surface, #1d1b20);
+      background: var(--moni-surface, #fffbfe);
+      font-family: system-ui, sans-serif;
+    }
+    main { width: min(100%, 760px); margin-inline: auto; }
+    header { margin-block-end: 40px; }
+    h1 { margin: 12px 0 8px; font-size: clamp(2rem, 7vw, 4rem); line-height: 1; }
+    p { color: var(--moni-on-surface-variant, #49454f); }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--moni-surface-container, #f3edf7);
+    }
+    .status::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: #9a6700; }
+    .status.ready::before { background: #16803a; }
+    .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .card {
+      display: grid;
+      align-content: start;
+      gap: 20px;
+      min-height: 190px;
+      padding: 24px;
+      border: 1px solid var(--moni-outline-variant, #cac4d0);
+      border-radius: 24px;
+      background: var(--moni-surface-container-low, #f7f2fa);
+    }
+    .card h2 { margin: 0; font-size: 1rem; }
+    .row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+    moni-progress { width: 100%; }
+    moni-shape { --moni-shape-color: var(--moni-primary, #6750a4); }
+    code { font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <span class="status" id="cdn-status">Conectando con jsDelivr…</span>
+      <h1>Moni UI</h1>
+      <p>Esta página funciona sin npm, Vite ni ningún bundler.</p>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Botones</h2>
+        <div class="row">
+          <moni-button variant="filled">Filled</moni-button>
+          <moni-button variant="outlined">Outlined</moni-button>
+          <moni-button variant="tonal" icon="favorite">Tonal</moni-button>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Formulario</h2>
+        <moni-text-field label="Nombre" placeholder="Escribe tu nombre"></moni-text-field>
+        <div class="row">
+          <moni-switch></moni-switch>
+          <span>Notificaciones</span>
+          <moni-checkbox checked></moni-checkbox>
+          <span>Acepto</span>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Progreso CDN</h2>
+        <moni-progress id="progress" variant="wavy" value="0"></moni-progress>
+        <moni-button id="run-progress" variant="filled" icon="play_arrow">Ver 0 → 100</moni-button>
+      </article>
+
+      <article class="card">
+        <h2>Expressive Shape</h2>
+        <div class="row">
+          <moni-shape id="shape" name="sunny" size="large"></moni-shape>
+          <moni-button id="morph-shape" variant="tonal">Hacer morph</moni-button>
+        </div>
+      </article>
+    </section>
+
+    <p><code>@moni-labs/moni-ui@0.4.1 · IIFE + CSS desde jsDelivr</code></p>
+  </main>
+
+  <script>
+    window.addEventListener('DOMContentLoaded', async () => {
+      await customElements.whenDefined('moni-button');
+      const status = document.querySelector('#cdn-status');
+      status.textContent = 'CDN conectado · componentes registrados';
+      status.classList.add('ready');
+
+      const progress = document.querySelector('#progress');
+      document.querySelector('#run-progress').addEventListener('click', () => {
+        const startedAt = performance.now();
+        const animate = (now) => {
+          const ratio = Math.min((now - startedAt) / 2400, 1);
+          progress.value = Math.round(ratio * 100);
+          if (ratio < 1) requestAnimationFrame(animate);
+        };
+        progress.value = 0;
+        requestAnimationFrame(animate);
+      });
+
+      const shape = document.querySelector('#shape');
+      let alternate = false;
+      document.querySelector('#morph-shape').addEventListener('click', () => {
+        alternate = !alternate;
+        shape.name = alternate ? 'heart' : 'sunny';
+      });
+    });
+  </script>
+</body>
+</html>
