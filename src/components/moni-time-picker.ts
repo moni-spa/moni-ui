@@ -318,17 +318,19 @@ export class MoniTimePicker extends MoniElement {
 			}
 
 			:host([orientation="horizontal"]) {
-				inline-size: auto;
+				inline-size: min(40rem, 100%);
 			}
 			:host([orientation="horizontal"]) .main-content {
 				flex-direction: row;
 				align-items: center;
+				justify-content: center;
 				gap: 2rem;
 			}
 			:host([orientation="horizontal"]) .left-pane {
 				display: flex;
 				flex-direction: column;
 				justify-content: center;
+				flex: none;
 			}
 
 			/* Main Content (Default vertical) */
@@ -358,6 +360,7 @@ export class MoniTimePicker extends MoniElement {
 				:host(:not([orientation])) .main-content {
 					flex-direction: row;
 					align-items: center;
+					justify-content: center;
 					gap: 2rem;
 				}
 				:host([orientation='auto']) .left-pane,
@@ -365,6 +368,7 @@ export class MoniTimePicker extends MoniElement {
 					display: flex;
 					flex-direction: column;
 					justify-content: center;
+					flex: none;
 				}
 			}
 

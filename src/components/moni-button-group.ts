@@ -59,6 +59,17 @@ import { MoniElement, sharedStyles } from './_base/index.js';
  */
 @customElement('moni-button-group')
 export class MoniButtonGroup extends MoniElement {
+	private readonly _activeObserver = new MutationObserver(() => this.updateSelectionNeighbors());
+
+	override connectedCallback() {
+		super.connectedCallback();
+		this._activeObserver.observe(this, { subtree: true, attributes: true, attributeFilter: ['active'] });
+	}
+
+	override disconnectedCallback() {
+		this._activeObserver.disconnect();
+		super.disconnectedCallback();
+	}
 	/**
 	 * Variante visual del grupo de botones.
 	 * - `standard`: Los elementos se espacian normalmente.
@@ -83,6 +94,18 @@ export class MoniButtonGroup extends MoniElement {
 	 */
 	@property({ type: Boolean, reflect: true })
 	multi = false;
+
+	/** Impide que el grupo quede sin selección. */
+	@property({ type: Boolean, reflect: true, attribute: 'selection-required' })
+	selectionRequired = false;
+
+	/** Forma base común de los botones. La selección invierte round ↔ square. */
+	@property({ reflect: true })
+	shape: 'round' | 'square' = 'round';
+
+	/** Controla si los botones conservan su ancho intrínseco o llenan la superficie. */
+	@property({ reflect: true })
+	resizing: 'fixed' | 'flexible' = 'fixed';
 
 	/**
 	 * Espacio CSS personalizado entre botones (ej., '1rem').
@@ -124,12 +147,18 @@ export class MoniButtonGroup extends MoniElement {
 				display: inline-flex;
 				align-items: center;
 				vertical-align: middle;
+				max-inline-size: 100%;
+			}
+			:host([variant='connected']),
+			:host([resizing='flexible']) {
+				inline-size: 100%;
 			}
 
 			.group-container {
 				display: inline-flex;
 				align-items: center;
 				width: 100%;
+				flex-wrap: nowrap;
 			}
 
 			slot {
@@ -159,6 +188,69 @@ export class MoniButtonGroup extends MoniElement {
 			:host([variant='connected']) .group-container {
 				gap: 0.125rem; /* 2dp */
 			}
+			:host([variant='connected']) ::slotted(moni-button),
+			:host([variant='connected']) ::slotted(moni-icon-button),
+			:host([resizing='flexible']) ::slotted(moni-button) {
+				flex: 1 1 0;
+			}
+			:host([variant='connected']) ::slotted(moni-button) {
+				--moni-button-inline-size: 100%;
+				min-inline-size: 0;
+			}
+			:host([variant='connected'][size='xsmall']) ::slotted(moni-button),
+			:host([variant='connected'][size='xsmall']) ::slotted(moni-icon-button),
+			:host([variant='connected'][size='small']) ::slotted(moni-button),
+			:host([variant='connected'][size='small']) ::slotted(moni-icon-button) {
+				min-inline-size: 3rem;
+			}
+
+			/* M3 Expressive selection emphasis. Increasing the button's internal
+			 * space (instead of scaling the host) keeps labels and icons crisp and
+			 * lets the existing padding transition transfer width smoothly. */
+			:host([variant='standard'][size='xsmall']) ::slotted(moni-button[active]),
+			:host([variant='standard'][size='xsmall']) ::slotted(moni-button[data-group-pressed]) {
+				--moni-button-padding: 0 1.25rem;
+			}
+			:host([variant='standard'][size='small']) ::slotted(moni-button[active]),
+			:host([variant='standard'][size='small']) ::slotted(moni-button[data-group-pressed]) {
+				--moni-button-padding: 0 1.75rem;
+			}
+			:host([variant='standard'][size='medium']) ::slotted(moni-button[active]),
+			:host([variant='standard'][size='medium']) ::slotted(moni-button[data-group-pressed]) {
+				--moni-button-padding: 0 2.375rem;
+			}
+			:host([variant='standard'][size='large']) ::slotted(moni-button[active]),
+			:host([variant='standard'][size='large']) ::slotted(moni-button[data-group-pressed]) {
+				--moni-button-padding: 0 4rem;
+			}
+			:host([variant='standard'][size='xlarge']) ::slotted(moni-button[active]),
+			:host([variant='standard'][size='extra']) ::slotted(moni-button[active]),
+			:host([variant='standard'][size='xlarge']) ::slotted(moni-button[data-group-pressed]),
+			:host([variant='standard'][size='extra']) ::slotted(moni-button[data-group-pressed]) {
+				--moni-button-padding: 0 5.25rem;
+			}
+
+			:host([variant='standard'][size='xsmall']) ::slotted(moni-button[data-group-adjacent-pressed]) { --moni-button-padding: 0 .5rem; }
+			:host([variant='standard'][size='small']) ::slotted(moni-button[data-group-adjacent-pressed]) { --moni-button-padding: 0 .75rem; }
+			:host([variant='standard'][size='medium']) ::slotted(moni-button[data-group-adjacent-pressed]) { --moni-button-padding: 0 1.25rem; }
+			:host([variant='standard'][size='large']) ::slotted(moni-button[data-group-adjacent-pressed]) { --moni-button-padding: 0 2.75rem; }
+			:host([variant='standard'][size='xlarge']) ::slotted(moni-button[data-group-adjacent-pressed]),
+			:host([variant='standard'][size='extra']) ::slotted(moni-button[data-group-adjacent-pressed]) { --moni-button-padding: 0 3.75rem; }
+
+			/* A selected standard button borrows space from its immediate
+			 * neighbours, keeping the group's outside footprint stable. */
+			:host([variant='standard'][size='xsmall']) ::slotted(moni-button[data-group-adjacent-selected='shared']) { --moni-button-padding: 0 .5rem; }
+			:host([variant='standard'][size='xsmall']) ::slotted(moni-button[data-group-adjacent-selected='sole']) { --moni-button-padding: 0 .25rem; }
+			:host([variant='standard'][size='small']) ::slotted(moni-button[data-group-adjacent-selected='shared']) { --moni-button-padding: 0 .625rem; }
+			:host([variant='standard'][size='small']) ::slotted(moni-button[data-group-adjacent-selected='sole']) { --moni-button-padding: 0 .25rem; }
+			:host([variant='standard'][size='medium']) ::slotted(moni-button[data-group-adjacent-selected='shared']) { --moni-button-padding: 0 1.0625rem; }
+			:host([variant='standard'][size='medium']) ::slotted(moni-button[data-group-adjacent-selected='sole']) { --moni-button-padding: 0 .625rem; }
+			:host([variant='standard'][size='large']) ::slotted(moni-button[data-group-adjacent-selected='shared']) { --moni-button-padding: 0 2.5rem; }
+			:host([variant='standard'][size='large']) ::slotted(moni-button[data-group-adjacent-selected='sole']) { --moni-button-padding: 0 2rem; }
+			:host([variant='standard'][size='xlarge']) ::slotted(moni-button[data-group-adjacent-selected='shared']),
+			:host([variant='standard'][size='extra']) ::slotted(moni-button[data-group-adjacent-selected='shared']) { --moni-button-padding: 0 3.375rem; }
+			:host([variant='standard'][size='xlarge']) ::slotted(moni-button[data-group-adjacent-selected='sole']),
+			:host([variant='standard'][size='extra']) ::slotted(moni-button[data-group-adjacent-selected='sole']) { --moni-button-padding: 0 2.75rem; }
 		`
 	];
 
@@ -169,7 +261,7 @@ export class MoniButtonGroup extends MoniElement {
 	 */
 	protected override updated(changedProperties: Map<string | number | symbol, unknown>) {
 		super.updated(changedProperties);
-		if (changedProperties.has('variant') || changedProperties.has('size') || changedProperties.has('gap')) {
+		if (changedProperties.has('variant') || changedProperties.has('size') || changedProperties.has('gap') || changedProperties.has('shape')) {
 			this.updateChildren();
 		}
 	}
@@ -181,6 +273,27 @@ export class MoniButtonGroup extends MoniElement {
 	 */
 	private handleSlotChange() {
 		this.updateChildren();
+	}
+
+	private getButtons() {
+		return (this.slottedButtons ?? []).filter(
+			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
+		);
+	}
+
+	/** Keeps selection emphasis inside the group's original visual footprint.
+	 * The selected width is funded evenly by every unselected button so edge
+	 * selections remain visually balanced instead of collapsing one neighbour. */
+	private updateSelectionNeighbors() {
+		const buttons = this.getButtons();
+		buttons.forEach((button) => button.removeAttribute('data-group-adjacent-selected'));
+		if (this.variant !== 'standard') return;
+
+		const selected = buttons.filter((button) => button.hasAttribute('active'));
+		if (selected.length === 0) return;
+		const unselected = buttons.filter((button) => !button.hasAttribute('active'));
+		const weight = unselected.length === 1 ? 'sole' : 'shared';
+		unselected.forEach((button) => button.setAttribute('data-group-adjacent-selected', weight));
 	}
 
 	private getGapValue(gap: string): string {
@@ -202,9 +315,7 @@ export class MoniButtonGroup extends MoniElement {
 	 * correspondiente (`left-round-flat`, `inner-round`, etc.) para formar una cápsula unificada.
 	 */
 	private updateChildren() {
-		const buttons = this.slottedButtons.filter(
-			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
-		);
+		const buttons = this.getButtons();
 
 		const normalizedGap = this.gap.trim().toLowerCase();
 		const hasConnectedGap = !['0', '0px', '0rem', '0em'].includes(normalizedGap);
@@ -214,7 +325,9 @@ export class MoniButtonGroup extends MoniElement {
 			btn.setAttribute('size', this.size);
 
 			// Propagate shape for connected variant
-			if (this.variant === 'connected') {
+			if (this.variant === 'connected' && this.shape === 'square') {
+				btn.setAttribute('shape', 'square');
+			} else if (this.variant === 'connected') {
 				if (hasConnectedGap) {
 					if (buttons.length === 1) {
 						btn.setAttribute('shape', 'round');
@@ -237,13 +350,10 @@ export class MoniButtonGroup extends MoniElement {
 					}
 				}
 			} else {
-				// Standard variant: buttons retain their own shapes or default round
-				const currentShape = btn.getAttribute('shape');
-				if (!currentShape || ['left-round-flat', 'right-round-flat', 'no-round', 'left-round', 'right-round', 'inner-round'].includes(currentShape)) {
-					btn.setAttribute('shape', 'round');
-				}
+				btn.setAttribute('shape', this.shape);
 			}
 		});
+		this.updateSelectionNeighbors();
 	}
 
 	/**
@@ -258,25 +368,13 @@ export class MoniButtonGroup extends MoniElement {
 		const button = target.closest('moni-button, moni-icon-button') as HTMLElement;
 		if (!button || button.hasAttribute('disabled')) return;
 
-		const buttons = this.slottedButtons.filter(
-			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
-		);
+		const buttons = this.getButtons();
 		const index = buttons.indexOf(button);
 		if (index === -1) return;
 
-		const prev = buttons[index - 1];
-		const next = buttons[index + 1];
-
-		if (prev) {
-			prev.style.transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1)';
-			prev.style.transform = 'translateX(-6px) scaleX(0.92)';
-			prev.style.transformOrigin = 'right center';
-		}
-		if (next) {
-			next.style.transition = 'transform 200ms cubic-bezier(0.2, 0, 0, 1)';
-			next.style.transform = 'translateX(6px) scaleX(0.92)';
-			next.style.transformOrigin = 'left center';
-		}
+		button.setAttribute('data-group-pressed', '');
+		buttons[index - 1]?.setAttribute('data-group-adjacent-pressed', '');
+		buttons[index + 1]?.setAttribute('data-group-adjacent-pressed', '');
 	}
 
 	/**
@@ -285,12 +383,10 @@ export class MoniButtonGroup extends MoniElement {
 	 * a su estado nativo neutro.
 	 */
 	private handlePointerUp() {
-		const buttons = this.slottedButtons.filter(
-			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
-		);
+		const buttons = this.getButtons();
 		buttons.forEach((btn) => {
-			btn.style.transform = '';
-			btn.style.transformOrigin = '';
+			btn.removeAttribute('data-group-pressed');
+			btn.removeAttribute('data-group-adjacent-pressed');
 		});
 	}
 
@@ -307,9 +403,7 @@ export class MoniButtonGroup extends MoniElement {
 			return;
 		}
 
-		const buttons = this.slottedButtons.filter(
-			(el) => el.tagName.toLowerCase() === 'moni-button' || el.tagName.toLowerCase() === 'moni-icon-button'
-		);
+		const buttons = this.getButtons();
 
 		if (!this.multi) {
 			buttons.forEach((btn) => {
@@ -322,6 +416,8 @@ export class MoniButtonGroup extends MoniElement {
 
 		// Toggle clicked button active state
 		const wasActive = clickedButton.hasAttribute('active');
+		const activeCount = buttons.filter((btn) => btn.hasAttribute('active')).length;
+		if (wasActive && this.selectionRequired && activeCount <= 1) return;
 		if (wasActive) {
 			clickedButton.removeAttribute('active');
 			(clickedButton as any).active = false;

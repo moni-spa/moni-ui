@@ -101,7 +101,11 @@ export class MoniLoadingIndicator extends MoniElement {
 			:host {
 				display: inline-block;
 				aspect-ratio: 1 / 1;
-				contain: strict;
+				/* Paint containment clipped oversized morphs in the contained
+				 * variant. Keep layout/style isolation while allowing the active
+				 * indicator to animate beyond the container surface. */
+				contain: layout style;
+				overflow: visible;
 				vertical-align: middle;
 			}
 
@@ -133,6 +137,19 @@ export class MoniLoadingIndicator extends MoniElement {
 				justify-content: center;
 				border-radius: var(--moni-loading-indicator-container-shape, 9999px);
 				box-sizing: border-box;
+				overflow: visible;
+			}
+
+			.active-indicator-wrapper {
+				overflow: visible;
+			}
+
+			.active-indicator-scale {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				overflow: visible;
+				transform-origin: center;
 			}
 
 			.active-indicator {
@@ -243,7 +260,9 @@ export class MoniLoadingIndicator extends MoniElement {
 		return html`
 			<div class="container animate" aria-hidden="true">
 				<div class="active-indicator-wrapper">
-					<div class="active-indicator"></div>
+					<div class="active-indicator-scale">
+						<div class="active-indicator"></div>
+					</div>
 				</div>
 			</div>
 		`;

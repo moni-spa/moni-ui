@@ -203,6 +203,7 @@ export class MoniButton extends MoniElement {
 			.button {
 				box-sizing: var(--moni-button-box-sizing, border-box);
 				display: inline-flex;
+				inline-size: var(--moni-button-inline-size, auto);
 				--_button-visual-height: 3.5rem;
 				align-items: center;
 				justify-content: center;

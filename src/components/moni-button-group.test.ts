@@ -122,6 +122,82 @@ describe('moni-button-group', () => {
 		expect(btn2.active).toBe(true);
 	});
 
+	it('expande el botón activo independientemente de su contenido', () => {
+		const cssText = ((group.constructor as typeof HTMLElement & { styles: unknown[] }).styles)
+			.map((style: any) => style?.cssText ?? '')
+			.join(' ');
+		expect(cssText).toContain("[variant='standard'][size='small']) ::slotted(moni-button[active])");
+		expect(cssText).not.toContain("[variant='connected'][size='small']) ::slotted(moni-button[active])");
+		expect(cssText).toContain('--moni-button-padding');
+	});
+
+	it('no permite deseleccionar el último botón cuando la selección es obligatoria', async () => {
+		group.selectionRequired = true;
+		const button = document.createElement('moni-button') as MoniButton;
+		button.active = true;
+		group.append(button);
+		await group.updateComplete;
+		button.click();
+		await button.updateComplete;
+		expect(button.active).toBe(true);
+	});
+
+	it('propaga la forma cuadrada y conserva anchos uniformes en connected', async () => {
+		group.variant = 'connected';
+		group.shape = 'square';
+		const first = document.createElement('moni-button') as MoniButton;
+		const second = document.createElement('moni-button') as MoniButton;
+		group.append(first, second);
+		await group.updateComplete;
+		expect(first.shape).toBe('square');
+		expect(second.shape).toBe('square');
+		const cssText = ((group.constructor as typeof HTMLElement & { styles: unknown[] }).styles)
+			.map((style: any) => style?.cssText ?? '')
+			.join(' ');
+		expect(cssText).toContain("[variant='connected']) ::slotted(moni-button)");
+		expect(cssText).toContain('flex: 1 1 0');
+		expect(cssText).toContain('--moni-button-inline-size: 100%');
+	});
+
+	it('marca temporalmente el botón presionado y sus vecinos en standard', async () => {
+		const buttons = Array.from({ length: 3 }, () => document.createElement('moni-button') as MoniButton);
+		group.append(...buttons);
+		await group.updateComplete;
+		buttons[1].dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, composed: true }));
+		expect(buttons[1].hasAttribute('data-group-pressed')).toBe(true);
+		expect(buttons[0].hasAttribute('data-group-adjacent-pressed')).toBe(true);
+		expect(buttons[2].hasAttribute('data-group-adjacent-pressed')).toBe(true);
+		buttons[1].dispatchEvent(new PointerEvent('pointerup', { bubbles: true, composed: true }));
+		expect(buttons.every((button) => !button.hasAttribute('data-group-pressed') && !button.hasAttribute('data-group-adjacent-pressed'))).toBe(true);
+	});
+
+	it('redistribuye el ancho seleccionado hacia sus vecinos sin afectar connected', async () => {
+		const buttons = Array.from({ length: 3 }, () => document.createElement('moni-button') as MoniButton);
+		group.append(...buttons);
+		await group.updateComplete;
+		buttons[1].active = true;
+		await buttons[1].updateComplete;
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(buttons[0].getAttribute('data-group-adjacent-selected')).toBe('shared');
+		expect(buttons[2].getAttribute('data-group-adjacent-selected')).toBe('shared');
+
+		group.variant = 'connected';
+		await group.updateComplete;
+		expect(buttons[0].hasAttribute('data-group-adjacent-selected')).toBe(false);
+		expect(buttons[2].hasAttribute('data-group-adjacent-selected')).toBe(false);
+	});
+
+	it('reparte por igual la reducción cuando se selecciona un botón del extremo', async () => {
+		const buttons = Array.from({ length: 3 }, () => document.createElement('moni-button') as MoniButton);
+		group.append(...buttons);
+		await group.updateComplete;
+		buttons[2].active = true;
+		await buttons[2].updateComplete;
+		await new Promise((resolve) => setTimeout(resolve, 0));
+		expect(buttons[0].getAttribute('data-group-adjacent-selected')).toBe('shared');
+		expect(buttons[1].getAttribute('data-group-adjacent-selected')).toBe('shared');
+	});
+
 	it('renderiza role="group" en el contenedor por defecto (accesibilidad M3)', async () => {
 		await group.updateComplete;
 		const container = group.shadowRoot?.querySelector('[part="container"]');

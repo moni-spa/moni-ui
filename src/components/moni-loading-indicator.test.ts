@@ -57,4 +57,13 @@ describe('moni-loading-indicator', () => {
 		expect(cssText).toContain('prefers-reduced-motion: reduce');
 		expect(cssText).toContain('animation: none');
 	});
+
+	it('permite que el indicador contained crezca fuera de su superficie', () => {
+		const cssText = ((el.constructor as typeof HTMLElement & { styles: unknown[] }).styles)
+			.map((style: any) => style?.cssText ?? '')
+			.join(' ');
+		expect(cssText).not.toContain('contain: strict');
+		expect(cssText).toContain('contain: layout style');
+		expect(cssText).toContain('overflow: visible');
+	});
 });
