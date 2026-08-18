@@ -71,11 +71,13 @@ describe('moni-file-field', () => {
 		expect(trailing).toBeTruthy();
 	});
 
-	it('usa button-label como placeholder cuando no hay valor', async () => {
+	it('muestra button-label como valor visible y mantiene el label elevado', async () => {
 		await el.updateComplete;
 		const text = el.shadowRoot?.querySelector(
 			'input[type="text"]'
 		) as HTMLInputElement;
-		expect(text.placeholder).toBe('Choose file');
+		expect(text.placeholder).toBe('');
+		expect(text.value).toBe('Choose file');
+		expect(text.classList.contains('active')).toBe(true);
 	});
 });

@@ -73,7 +73,17 @@ try {
 	console.warn('⚠️ Failed to generate custom-elements.json. Analyzer might not be fully configured.');
 }
 
-// 7. Build minified ESM/IIFE browser distributions and compressed variants
+// 7. Generate the complete human/LLM documentation and replace the analyzer's
+// partial manifest with the source-driven manifest used by the docs.
+console.log('📚 Generating component documentation...');
+try {
+	execSync('node scripts/generate-docs.mjs', { cwd: rootDir, stdio: 'inherit' });
+} catch (error) {
+	console.error('❌ Component documentation generation failed.');
+	process.exit(1);
+}
+
+// 8. Build minified ESM/IIFE browser distributions and compressed variants
 console.log('🌐 Building browser distribution...');
 try {
 	execSync('node scripts/build-browser.js', { cwd: rootDir, stdio: 'inherit' });

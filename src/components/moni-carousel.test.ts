@@ -195,6 +195,20 @@ describe('moni-carousel', () => {
 		testEl.remove();
 	});
 
+	it('normaliza propiedades numéricas asignadas como strings por frameworks', async () => {
+		const testEl = document.createElement('moni-carousel') as MoniCarousel;
+		(testEl as unknown as { gap: string }).gap = '12';
+		(testEl as unknown as { padding: string }).padding = '8';
+		document.body.appendChild(testEl);
+		await testEl.updateComplete;
+
+		expect(testEl.gap).toBe(12);
+		expect(testEl.padding).toBe(8);
+		expect(testEl.itemSize).toBe(testEl.computedLayout.largeItemWidth + 12);
+
+		testEl.remove();
+	});
+
 	it('proporciona suficiente ancho de desplazamiento para alcanzar el último elemento (regresión de Firefox)', async () => {
 		const testEl = document.createElement('moni-carousel') as MoniCarousel;
 		testEl.items = Array.from({ length: 10 }, (_, i) => ({

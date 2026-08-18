@@ -22,6 +22,8 @@ describe('moni-tooltip (P3.1)', () => {
 		await el.updateComplete;
 		const tip = el.shadowRoot?.querySelector('[role="tooltip"]');
 		expect(tip).toBeTruthy();
+		expect(tip?.classList.contains('js-positioned')).toBe(true);
+		expect((tip as HTMLElement).style.getPropertyValue('--_tooltip-origin-x')).not.toBe('');
 	});
 
 	it('refleja el texto en el host', async () => {
@@ -35,14 +37,16 @@ describe('moni-tooltip (P3.1)', () => {
 		expect(tip?.classList.contains('top')).toBe(true);
 	});
 
-	it('acepta los 6 posicionamientos M3 (top/top-start/top-end/bottom/bottom-start/bottom-end)', async () => {
-		const positions: Array<'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end'> = [
+	it('acepta los 8 posicionamientos disponibles', async () => {
+		const positions: Array<'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'right'> = [
 			'top',
 			'top-start',
 			'top-end',
 			'bottom',
 			'bottom-start',
-			'bottom-end'
+			'bottom-end',
+			'left',
+			'right'
 		];
 		for (const pos of positions) {
 			el.position = pos;
@@ -56,6 +60,21 @@ describe('moni-tooltip (P3.1)', () => {
 		await el.updateComplete;
 		expect(el.rich).toBe(false);
 		expect(el.hasAttribute('rich')).toBe(false);
+	});
+
+	it('rota con el target solo cuando rotate-with-target está activo', async () => {
+		await el.updateComplete;
+		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
+		parent.style.transform = 'matrix(0.996195, 0.087156, -0.087156, 0.996195, 0, 0)';
+		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+		expect(tip.style.getPropertyValue('--_tooltip-target-rotation')).toBe('0deg');
+
+		parent.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+		el.rotateWithTarget = true;
+		await el.updateComplete;
+		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+		expect(Number.parseFloat(tip.style.getPropertyValue('--_tooltip-target-rotation'))).toBeCloseTo(5, 1);
+		expect(el.hasAttribute('rotate-with-target')).toBe(true);
 	});
 
 	it('rich=true habilita el modo de contenido enriquecido (atributo rich reflejado)', async () => {
@@ -77,6 +96,61 @@ describe('moni-tooltip (P3.1)', () => {
 		parent.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
 		await el.updateComplete;
 		expect(tip?.classList.contains('visible')).toBe(false);
+	});
+
+	it('centra matemáticamente el tooltip sobre el trigger', async () => {
+		await el.updateComplete;
+		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
+		parent.getBoundingClientRect = () => new DOMRect(500, 300, 160, 48);
+		Object.defineProperty(tip, 'offsetWidth', { configurable: true, value: 112 });
+		Object.defineProperty(tip, 'offsetHeight', { configurable: true, value: 36 });
+
+		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+
+		expect(tip.style.left).toBe('524px');
+		expect(tip.style.top).toBe('256px');
+		expect(tip.classList.contains('js-positioned')).toBe(true);
+		expect(tip.style.transformOrigin).toBe('center');
+		expect(tip.style.getPropertyValue('--_tooltip-origin-x')).toBe('0px');
+		expect(tip.style.getPropertyValue('--_tooltip-origin-y')).toBe('50px');
+	});
+
+	it('posiciona left y right desde el borde del trigger', async () => {
+		await el.updateComplete;
+		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
+		parent.getBoundingClientRect = () => new DOMRect(500, 300, 160, 48);
+		Object.defineProperty(tip, 'offsetWidth', { configurable: true, value: 112 });
+		Object.defineProperty(tip, 'offsetHeight', { configurable: true, value: 36 });
+
+		el.position = 'left';
+		await el.updateComplete;
+		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+		expect(tip.style.left).toBe('380px');
+		expect(tip.style.top).toBe('306px');
+		expect(tip.style.getPropertyValue('--_tooltip-origin-x')).toBe('144px');
+		expect(tip.style.getPropertyValue('--_tooltip-origin-y')).toBe('0px');
+
+		parent.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+		el.position = 'right';
+		await el.updateComplete;
+		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+		expect(tip.style.left).toBe('668px');
+		expect(tip.style.getPropertyValue('--_tooltip-origin-x')).toBe('-144px');
+	});
+
+	it('sigue al trigger cuando cambia de posición durante scroll', async () => {
+		await el.updateComplete;
+		const tip = el.shadowRoot?.querySelector('.tooltip') as HTMLElement;
+		let top = 300;
+		parent.getBoundingClientRect = () => new DOMRect(500, top, 160, 48);
+		Object.defineProperty(tip, 'offsetWidth', { configurable: true, value: 112 });
+		Object.defineProperty(tip, 'offsetHeight', { configurable: true, value: 36 });
+		parent.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+		expect(tip.style.top).toBe('256px');
+
+		top = 180;
+		document.dispatchEvent(new Event('scroll'));
+		expect(tip.style.top).toBe('136px');
 	});
 
 	it('muestra el tooltip en focusin y lo oculta en focusout', async () => {

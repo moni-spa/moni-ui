@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import './moni-toolbar.js';
-import type { MoniToolbar } from './moni-toolbar.js';
+import { MoniToolbar } from './moni-toolbar.js';
 
 describe('moni-toolbar (P5.4 — recreated)', () => {
 	let el: MoniToolbar;
@@ -89,5 +88,9 @@ describe('moni-toolbar (P5.4 — recreated)', () => {
 		const slot = el.shadowRoot?.querySelector('slot[name="action-button"]') as HTMLSlotElement | null;
 		const assigned = slot?.assignedNodes({ flatten: true }) ?? [];
 		expect(assigned.length).toBeGreaterThan(0);
+	});
+
+	it('usa un z-index local que no atraviesa overlays modales', () => {
+		expect(String(MoniToolbar.styles).replace(/\s+/g, '')).toContain('z-index:var(--z-index-toolbar,10)');
 	});
 });

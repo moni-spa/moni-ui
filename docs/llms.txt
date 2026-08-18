@@ -1,0 +1,53 @@
+# @moni-labs/moni-ui — índice para LLM
+
+Biblioteca de 49 Web Components Material Design 3 Expressive. Importa `@moni-labs/moni-ui` y `@moni-labs/moni-ui/styles`. Consulta una ficha antes de generar markup.
+
+- moni-app-bar: docs/components/app-bar.md — Componente Material Design 3 App Bar.
+- moni-badge: docs/components/badge.md — Componente Material Design 3 Badge.
+- moni-bottom-sheet: docs/components/bottom-sheet.md — Componente Material Design 3 Bottom Sheet.
+- moni-button: docs/components/button.md — Componente Material Design 3 Button.
+- moni-button-group: docs/components/button-group.md — Componente Material Design 3 Button Group.
+- moni-button-segment: docs/components/button-segment.md — Componente Material Design 3 Segmented Button (Heredado).
+- moni-card: docs/components/card.md — Componente Material Design 3 Card.
+- moni-carousel: docs/components/carousel.md — Componente Material Design 3 Expressive Carousel.
+- moni-checkbox: docs/components/checkbox.md — Componente Material Design 3 Checkbox.
+- moni-chip: docs/components/chip.md — Componente Material Design 3 Chip.
+- moni-color-field: docs/components/color-field.md — Componente Material Design 3 Color Field (Campo de Color).
+- moni-context-menu: docs/components/context-menu.md — Componente Material Design 3 Context Menu (Menú Contextual).
+- moni-dialog: docs/components/dialog.md — Componente Material Design 3 Dialog (Diálogo).
+- moni-divider: docs/components/divider.md — Componente Material Design 3 Divider (Separador).
+- moni-expansion: docs/components/expansion.md — Componente Material Design 3 Expansion panel (Panel de expansión).
+- moni-fab: docs/components/fab.md — Material 3 Expressive floating action button.
+- moni-fab-menu: docs/components/fab-menu.md — Accessible Material 3 Expressive FAB menu / speed dial.
+- moni-file-field: docs/components/file-field.md — Componente Material Design 3 File Field (Campo de Archivo).
+- moni-icon: docs/components/icon.md — Componente de icono solo visual que utiliza la fuente variable Material Symbols.
+- moni-list: docs/components/list.md — Componente Material Design 3 List (Lista).
+- moni-list-item: docs/components/list-item.md — Componente Material Design 3 List Item (Elemento de Lista).
+- moni-loading-indicator: docs/components/loading-indicator.md — Componente Material Design 3 Loading Indicator (Indicador de carga).
+- moni-menu: docs/components/menu.md — Componente Material Design 3 Menu (Menú).
+- moni-menu-item: docs/components/menu-item.md — Componente Material Design 3 Menu Item (Elemento de Menú).
+- moni-morph-modal: docs/components/morph-modal.md — Componente moni-morph-modal de Moni UI.
+- moni-nav: docs/components/nav.md — Componente contenedor de Navegación Material Design 3.
+- moni-nav-item: docs/components/nav-item.md — Componente Material Design 3 Navigation Item (Elemento de Navegación).
+- moni-progress: docs/components/progress.md — Material 3 Expressive progress indicator.
+- moni-radio: docs/components/radio.md — Componente Material Design 3 Radio Button (Botón de Opción).
+- moni-ripple: docs/components/ripple.md — Componente de decoración de onda (ripple) puramente visual.
+- moni-segmented-button: docs/components/segmented-button.md — Componente Material Design 3 Segmented Button (Botón Segmentado) (Heredado).
+- moni-select: docs/components/select.md — Componente Material Design 3 Select (Menú Desplegable).
+- moni-select-option: docs/components/select-option.md — Componente Material Design 3 Select Option (Opción de Selección).
+- moni-shape: docs/components/shape.md — Material 3 Expressive shape with built-in polygon morphing.
+- moni-side-sheet: docs/components/side-sheet.md — Componente Material Design 3 Side Sheet (Hoja o panel lateral).
+- moni-slider: docs/components/slider.md — Componente Material Design 3 Slider (Control deslizante).
+- moni-snackbar: docs/components/snackbar.md — Componente Material Design 3 Snackbar (Barra de notificaciones).
+- moni-split-button: docs/components/split-button.md — Componente Material Design 3 Split Button (Botón dividido).
+- moni-step: docs/components/step.md — Componente Material Design 3 Step (Paso).
+- moni-stepper: docs/components/stepper.md — Componente Material Design 3 Stepper (Pasos/Progresión).
+- moni-switch: docs/components/switch.md — Componente Material Design 3 Switch (Interruptor).
+- moni-tab: docs/components/tab.md — Componente Material Design 3 Tab (Pestaña).
+- moni-tabs: docs/components/tabs.md — Componente Material Design 3 Tabs container (Contenedor de pestañas).
+- moni-text-field: docs/components/text-field.md — Componente Material Design 3 Text Field (Campo de texto).
+- moni-textarea: docs/components/textarea.md — Componente Material Design 3 Textarea (Área de texto).
+- moni-time-picker: docs/components/time-picker.md — Componente Material Design 3 Time Picker (Selector de hora).
+- moni-toolbar: docs/components/toolbar.md — Componente Material Design 3 Top App Bar (Barra de herramientas superior).
+- moni-tooltip: docs/components/tooltip.md — Componente Material Design 3 Tooltip (Información sobre herramientas).
+- moni-typography: docs/components/typography.md — Componente Material Design 3 Typography (Tipografía).

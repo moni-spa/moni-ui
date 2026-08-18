@@ -155,7 +155,7 @@ describe('moni-button-group', () => {
 			.map((style: any) => style?.cssText ?? '')
 			.join(' ');
 		expect(cssText).toContain("[variant='connected']) ::slotted(moni-button)");
-		expect(cssText).toContain('flex: 1 1 0');
+		expect(cssText).toContain('flex: var(--_moni-group-flex-grow, 1) 1 0');
 		expect(cssText).toContain('--moni-button-inline-size: 100%');
 	});
 
@@ -196,6 +196,20 @@ describe('moni-button-group', () => {
 		await new Promise((resolve) => setTimeout(resolve, 0));
 		expect(buttons[0].getAttribute('data-group-adjacent-selected')).toBe('shared');
 		expect(buttons[1].getAttribute('data-group-adjacent-selected')).toBe('shared');
+	});
+
+	it('expande toda la superficie del activo en modo flexible y reduce los demás por igual', async () => {
+		group.resizing = 'flexible';
+		const buttons = Array.from({ length: 3 }, () => document.createElement('moni-button') as MoniButton);
+		group.append(...buttons);
+		await group.updateComplete;
+		buttons[0].active = true;
+		await buttons[0].updateComplete;
+		await new Promise((resolve) => setTimeout(resolve, 0));
+
+		expect(buttons[0].style.getPropertyValue('--_moni-group-flex-grow')).toBe('1.24');
+		expect(buttons[1].style.getPropertyValue('--_moni-group-flex-grow')).toBe('0.88');
+		expect(buttons[2].style.getPropertyValue('--_moni-group-flex-grow')).toBe('0.88');
 	});
 
 	it('renderiza role="group" en el contenedor por defecto (accesibilidad M3)', async () => {

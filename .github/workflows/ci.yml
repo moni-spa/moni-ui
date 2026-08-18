@@ -40,5 +40,8 @@ jobs:
       - name: Build package
         run: npm run build
 
+      - name: Verify generated component documentation
+        run: npm run docs:check
+
       - name: Inspect npm package contents
         run: npm pack --dry-run

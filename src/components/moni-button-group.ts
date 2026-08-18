@@ -191,9 +191,11 @@ export class MoniButtonGroup extends MoniElement {
 			:host([variant='connected']) ::slotted(moni-button),
 			:host([variant='connected']) ::slotted(moni-icon-button),
 			:host([resizing='flexible']) ::slotted(moni-button) {
-				flex: 1 1 0;
+				flex: var(--_moni-group-flex-grow, 1) 1 0;
+				transition: flex-grow 450ms cubic-bezier(0.2, 0, 0, 1);
 			}
-			:host([variant='connected']) ::slotted(moni-button) {
+			:host([variant='connected']) ::slotted(moni-button),
+			:host([variant='standard'][resizing='flexible']) ::slotted(moni-button) {
 				--moni-button-inline-size: 100%;
 				min-inline-size: 0;
 			}
@@ -261,7 +263,7 @@ export class MoniButtonGroup extends MoniElement {
 	 */
 	protected override updated(changedProperties: Map<string | number | symbol, unknown>) {
 		super.updated(changedProperties);
-		if (changedProperties.has('variant') || changedProperties.has('size') || changedProperties.has('gap') || changedProperties.has('shape')) {
+		if (changedProperties.has('variant') || changedProperties.has('size') || changedProperties.has('gap') || changedProperties.has('shape') || changedProperties.has('resizing')) {
 			this.updateChildren();
 		}
 	}
@@ -286,7 +288,10 @@ export class MoniButtonGroup extends MoniElement {
 	 * selections remain visually balanced instead of collapsing one neighbour. */
 	private updateSelectionNeighbors() {
 		const buttons = this.getButtons();
-		buttons.forEach((button) => button.removeAttribute('data-group-adjacent-selected'));
+		buttons.forEach((button) => {
+			button.removeAttribute('data-group-adjacent-selected');
+			button.style.removeProperty('--_moni-group-flex-grow');
+		});
 		if (this.variant !== 'standard') return;
 
 		const selected = buttons.filter((button) => button.hasAttribute('active'));
@@ -294,6 +299,16 @@ export class MoniButtonGroup extends MoniElement {
 		const unselected = buttons.filter((button) => !button.hasAttribute('active'));
 		const weight = unselected.length === 1 ? 'sole' : 'shared';
 		unselected.forEach((button) => button.setAttribute('data-group-adjacent-selected', weight));
+
+		if (this.resizing === 'flexible' && unselected.length > 0) {
+			const activeWeight = 1.24;
+			const inactiveWeight = Math.max(
+				0.6,
+				(buttons.length - selected.length * activeWeight) / unselected.length
+			);
+			selected.forEach((button) => button.style.setProperty('--_moni-group-flex-grow', String(activeWeight)));
+			unselected.forEach((button) => button.style.setProperty('--_moni-group-flex-grow', String(inactiveWeight)));
+		}
 	}
 
 	private getGapValue(gap: string): string {

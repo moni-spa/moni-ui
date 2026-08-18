@@ -84,6 +84,25 @@ export class MoniSideSheet extends MoniElement {
 	private _sheetWidth = 0;
 	private _defaultWidth = 0;
 	private _justDragged = false;
+	private _closeTimer: ReturnType<typeof setTimeout> | undefined;
+	private _closing = false;
+
+	override disconnectedCallback() {
+		clearTimeout(this._closeTimer);
+		super.disconnectedCallback();
+	}
+
+	private _finishClose() {
+		if (!this._closing || this.open) return;
+		this._closing = false;
+		clearTimeout(this._closeTimer);
+		this._dialog.classList.remove('expanded');
+		if (this._dialog.open) {
+			if (typeof this._dialog.close === 'function') this._dialog.close();
+			else this._dialog.open = false;
+		}
+		this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+	}
 
 	private _getMaxWidthPx(): number {
 		const val = this.expandedWidth || '600px';
@@ -119,6 +138,8 @@ export class MoniSideSheet extends MoniElement {
 
 		if (changedProperties.has('open') && this._dialog) {
 			if (this.open) {
+				this._closing = false;
+				clearTimeout(this._closeTimer);
 				if (this.modal) {
 					if (!this._dialog.open) {
 						if (typeof this._dialog.showModal === 'function') {
@@ -141,23 +162,18 @@ export class MoniSideSheet extends MoniElement {
 				this._dialog.classList.add('opened');
 			} else {
 				if (this._dialog.open) {
+					this._closing = true;
 					this._dialog.classList.remove('opened');
 					const onTransitionEnd = (e: TransitionEvent) => {
-						if (e.target === this._dialog && (e.propertyName === 'transform' || e.propertyName === 'opacity')) {
+						if (e.target === this._dialog && e.propertyName === 'transform') {
 							this._dialog.removeEventListener('transitionend', onTransitionEnd);
-							if (!this.open && this._dialog.open) {
-								this._dialog.classList.remove('expanded');
-								this._dialog.close();
-							}
+							this._finishClose();
 						}
 					};
 					this._dialog.addEventListener('transitionend', onTransitionEnd);
-					// Fallback safety
-					setTimeout(() => {
-						if (!this.open && this._dialog.open) {
-							this._dialog.classList.remove('expanded');
-							this._dialog.close();
-						}
+					this._closeTimer = setTimeout(() => {
+						this._dialog.removeEventListener('transitionend', onTransitionEnd);
+						this._finishClose();
 					}, 350);
 				}
 			}
@@ -341,7 +357,11 @@ export class MoniSideSheet extends MoniElement {
 	 */
 	private _onCloseClick() {
 		this.open = false;
-		this.dispatchEvent(new CustomEvent('close', { bubbles: true, composed: true }));
+	}
+
+	private _onCancel(e: Event) {
+		e.preventDefault();
+		this._onCloseClick();
 	}
 
 	/**
@@ -381,9 +401,9 @@ export class MoniSideSheet extends MoniElement {
 				flex-direction: column;
 				border: none;
 				position: fixed;
-				top: 0;
-				bottom: 0;
-				block-size: 100vh;
+				inset-block: 0;
+				block-size: 100dvh;
+				max-block-size: 100dvh;
 				inline-size: 100%;
 				max-inline-size: var(--moni-side-sheet-max-width, 400px);
 				background-color: var(--surface);
@@ -402,6 +422,12 @@ export class MoniSideSheet extends MoniElement {
 					visibility var(--speed3);
 				opacity: 0;
 				visibility: hidden;
+			}
+
+			/* Author-level display:flex overrides the browser's native
+			   dialog:not([open]) rule, so closed sheets must be hidden explicitly. */
+			dialog:not([open]) {
+				display: none;
 			}
 
 			dialog.dragging {
@@ -433,7 +459,13 @@ export class MoniSideSheet extends MoniElement {
 			dialog.detached {
 				top: 16px;
 				bottom: 16px;
-				block-size: calc(100vh - 32px);
+				block-size: calc(100dvh - 32px);
+				max-block-size: calc(100dvh - 32px);
+				inline-size: calc(100% - 32px);
+				max-inline-size: min(
+					var(--moni-side-sheet-max-width, 400px),
+					calc(100% - 32px)
+				);
 				border-radius: 1.75rem !important;
 				border: 1px solid var(--outline-variant);
 				box-shadow: var(--elevate1);
@@ -586,8 +618,8 @@ export class MoniSideSheet extends MoniElement {
 		return html`
 			<dialog
 				part="dialog"
-				?open=${this.open}
 				class=${classes}
+				@cancel=${this._onCancel}
 				@click=${this._onDialogClick}
 				@pointerdown=${this._onPointerDown}
 				@pointermove=${this._onPointerMove}

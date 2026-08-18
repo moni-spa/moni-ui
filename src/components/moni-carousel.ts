@@ -5,7 +5,7 @@
  * @contributors Moni Labs & Contributors
  */
 
-import { html, css } from 'lit';
+import { html, css, type PropertyValues } from 'lit';
 import { customElement, property, query, state, queryAll } from 'lit/decorators.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 import { emitMoniEvent } from '../utils/event-emitter.js';
@@ -84,6 +84,23 @@ export interface CarouselItem {
  */
 @customElement('moni-carousel')
 export class MoniCarousel extends MoniElement {
+	protected override willUpdate(changedProperties: PropertyValues<this>) {
+		super.willUpdate(changedProperties);
+		// Frameworks commonly assign static custom-element attributes as string
+		// properties, bypassing Lit's attribute converter. Normalize before the
+		// layout math so `184 + "12"` never becomes the coordinate `18412`.
+		const numericProperties = [
+			'largeWidth', 'mediumWidth', 'smallWidth', 'gap', 'padding',
+			'borderRadius', 'autoplayInterval'
+		] as const;
+		for (const key of numericProperties) {
+			const value = this[key] as unknown;
+			if (typeof value !== 'string') continue;
+			const normalized = Number(value);
+			if (Number.isFinite(normalized)) this[key] = normalized;
+		}
+	}
+
 	/**
 	 * Array de elementos a mostrar en el carrusel.
 	 * Cada elemento requiere al menos `title` e `img`. El opcional `href` renderiza la tarjeta como un enlace.

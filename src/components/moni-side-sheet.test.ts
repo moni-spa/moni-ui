@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import './moni-side-sheet.js';
-import type { MoniSideSheet } from './moni-side-sheet.js';
+import { MoniSideSheet } from './moni-side-sheet.js';
 
 describe('moni-side-sheet', () => {
 	let el: MoniSideSheet;
@@ -41,6 +40,7 @@ describe('moni-side-sheet', () => {
 		await el.updateComplete;
 
 		const headline = el.shadowRoot?.querySelector('.headline') as HTMLHeadingElement;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
 		expect(headline.textContent?.trim()).toBe('Configuración');
 
 		let eventFired = false;
@@ -54,7 +54,38 @@ describe('moni-side-sheet', () => {
 
 		await el.updateComplete;
 		expect(el.open).toBe(false);
+		expect(eventFired).toBe(false);
+		expect(dialog.open).toBe(true);
+		dialog.dispatchEvent(new TransitionEvent('transitionend', { propertyName: 'transform' }));
 		expect(eventFired).toBe(true);
+		expect(dialog.matches(':not([open])')).toBe(true);
+	});
+
+	it('anima el cierre por Escape antes de cerrar el dialog nativo', async () => {
+		el.modal = true;
+		el.open = true;
+		await el.updateComplete;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const cancel = new Event('cancel', { cancelable: true });
+		dialog.dispatchEvent(cancel);
+		await el.updateComplete;
+
+		expect(cancel.defaultPrevented).toBe(true);
+		expect(el.open).toBe(false);
+		expect(dialog.open).toBe(true);
+		expect(dialog.classList.contains('opened')).toBe(false);
+	});
+
+	it('oculta explícitamente el dialog cuando no tiene open', () => {
+		const cssText = String(MoniSideSheet.styles).replace(/\s+/g, '');
+		expect(cssText).toContain('dialog:not([open]){display:none;');
+	});
+
+	it('anula el límite nativo de dialog y ocupa todo el alto dinámico', () => {
+		const cssText = String(MoniSideSheet.styles).replace(/\s+/g, '');
+		expect(cssText).toContain('block-size:100dvh;');
+		expect(cssText).toContain('max-block-size:100dvh;');
+		expect(cssText).toContain('inset-block:0;');
 	});
 
 	it('dispara el evento back cuando se hace clic en el botón de volver', async () => {
@@ -80,6 +111,12 @@ describe('moni-side-sheet', () => {
 		el.noBorder = true;
 		await el.updateComplete;
 		expect(dialog?.classList.contains('no-border')).toBe(true);
+	});
+
+	it('compensa los márgenes del modo detached sin desbordar el viewport', () => {
+		const cssText = String(MoniSideSheet.styles).replace(/\s+/g, '');
+		expect(cssText).toContain('inline-size:calc(100%-32px)');
+		expect(cssText).toContain('calc(100%-32px)');
 	});
 
 	it('renderiza el tirador (handle) y soporta el cierre por arrastre cuando withHandle es true', async () => {

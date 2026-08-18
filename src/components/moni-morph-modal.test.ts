@@ -1,12 +1,31 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { gsap } from 'gsap';
 import './moni-morph-modal.js';
+import './moni-fab.js';
+import './moni-fab-menu.js';
 import type { MoniMorphModal } from './moni-morph-modal.js';
 
 vi.mock('gsap', () => {
 	return {
 		gsap: {
 			registerPlugin: vi.fn(),
+			utils: {
+				interpolate: vi.fn((_start: unknown, end: unknown) => end)
+			},
 			set: vi.fn(),
+			timeline: vi.fn((config: { onComplete?: () => void } = {}) => {
+				const timeline = {
+					addLabel: vi.fn(() => timeline),
+					to: vi.fn((target: Record<string, unknown>, vars: Record<string, unknown>) => {
+						if (typeof vars.onStart === 'function') (vars.onStart as () => void)();
+						if (typeof vars.progress === 'number') target.progress = vars.progress;
+						if (typeof vars.onUpdate === 'function') (vars.onUpdate as () => void)();
+						return timeline;
+					})
+				};
+				queueMicrotask(() => config.onComplete?.());
+				return timeline;
+			}),
 			fromTo: vi.fn(
 				(_target: unknown, _from: object, to: { onComplete?: () => void }) => {
 					if (to.onComplete) to.onComplete();
@@ -61,6 +80,7 @@ describe('moni-morph-modal', () => {
 		target = document.createElement('button');
 		target.id = 'test-target';
 		target.textContent = 'Open';
+		target.getBoundingClientRect = () => new DOMRect(24, 700, 56, 56);
 		document.body.appendChild(target);
 
 		el = document.createElement('moni-morph-modal') as MoniMorphModal;
@@ -143,6 +163,156 @@ describe('moni-morph-modal', () => {
 		el.hide();
 		await waitForRaf();
 		expect(el.open).toBe(false);
+	});
+
+	it('desenfoca el contenido mientras desaparece al cerrar', async () => {
+		el.show();
+		await waitForRaf();
+		vi.mocked(gsap.fromTo).mockClear();
+
+		el.hide();
+		await waitForRaf();
+
+		expect(gsap.fromTo).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ opacity: 1, filter: 'blur(0px)' }),
+			expect.objectContaining({ opacity: 0, filter: 'blur(6px)' })
+		);
+	});
+
+	it('recalcula la posición actual del origen al cerrar', async () => {
+		el.show();
+		await waitForRaf();
+		target.getBoundingClientRect = () => new DOMRect(310, 420, 64, 48);
+
+		el.hide();
+		await waitForRaf();
+
+		const panel = el.shadowRoot?.querySelector('.panel') as HTMLElement;
+		expect(gsap.set).toHaveBeenCalledWith(
+			panel,
+			expect.objectContaining({ x: 310, y: 420 })
+		);
+		expect(panel.style.width).toBe('64px');
+		expect(panel.style.height).toBe('48px');
+	});
+
+	it('desaparece con escala y opacidad cuando el origen ya no existe', async () => {
+		el.show();
+		await waitForRaf();
+		target.remove();
+		vi.mocked(gsap.to).mockClear();
+
+		el.hide();
+		await waitForRaf();
+
+		expect(gsap.to).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ autoAlpha: 0, scale: 0.92 })
+		);
+		expect(el.open).toBe(false);
+	});
+
+	it('captura la superficie interna real de un FAB para el morph', async () => {
+		const fab = document.createElement('moni-fab');
+		document.body.appendChild(fab);
+		await (fab as HTMLElement & { updateComplete: Promise<unknown> }).updateComplete;
+		const button = fab.shadowRoot?.querySelector('button') as HTMLButtonElement;
+		button.style.backgroundColor = 'rgb(103, 80, 164)';
+		button.style.borderRadius = '20px';
+		button.style.boxShadow = 'rgba(0, 0, 0, 0.2) 0px 2px 6px';
+		button.getBoundingClientRect = () => new DOMRect(280, 640, 56, 56);
+
+		const state = (el as unknown as {
+			_getTargetState: (target: HTMLElement) => {
+				rect: DOMRect;
+				backgroundColor: string;
+				borderRadius: string;
+				boxShadow: string;
+			};
+		})._getTargetState(fab);
+
+		expect(state.rect.x).toBe(280);
+		expect(state.rect.width).toBe(56);
+		expect(state.backgroundColor).toBe('rgb(103, 80, 164)');
+		expect(state.borderRadius).toBe('20px');
+		expect(state.boxShadow).toContain('2px 6px');
+		fab.remove();
+	});
+
+	it('captura todo el contenido compuesto del trigger interno de un FAB Menu', async () => {
+		const menu = document.createElement('moni-fab-menu') as HTMLElement & {
+			icon: string;
+			updateComplete: Promise<unknown>;
+		};
+		menu.icon = 'add';
+		document.body.appendChild(menu);
+		await menu.updateComplete;
+		const trigger = menu.shadowRoot?.querySelector('.trigger') as HTMLElement & { updateComplete: Promise<unknown> };
+		await trigger.updateComplete;
+
+		const visual = (el as unknown as {
+			_resolveVisualTarget: (target: HTMLElement) => HTMLElement;
+		})._resolveVisualTarget(menu);
+		visual.getBoundingClientRect = () => new DOMRect(20, 30, 56, 56);
+		const snapshot = (el as unknown as {
+			_createTargetSnapshot: (target: HTMLElement, rect: DOMRect) => HTMLElement;
+		})._createTargetSnapshot(visual, visual.getBoundingClientRect());
+
+		expect(snapshot.textContent).toContain('add');
+		expect(snapshot.style.width).toBe('56px');
+		expect(snapshot.querySelectorAll('*').length).toBeGreaterThan(1);
+		expect((snapshot.firstElementChild as HTMLElement).style.backgroundColor).toBe('transparent');
+		expect((snapshot.firstElementChild as HTMLElement).style.transform).toBe('none');
+		expect((snapshot.firstElementChild as HTMLElement).style.whiteSpace).toBe('nowrap');
+		menu.remove();
+	});
+
+	it('carga inmediatamente las imágenes incluidas en el snapshot', () => {
+		const card = document.createElement('button');
+		const image = document.createElement('img');
+		image.loading = 'lazy';
+		image.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg"/>';
+		card.appendChild(image);
+		const snapshot = (el as unknown as {
+			_createTargetSnapshot: (target: HTMLElement, rect: DOMRect) => HTMLElement;
+		})._createTargetSnapshot(card, new DOMRect(0, 0, 240, 140));
+
+		expect(snapshot.querySelector('img')?.loading).toBe('eager');
+		expect(snapshot.querySelector('img')?.decoding).toBe('sync');
+	});
+
+	it('descompone rotación y escala del transform vivo del target', () => {
+		const transformed = document.createElement('button');
+		transformed.style.transform = 'matrix(1.195128, 0.104587, -0.104587, 1.195128, 80, 0)';
+		document.body.appendChild(transformed);
+		const state = (el as unknown as {
+			_readTransformState: (target: HTMLElement) => { rotation: number; scaleX: number; scaleY: number };
+		})._readTransformState(transformed);
+
+		expect(state.rotation).toBeCloseTo(5, 1);
+		expect(state.scaleX).toBeCloseTo(1.2, 1);
+		expect(state.scaleY).toBeCloseTo(1.2, 1);
+		transformed.remove();
+	});
+
+	it('convierte coordenadas del viewport al canvas transformado', () => {
+		const canvas = document.createElement('div');
+		canvas.className = 'lab-canvas';
+		canvas.style.transform = 'scale(0.5)';
+		canvas.getBoundingClientRect = () => new DOMRect(10, 20, 200, 300);
+		document.body.appendChild(canvas);
+		canvas.appendChild(el);
+
+		const local = (el as unknown as {
+			_toPanelCoordinateRect: (rect: DOMRect) => DOMRect;
+		})._toPanelCoordinateRect(new DOMRect(60, 70, 20, 30));
+
+		expect(local.x).toBe(100);
+		expect(local.y).toBe(100);
+		expect(local.width).toBe(40);
+		expect(local.height).toBe(60);
+		canvas.remove();
 	});
 
 	it('alterna el estado open cuando se llama a toggle()', async () => {
@@ -238,7 +408,7 @@ describe('moni-morph-modal', () => {
 		getNodes.mockRestore();
 	});
 
-	it('ejecuta la animación FLIP de label al cerrar cuando morph-label es true', async () => {
+	it('no ejecuta el morph de texto legado al cerrar cuando morph-label es true', async () => {
 		(el as unknown as { _hasHeader: boolean })._hasHeader = true;
 		el.morphLabel = true;
 		await el.updateComplete;
@@ -254,7 +424,8 @@ describe('moni-morph-modal', () => {
 		el.hide();
 		await waitForRaf();
 
-		expect(closeSpy).toHaveBeenCalled();
+		expect(closeSpy).not.toHaveBeenCalled();
+		expect(el.shadowRoot?.querySelector('.morph-text, .morph-icon, .morph-target-snapshot')).toBeNull();
 		closeSpy.mockRestore();
 	});
 

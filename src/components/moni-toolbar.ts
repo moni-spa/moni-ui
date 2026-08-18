@@ -65,7 +65,9 @@ export class MoniToolbar extends MoniElement {
 			:host {
 				display: block;
 				position: relative;
-				z-index: var(--z-index-toolbar, 1000);
+				/* Participate in the local surface stack. A four-digit default
+				   allowed toolbars to paint above modal sheets and dialogs. */
+				z-index: var(--z-index-toolbar, 10);
 			}
 
 			.container {

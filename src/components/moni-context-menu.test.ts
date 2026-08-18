@@ -60,6 +60,22 @@ describe('moni-context-menu (P3.5 — flip)', () => {
 		expect(menu?.hasAttribute('active')).toBe(true);
 	});
 
+	it('reserva ancho para la superficie y limita la coordenada al viewport', async () => {
+		await el.updateComplete;
+		parent.dispatchEvent(new MouseEvent('contextmenu', {
+			bubbles: true,
+			clientX: window.innerWidth + 500,
+			clientY: 75
+		}));
+		await el.updateComplete;
+
+		const menu = el.shadowRoot?.querySelector('moni-menu');
+		const host = el.shadowRoot?.querySelector('.menu-host') as HTMLElement;
+		const x = Number(host.style.getPropertyValue('--_x').replace('px', ''));
+		expect(menu?.hasAttribute('no-wrap')).toBe(true);
+		expect(x).toBeLessThanOrEqual(window.innerWidth - 192 - 8);
+	});
+
 	it('cierra el menú al hacer clic en el documento', async () => {
 		await el.updateComplete;
 		const menu = el.shadowRoot?.querySelector(

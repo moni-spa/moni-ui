@@ -59,6 +59,22 @@ describe('moni-snackbar', () => {
 		await el.updateComplete;
 		const action = el.shadowRoot?.querySelector('[part="action"]');
 		expect(action?.textContent).toBe('Undo');
+		expect(action?.tagName).toBe('BUTTON');
+	});
+
+	it('emite action y se cierra al activar la acción', async () => {
+		el.action = 'Undo';
+		el.active = true;
+		await el.updateComplete;
+		let received = false;
+		el.addEventListener('action', () => (received = true));
+
+		(el.shadowRoot?.querySelector('[part="action"]') as HTMLButtonElement).click();
+		await el.updateComplete;
+
+		expect(received).toBe(true);
+		expect(el.active).toBe(false);
+		expect(el.hasAttribute('active')).toBe(false);
 	});
 
 	it('max-lines es 2 por defecto (especificación M3)', async () => {

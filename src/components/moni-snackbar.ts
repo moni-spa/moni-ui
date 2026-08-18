@@ -178,12 +178,25 @@ export class MoniSnackbar extends MoniElement {
 			}
 
 			.action {
+				appearance: none;
+				border: 0;
+				background: transparent;
+				padding: 0.5rem;
+				margin: -0.5rem;
+				border-radius: 999px;
+				font: inherit;
 				font-weight: 500;
 				text-transform: uppercase;
 				font-size: 0.875rem;
 				letter-spacing: 0.05em;
 				color: var(--inverse-primary);
 				white-space: nowrap;
+				cursor: pointer;
+			}
+
+			.action:focus-visible {
+				outline: 2px solid currentColor;
+				outline-offset: 2px;
 			}
 
 			@media only screen and (min-width: 993px) {
@@ -193,6 +206,16 @@ export class MoniSnackbar extends MoniElement {
 			}
 		`
 	];
+
+	private handleAction() {
+		this.active = false;
+		this.dispatchEvent(
+			new CustomEvent('action', {
+				bubbles: true,
+				composed: true
+			})
+		);
+	}
 
 	/**
 	 * Renderiza el snackbar con su mensaje y el botón de acción opcional.
@@ -215,7 +238,7 @@ export class MoniSnackbar extends MoniElement {
 			<slot name="icon"></slot>
 			<span class="max" part="text"><slot>${this.text}</slot></span>
 			${this.action
-				? html`<span class="action" part="action">${this.action}</span>`
+				? html`<button class="action" part="action" type="button" @click=${this.handleAction}>${this.action}</button>`
 				: ''}
 		</div>`;
 	}

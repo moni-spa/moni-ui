@@ -53,6 +53,7 @@ interface TargetState {
 	backgroundColor: string;
 	color: string;
 	borderRadius: string;
+	boxShadow: string;
 }
 
 /**
@@ -235,6 +236,10 @@ export class MoniMorphModal extends MoniElement {
 	@property({ type: Boolean, reflect: true, attribute: 'blur-content', converter: litBool })
 	blurContent = false;
 
+	/** Muestra en consola el origen, geometría y estrategia usada por cada morph. */
+	@property({ type: Boolean, reflect: true, converter: litBool })
+	debug = false;
+
 	@query('.panel') private _panel!: HTMLDivElement;
 	@query('.panel-inner') private _inner!: HTMLDivElement;
 	@query('.backdrop') private _backdrop!: HTMLDivElement;
@@ -250,6 +255,8 @@ export class MoniMorphModal extends MoniElement {
 	private _handlingOpenChange = false;
 	private _zIndex = 100;
 	private _morphEls: MorphElements = { text: null, icon: null };
+	private _targetSnapshot: HTMLElement | null = null;
+	private _originFallbacks: HTMLElement[] = [];
 	private static _openStack: MoniMorphModal[] = [];
 	private _targetStylesCache = new Map<HTMLElement, { opacity: string; color: string }>();
 
@@ -352,6 +359,7 @@ export class MoniMorphModal extends MoniElement {
 			console.warn('[moni-morph-modal] cannot show: target not found');
 			return;
 		}
+		this._captureOriginFallbacks(this._targetEl);
 
 		this._isAnimating = true;
 		
@@ -369,6 +377,7 @@ export class MoniMorphModal extends MoniElement {
 		this.style.setProperty('--_z-index', String(this._zIndex));
 		this.style.setProperty('--_backdrop-duration', '0.38s');
 		this.style.setProperty('--_backdrop-ease', 'cubic-bezier(0.15, 0.85, 0.2, 1)');
+		if (this._backdrop) gsap.set(this._backdrop, { clearProps: 'opacity,transition' });
 
 		// Fase "First": Ocultamos o cubrimos el trigger original según la configuración del desarrollador
 		this._hideTargetContent();
@@ -388,15 +397,16 @@ export class MoniMorphModal extends MoniElement {
 
 			// 1. "First": Calculamos el estado visual actual del trigger
 			const targetState = this._getTargetState(this._targetEl);
+			this._debugMorph('open', this._targetEl, 'target', [this._targetEl]);
 			const panel = this._panel;
 
 			// 2. "Invert": Posicionamos el modal como un clon visual exacto del trigger.
 			// Desactivamos la sombra y forzamos el color/borde para coincidir con el botón/FAB.
-			this._applyRect(panel, targetState.rect);
+			this._applyRect(panel, this._toPanelCoordinateRect(targetState.rect));
 			panel.style.backgroundColor = targetState.backgroundColor;
 			panel.style.color = targetState.color;
 			panel.style.borderRadius = targetState.borderRadius;
-			panel.style.boxShadow = 'none';
+			panel.style.boxShadow = targetState.boxShadow;
 			panel.style.zIndex = String(this._zIndex);
 			panel.style.visibility = 'visible';
 			panel.style.opacity = '1';
@@ -662,7 +672,6 @@ export class MoniMorphModal extends MoniElement {
 
 	hide(): void {
 		if (this._isAnimating || !this._visible) return;
-		if (!this._targetEl) return;
 
 		this._isAnimating = true;
 		this._panel.classList.add('is-animating');
@@ -676,10 +685,13 @@ export class MoniMorphModal extends MoniElement {
 		const body = this.shadowRoot!.querySelector('.body');
 		const footer = this.shadowRoot!.querySelector('footer');
 		const closeBtn = this.shadowRoot!.querySelector('.close-btn');
-		const fadeTargets = [body, footer, closeBtn].filter(Boolean) as HTMLElement[];
 		const headerWrapper = this.shadowRoot!.querySelector('.header-morph-wrapper') as HTMLElement;
+		const fadeTargets = [body, footer, closeBtn, headerWrapper].filter(Boolean) as HTMLElement[];
 
-		const targetBlur = this.blurContent ? 'blur(12px)' : 'blur(0px)';
+		// El contenido pierde definición al retirarse, evitando un corte plano
+		// antes de que la superficie comience su recorrido. `blurContent`
+		// conserva la variante más expresiva para quienes desean mayor intensidad.
+		const targetBlur = this.blurContent ? 'blur(12px)' : 'blur(6px)';
 		gsap.fromTo(
 			fadeTargets,
 			{ opacity: 1, filter: 'blur(0px)' },
@@ -690,14 +702,19 @@ export class MoniMorphModal extends MoniElement {
 				ease: 'power2.in',
 				onComplete: () => {
 					const panel = this._panel;
+					const closingTarget = this._resolveClosingTarget();
 
 					this._cleanupMorphElements();
 					const prefersReducedMotion = window.matchMedia(
 						'(prefers-reduced-motion: reduce)'
 					).matches;
-					let shouldMorph = this._shouldMorphLabel() && !prefersReducedMotion;
+					// El cierre usa un único snapshot compuesto. La ruta histórica que
+					// creaba `morph-text` y `morph-icon` por separado podía ejecutarse a
+					// la vez que el snapshot y dejar etiquetas flotando sobre el modal.
+					let shouldMorph = false;
 					const morphTargets: HTMLElement[] = [];
 					let source: any = null;
+					let destinationMorph: { element: HTMLElement; rect: DOMRect; source: HTMLElement } | null = null;
 
 					if (shouldMorph) {
 						this._animateLabelClose();
@@ -726,6 +743,25 @@ export class MoniMorphModal extends MoniElement {
 						if (morphTargets.length === 0) shouldMorph = false;
 					}
 
+					// Si el destino de cierre cambió, el contenido final debe ser una
+					// representación completa del target (no solamente su icono). Esto
+					// permite hacer morph hacia rich buttons, cards, imágenes y cualquier
+					// otra superficie compuesta.
+					if (closingTarget && !shouldMorph && !prefersReducedMotion) {
+						const visualTarget = this._resolveVisualTarget(closingTarget);
+						const destinationRect = visualTarget.getBoundingClientRect();
+						if (destinationRect.width > 0 && destinationRect.height > 0) {
+							// El contenido del trigger permanece oculto mientras el modal está
+							// abierto. Lo restauramos únicamente durante la captura para que el
+							// snapshot no herede opacity:0/color:transparent.
+							if (closingTarget === this._targetEl) this._restoreTargetContent();
+							const element = this._createTargetSnapshot(visualTarget, destinationRect);
+							if (closingTarget === this._targetEl) this._hideTargetContent();
+							element.style.opacity = '0';
+							destinationMorph = { element, rect: destinationRect, source: visualTarget };
+						}
+					}
+
 					if (shouldMorph && headerWrapper) {
 						headerWrapper.style.opacity = '0';
 					}
@@ -734,10 +770,41 @@ export class MoniMorphModal extends MoniElement {
 						props: 'backgroundColor,borderRadius,color,boxShadow'
 					});
 					const morphState = Flip.getState(morphTargets, {
-						props: 'color,fontSize,fontWeight,lineHeight'
+						props: 'color,fontSize,fontWeight,lineHeight,opacity'
 					});
 
-					const targetState = this._getTargetState(this._targetEl!);
+					if (!closingTarget) {
+						gsap.to(this._backdrop, {
+							opacity: 0,
+							duration: prefersReducedMotion ? 0.01 : 0.22,
+							ease: 'power2.in'
+						});
+						gsap.to(panel, {
+							autoAlpha: 0,
+							scale: 0.92,
+							duration: prefersReducedMotion ? 0.01 : 0.22,
+							ease: 'power2.in',
+							overwrite: true,
+							onComplete: () => {
+								gsap.set(panel, { clearProps: 'transform' });
+								this._finishHide(fadeTargets, headerWrapper);
+							}
+						});
+						return;
+					}
+
+					const targetState = this._getTargetState(closingTarget);
+					if (destinationMorph) {
+						this._runTargetMorphTimeline(
+							panel,
+							targetState,
+							destinationMorph,
+							fadeTargets,
+							headerWrapper,
+							prefersReducedMotion
+						);
+						return;
+					}
 					
 					let naturalSize: { width: number; height: number } | undefined;
 					if (this.autoSize) {
@@ -769,11 +836,11 @@ export class MoniMorphModal extends MoniElement {
 					panel.style.setProperty('--_panel-width', `${finalRect.width}px`);
 					panel.style.setProperty('--_panel-height', `${finalRect.height}px`);
 
-					this._applyRect(panel, targetState.rect);
+					this._applyRect(panel, this._toPanelCoordinateRect(targetState.rect));
 					panel.style.backgroundColor = targetState.backgroundColor;
 					panel.style.color = targetState.color;
 					panel.style.borderRadius = targetState.borderRadius;
-					panel.style.boxShadow = 'none';
+					panel.style.boxShadow = targetState.boxShadow;
 
 					if (shouldMorph && source) {
 						if (this._morphEls.text && source.text) {
@@ -793,38 +860,17 @@ export class MoniMorphModal extends MoniElement {
 								window.getComputedStyle(source.icon.element).color || 'inherit';
 						}
 					}
-
 					Flip.from(state, {
 						targets: panel,
 						duration: 0.3,
 						ease: 'morph-close',
 						zIndex: this._zIndex,
-						onComplete: () => {
-							panel.style.visibility = 'hidden';
-							panel.style.opacity = '0';
-							panel.style.pointerEvents = 'none';
-
-							this._visible = false;
-							this._handlingOpenChange = true;
-							this.open = false;
-							this._handlingOpenChange = false;
-							this._isAnimating = false;
-							this._panel.classList.remove('is-animating');
-							this._panel.style.removeProperty('--_panel-width');
-							this._panel.style.removeProperty('--_panel-height');
-							this._cleanupMorphElements();
-							this._restoreTargetContent();
-							
-							gsap.set(fadeTargets, { clearProps: 'opacity,transform,filter' });
-							if (headerWrapper) headerWrapper.style.opacity = '1';
-							this.style.removeProperty('z-index');
-							this.style.removeProperty('--_z-index');
-							this.style.removeProperty('--_backdrop-duration');
-							this.style.removeProperty('--_backdrop-ease');
-
-							const idx = MoniMorphModal._openStack.indexOf(this);
-							if (idx > -1) MoniMorphModal._openStack.splice(idx, 1);
-						}
+						onComplete: () => this._finishHide(fadeTargets, headerWrapper)
+					});
+					gsap.to(this._backdrop, {
+						opacity: 0,
+						duration: 0.3,
+						ease: 'power2.inOut'
 					});
 
 					if (morphTargets.length > 0) {
@@ -845,6 +891,325 @@ export class MoniMorphModal extends MoniElement {
 				}
 			}
 		);
+	}
+
+	private _runTargetMorphTimeline(
+		panel: HTMLElement,
+		target: TargetState,
+		destination: { element: HTMLElement; rect: DOMRect; source: HTMLElement },
+		fadeTargets: HTMLElement[],
+		headerWrapper: HTMLElement | null,
+		prefersReducedMotion: boolean
+	): void {
+		const current = this._toPanelCoordinateRect(panel.getBoundingClientRect());
+		const targetRect = this._toPanelCoordinateRect(target.rect);
+		const destinationRect = this._toPanelCoordinateRect(destination.rect);
+		const destinationContent = destination.element;
+		const activeTargetAnimations = destination.source.getAnimations?.({ subtree: true }) ?? [];
+		const remainingTargetMotion = activeTargetAnimations.reduce((remaining, animation) => {
+			const timing = animation.effect?.getComputedTiming();
+			const endTime = typeof timing?.endTime === 'number' ? timing.endTime : 0;
+			const currentTime = typeof animation.currentTime === 'number' ? animation.currentTime : 0;
+			return Math.max(remaining, Math.max(0, endTime - currentTime) / 1000);
+		}, 0);
+		const morphDuration = Math.min(1.2, Math.max(0.46, remainingTargetMotion));
+		const start = {
+			x: current.left + current.width / 2,
+			y: current.top + current.height / 2
+		};
+		const end = {
+			x: targetRect.left + targetRect.width / 2,
+			y: targetRect.top + targetRect.height / 2
+		};
+		const dx = end.x - start.x;
+		const dy = end.y - start.y;
+		const distance = Math.hypot(dx, dy) || 1;
+		// En una Bézier cuadrática el desplazamiento máximo visible equivale
+		// aproximadamente a la mitad del offset del control. 0.72 produce una
+		// curva expresiva visible (~36% de la distancia) sin formar un bucle.
+		const arc = Math.min(360, Math.max(48, distance * 0.72));
+		const perpendicular = { x: -dy / distance, y: dx / distance };
+		const midpoint = { x: (start.x + end.x) / 2, y: (start.y + end.y) / 2 };
+		const viewportCenter = this._toPanelCoordinateRect(
+			new DOMRect(window.innerWidth / 2, window.innerHeight / 2, 0, 0)
+		);
+		const candidates = [1, -1].map((direction) => ({
+			x: midpoint.x + perpendicular.x * arc * direction,
+			y: midpoint.y + perpendicular.y * arc * direction
+		}));
+		const centerDistance = (point: { x: number; y: number }) =>
+			Math.abs(
+				Math.abs(dy) >= Math.abs(dx)
+					? point.x - viewportCenter.x
+					: point.y - viewportCenter.y
+			);
+		const control = centerDistance(candidates[0]) <= centerDistance(candidates[1])
+			? candidates[0]
+			: candidates[1];
+
+		Object.assign(destinationContent.style, {
+			position: 'absolute',
+			inset: '50% auto auto 50%',
+			width: `${destinationRect.width}px`,
+			height: `${destinationRect.height}px`,
+			transform: 'translate(-50%, -50%) scale(.78)',
+			color: window.getComputedStyle(destination.source).color || target.color,
+			opacity: '0'
+		});
+
+		if (prefersReducedMotion) {
+			panel.appendChild(destinationContent);
+			this._applyRect(panel, targetRect);
+			panel.style.backgroundColor = target.backgroundColor;
+			panel.style.color = target.color;
+			panel.style.borderRadius = target.borderRadius;
+			panel.style.boxShadow = target.boxShadow;
+			this._backdrop.style.opacity = '0';
+			destinationContent.style.opacity = '1';
+			this._finishHide(fadeTargets, headerWrapper);
+			return;
+		}
+
+		const timeline = gsap.timeline({
+			onComplete: () => {
+				gsap.set(panel, { clearProps: 'transform' });
+				this._finishHide(fadeTargets, headerWrapper);
+			}
+		});
+		panel.style.left = `${current.left}px`;
+		panel.style.top = `${current.top}px`;
+		panel.style.width = `${current.width}px`;
+		panel.style.height = `${current.height}px`;
+		const panelStartStyle = window.getComputedStyle(panel);
+		const panelStartVisual = {
+			backgroundColor: panelStartStyle.backgroundColor,
+			color: panelStartStyle.color,
+			borderRadius: panelStartStyle.borderRadius,
+			boxShadow: panelStartStyle.boxShadow
+		};
+		// GSAP es el único propietario de la opacidad durante el recorrido.
+		// La transición CSS del estado `.open` produciría un segundo easing y
+		// haría que el scrim pareciera desaparecer al final de golpe.
+		this._backdrop.style.transition = 'none';
+		this._backdrop.style.opacity = '1';
+		const motion = { progress: 0 };
+		let contentAttached = false;
+		if (this.debug) {
+			console.log('[moni-morph-modal] arc', { start, control, end, distance, arc, morphDuration });
+		}
+		timeline
+			.addLabel('morph', 0)
+			.to(motion, {
+				progress: 1,
+				duration: morphDuration,
+				ease: 'power2.inOut',
+				onUpdate: () => {
+					const progress = motion.progress;
+					const liveState = this._getTargetState(destination.source);
+					const liveRect = this._toPanelCoordinateRect(liveState.rect);
+					const liveTransform = this._readTransformState(destination.source);
+					const liveEnd = {
+						x: liveRect.left + liveRect.width / 2,
+						y: liveRect.top + liveRect.height / 2
+					};
+					const liveDx = liveEnd.x - start.x;
+					const liveDy = liveEnd.y - start.y;
+					const liveDistance = Math.hypot(liveDx, liveDy) || 1;
+					const liveArc = Math.min(360, Math.max(48, liveDistance * 0.72));
+					const livePerpendicular = { x: -liveDy / liveDistance, y: liveDx / liveDistance };
+					const liveMidpoint = {
+						x: (start.x + liveEnd.x) / 2,
+						y: (start.y + liveEnd.y) / 2
+					};
+					const liveCandidates = [1, -1].map((direction) => ({
+						x: liveMidpoint.x + livePerpendicular.x * liveArc * direction,
+						y: liveMidpoint.y + livePerpendicular.y * liveArc * direction
+					}));
+					const liveControl = centerDistance(liveCandidates[0]) <= centerDistance(liveCandidates[1])
+						? liveCandidates[0]
+						: liveCandidates[1];
+					// El backdrop comparte exactamente el playhead del arco. Se mantiene
+					// algo más presente al comienzo y luego se retira progresivamente.
+					this._backdrop.style.opacity = String(Math.max(0, 1 - progress));
+					const inverse = 1 - progress;
+					const centerX =
+						inverse * inverse * start.x +
+						2 * inverse * progress * liveControl.x +
+						progress * progress * liveEnd.x;
+					const centerY =
+						inverse * inverse * start.y +
+						2 * inverse * progress * liveControl.y +
+						progress * progress * liveEnd.y;
+					// La contracción modal mantiene su easing, pero cualquier mutación
+					// adicional del target se suma completa para seguirla en tiempo real.
+					const liveVisualWidth = destination.source.offsetWidth || liveRect.width;
+					const liveVisualHeight = destination.source.offsetHeight || liveRect.height;
+					const initialVisualWidth = destination.source.offsetWidth || targetRect.width;
+					const initialVisualHeight = destination.source.offsetHeight || targetRect.height;
+					const width =
+						current.width + (initialVisualWidth - current.width) * progress +
+						(liveVisualWidth - initialVisualWidth);
+					const height =
+						current.height + (initialVisualHeight - current.height) * progress +
+						(liveVisualHeight - initialVisualHeight);
+					panel.style.width = `${width}px`;
+					panel.style.height = `${height}px`;
+					gsap.set(panel, {
+						x: centerX - width / 2 - current.left,
+						y: centerY - height / 2 - current.top,
+						rotation: liveTransform.rotation * progress,
+						skewX: liveTransform.skewX * progress,
+						scaleX: 1 + (liveTransform.scaleX - 1) * progress,
+						scaleY: 1 + (liveTransform.scaleY - 1) * progress,
+						backgroundColor: gsap.utils.interpolate(
+							panelStartVisual.backgroundColor,
+							liveState.backgroundColor,
+							progress
+						),
+						color: gsap.utils.interpolate(panelStartVisual.color, liveState.color, progress),
+						borderRadius: gsap.utils.interpolate(
+							panelStartVisual.borderRadius,
+							liveState.borderRadius,
+							progress
+						),
+						boxShadow: gsap.utils.interpolate(
+							panelStartVisual.boxShadow,
+							liveState.boxShadow,
+							progress
+						)
+					});
+					// El contenido del target no debe flotar sobre el modal grande. Solo
+					// comienza a materializarse cuando posición y relación de aspecto ya
+					// se aproximan al destino, pero continúa viajando con la superficie.
+					const contentProgress = Math.max(0, Math.min(1, (progress - 0.6) / 0.4));
+					if (!contentAttached && contentProgress > 0) {
+						panel.appendChild(destinationContent);
+						contentAttached = true;
+					}
+					// Conservamos el layout nativo del target y escalamos toda su
+					// composición. Redimensionar el wrapper convertiría porcentajes
+					// computados en píxeles fijos y dejaría la imagen arriba a la izquierda.
+					destinationContent.style.width = `${liveVisualWidth}px`;
+					destinationContent.style.height = `${liveVisualHeight}px`;
+					const revealScale = 0.82 + contentProgress * 0.18;
+					gsap.set(destinationContent, {
+						opacity: contentProgress,
+						scaleX: (width / Math.max(1, liveVisualWidth)) * revealScale,
+						scaleY: (height / Math.max(1, liveVisualHeight)) * revealScale
+					});
+				}
+			}, 'morph')
+			.addLabel('target-fade')
+			.to(panel, {
+				autoAlpha: 0,
+				duration: 0.08,
+				ease: 'power1.out',
+				onStart: () => {
+					// Handoff atómico: el contenido real ocupa el lugar del snapshot
+					// antes de retirar la última superficie. Evita un frame vacío o una
+					// duplicación perceptible al finalizar el morph.
+					destinationContent.style.visibility = 'hidden';
+					this._restoreTargetContent();
+					panel.style.backgroundColor = 'transparent';
+					panel.style.boxShadow = 'none';
+					panel.style.borderColor = 'transparent';
+				}
+			}, `morph+=${morphDuration}`);
+	}
+
+	private _finishHide(fadeTargets: HTMLElement[], headerWrapper: HTMLElement | null): void {
+		const panel = this._panel;
+		panel.style.visibility = 'hidden';
+		panel.style.opacity = '0';
+		panel.style.pointerEvents = 'none';
+		this._visible = false;
+		this._handlingOpenChange = true;
+		this.open = false;
+		this._handlingOpenChange = false;
+		this._isAnimating = false;
+		panel.classList.remove('is-animating');
+		panel.style.removeProperty('--_panel-width');
+		panel.style.removeProperty('--_panel-height');
+		this._cleanupMorphElements();
+		this._restoreTargetContent();
+		gsap.set(fadeTargets, { clearProps: 'opacity,transform,filter' });
+		if (headerWrapper) headerWrapper.style.opacity = '1';
+		this.style.removeProperty('z-index');
+		this.style.removeProperty('--_z-index');
+		this.style.removeProperty('--_backdrop-duration');
+		this.style.removeProperty('--_backdrop-ease');
+		// Conservamos opacity:0 hasta la próxima apertura. Limpiarla aquí puede
+		// producir un flash de scrim antes de que Lit retire la clase `.open`.
+		const idx = MoniMorphModal._openStack.indexOf(this);
+		if (idx > -1) MoniMorphModal._openStack.splice(idx, 1);
+	}
+
+	private _captureOriginFallbacks(origin: HTMLElement): void {
+		this._originFallbacks = [];
+		let current: HTMLElement | null = this._getComposedParent(origin);
+		while (current && current !== document.body && current !== document.documentElement) {
+			this._originFallbacks.push(current);
+			current = this._getComposedParent(current);
+		}
+	}
+
+	private _getComposedParent(el: HTMLElement): HTMLElement | null {
+		if (el.parentElement) return el.parentElement;
+		const root = el.getRootNode();
+		return root instanceof ShadowRoot ? (root.host as HTMLElement) : null;
+	}
+
+	private _resolveClosingTarget(): HTMLElement | null {
+		if (this.target) this._resolveTarget();
+		const candidates = [this._targetEl, ...this._originFallbacks].filter(
+			(candidate, index, all): candidate is HTMLElement => !!candidate && all.indexOf(candidate) === index
+		);
+		const resolved = candidates.find((candidate) => this._isUsableClosingTarget(candidate)) ?? null;
+		const strategy = !resolved ? 'fade' : resolved === this._targetEl ? 'target' : 'ancestor';
+		this._debugMorph('close', resolved, strategy, candidates);
+		return resolved;
+	}
+
+	private _debugMorph(
+		phase: 'open' | 'close',
+		resolved: HTMLElement | null,
+		strategy: 'target' | 'ancestor' | 'fade',
+		candidates: HTMLElement[]
+	): void {
+		if (!this.debug) return;
+		const rows = candidates.map((element, index) => {
+			const rect = element.getBoundingClientRect();
+			return {
+				index,
+				element: `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ''}`,
+				connected: element.isConnected,
+				usable: this._isUsableClosingTarget(element),
+				x: Math.round(rect.x),
+				y: Math.round(rect.y),
+				width: Math.round(rect.width),
+				height: Math.round(rect.height)
+			};
+		});
+		console.groupCollapsed(`[moni-morph-modal] ${phase} → ${strategy}`);
+		console.log('Origin:', this._targetEl);
+		console.log('Resolved morph target:', resolved);
+		console.table(rows);
+		console.groupEnd();
+	}
+
+	private _isUsableClosingTarget(el: HTMLElement | null): el is HTMLElement {
+		if (!el?.isConnected) return false;
+		const rect = el.getBoundingClientRect();
+		if (rect.width < 2 || rect.height < 2) return false;
+		if (rect.right <= 0 || rect.bottom <= 0 || rect.left >= window.innerWidth || rect.top >= window.innerHeight) return false;
+		let current: HTMLElement | null = el;
+		while (current && current !== document.body) {
+			const style = getComputedStyle(current);
+			if (style.display === 'none' || style.visibility === 'hidden' || style.contentVisibility === 'hidden') return false;
+			if (Number.parseFloat(style.opacity || '1') === 0 && !this._targetStylesCache.has(current)) return false;
+			current = this._getComposedParent(current);
+		}
+		return true;
 	}
 
 	toggle(): void {
@@ -887,6 +1252,11 @@ export class MoniMorphModal extends MoniElement {
 			if (parts.label) saveAndHide(parts.label as HTMLElement, 'opacity');
 			if (parts.icon) saveAndHide(parts.icon as HTMLElement, 'opacity');
 			if (parts.iconTrailing) saveAndHide(parts.iconTrailing as HTMLElement, 'opacity');
+		} else if (this._targetEl.tagName === 'MONI-FAB') {
+			const icon = this._targetEl.shadowRoot?.querySelector('.icon') as HTMLElement | null;
+			const label = this._targetEl.shadowRoot?.querySelector('.label') as HTMLElement | null;
+			if (icon) saveAndHide(icon, 'opacity');
+			if (label) saveAndHide(label, 'opacity');
 		} else {
 			saveAndHide(this._targetEl, 'color');
 			const icon = this._targetEl.querySelector('moni-icon, svg, [class*="icon"]');
@@ -920,6 +1290,11 @@ export class MoniMorphModal extends MoniElement {
 			if (parts.label) restore(parts.label as HTMLElement);
 			if (parts.icon) restore(parts.icon as HTMLElement);
 			if (parts.iconTrailing) restore(parts.iconTrailing as HTMLElement);
+		} else if (this._targetEl.tagName === 'MONI-FAB') {
+			const icon = this._targetEl.shadowRoot?.querySelector('.icon') as HTMLElement | null;
+			const label = this._targetEl.shadowRoot?.querySelector('.label') as HTMLElement | null;
+			if (icon) restore(icon);
+			if (label) restore(label);
 		} else {
 			restore(this._targetEl);
 			const icon = this._targetEl.querySelector('moni-icon, svg, [class*="icon"]');
@@ -960,6 +1335,10 @@ export class MoniMorphModal extends MoniElement {
 	// =========================================================================
 
 	private _cleanupMorphElements(): void {
+		if (this._targetSnapshot) {
+			this._targetSnapshot.remove();
+			this._targetSnapshot = null;
+		}
 		if (this._morphEls.text) {
 			this._morphEls.text.remove();
 			this._morphEls.text = null;
@@ -1059,10 +1438,46 @@ export class MoniMorphModal extends MoniElement {
 	}
 
 	private _positionElement(el: HTMLElement, rect: DOMRect): void {
-		el.style.top = `${rect.top}px`;
-		el.style.left = `${rect.left}px`;
-		el.style.width = `${rect.width}px`;
-		el.style.height = `${rect.height}px`;
+		const localRect = this._toPanelCoordinateRect(rect);
+		el.style.top = `${localRect.top}px`;
+		el.style.left = `${localRect.left}px`;
+		el.style.width = `${localRect.width}px`;
+		el.style.height = `${localRect.height}px`;
+	}
+
+	private _toPanelCoordinateRect(rect: DOMRect): DOMRect {
+		const ancestor = this.parentElement?.closest<HTMLElement>(
+			'.lab-canvas, [data-morph-coordinate-space]'
+		);
+		if (!ancestor) return rect;
+		const transform = getComputedStyle(ancestor).transform;
+		if (!transform || transform === 'none') return rect;
+		let scaleX = 1;
+		let scaleY = 1;
+		if (typeof DOMMatrix !== 'undefined') {
+			const matrix = new DOMMatrix(transform);
+			scaleX = Math.hypot(matrix.a, matrix.b) || 1;
+			scaleY = Math.hypot(matrix.c, matrix.d) || 1;
+		} else {
+			const matrixMatch = transform.match(/^matrix\(([^)]+)\)$/);
+			const scaleMatch = transform.match(/^scale\(([^)]+)\)$/);
+			if (matrixMatch) {
+				const values = matrixMatch[1].split(',').map(Number);
+				scaleX = Math.hypot(values[0], values[1]) || 1;
+				scaleY = Math.hypot(values[2], values[3]) || 1;
+			} else if (scaleMatch) {
+				const values = scaleMatch[1].split(/[,\s]+/).map(Number);
+				scaleX = values[0] || 1;
+				scaleY = values[1] || scaleX;
+			}
+		}
+		const ancestorRect = ancestor.getBoundingClientRect();
+		return new DOMRect(
+			(rect.left - ancestorRect.left) / scaleX,
+			(rect.top - ancestorRect.top) / scaleY,
+			rect.width / scaleX,
+			rect.height / scaleY
+		);
 	}
 
 	private _getMoniButtonParts(): {
@@ -1262,18 +1677,10 @@ export class MoniMorphModal extends MoniElement {
 	}
 
 	private _getTargetState(el: HTMLElement): TargetState {
-		const rect = el.getBoundingClientRect();
-
-		// Para <moni-button> el botón visual vive dentro del shadow DOM;
-		// el host es transparente y sin border-radius, así que leemos
-		// los estilos del <button> interno para que la morph coincida.
-		let visualEl: Element = el;
-		if (el.tagName === 'MONI-BUTTON') {
-			const inner = el.shadowRoot?.querySelector('.button') as
-				| HTMLElement
-				| undefined;
-			if (inner) visualEl = inner;
-		}
+		// Los Web Components interactivos exponen un host transparente. El morph
+		// debe usar la superficie pintada real dentro de su Shadow DOM.
+		const visualEl = this._resolveVisualTarget(el);
+		const rect = visualEl.getBoundingClientRect();
 
 		let bg = window.getComputedStyle(visualEl).backgroundColor;
 
@@ -1306,8 +1713,123 @@ export class MoniMorphModal extends MoniElement {
 			rect,
 			backgroundColor: bg,
 			color: computed.color || 'var(--on-surface)',
-			borderRadius: computed.borderRadius || '1.25rem'
+			borderRadius: computed.borderRadius || '1.25rem',
+			boxShadow: computed.boxShadow || 'none'
 		};
+	}
+
+	private _resolveVisualTarget(el: HTMLElement): HTMLElement {
+		if (el.tagName === 'MONI-BUTTON') {
+			return (el.shadowRoot?.querySelector('.button') as HTMLElement | null) ?? el;
+		}
+		if (el.tagName === 'MONI-FAB') {
+			return (el.shadowRoot?.querySelector('button') as HTMLElement | null) ?? el;
+		}
+		if (el.tagName === 'MONI-FAB-MENU') {
+			const trigger = el.shadowRoot?.querySelector('.trigger') as HTMLElement | null;
+			return (trigger?.shadowRoot?.querySelector('button') as HTMLElement | null) ?? trigger ?? el;
+		}
+		return el;
+	}
+
+	/**
+	 * Crea una copia visual inerte del árbol compuesto del target. Los `<slot>`
+	 * se sustituyen por sus nodos asignados, por lo que la captura incluye tanto
+	 * contenido light DOM como superficies internas de Web Components.
+	 */
+	private _createTargetSnapshot(source: HTMLElement, rect: DOMRect): HTMLElement {
+		this._targetSnapshot?.remove();
+		const snapshot = document.createElement('div');
+		snapshot.className = 'morph-target-snapshot';
+		snapshot.setAttribute('aria-hidden', 'true');
+		const clone = this._cloneComposedNode(source);
+		if (clone) {
+			snapshot.appendChild(clone);
+			// La geometría, el color y la elevación pertenecen al panel animado.
+			// Repetirlos en el snapshot crea una segunda píldora encima del morph.
+			// En medios visuales, en cambio, la propia superficie sí es contenido.
+			if (
+				clone instanceof HTMLElement &&
+				!['IMG', 'VIDEO', 'CANVAS', 'SVG', 'PICTURE'].includes(source.tagName)
+			) {
+				Object.assign(clone.style, {
+					background: 'transparent',
+					backgroundColor: 'transparent',
+					boxShadow: 'none',
+					borderColor: 'transparent',
+					outline: 'none',
+					position: 'relative',
+					inset: 'auto',
+					transform: 'none',
+					opacity: '1',
+					visibility: 'visible',
+					width: '100%',
+					height: '100%'
+				});
+				if (source.tagName === 'BUTTON') {
+					clone.style.whiteSpace = 'nowrap';
+					clone.querySelectorAll<HTMLElement>('span, [part~="label"]').forEach((child) => {
+						child.style.whiteSpace = 'nowrap';
+					});
+				}
+			}
+		}
+		Object.assign(snapshot.style, {
+			width: `${rect.width}px`,
+			height: `${rect.height}px`,
+			overflow: 'hidden',
+			pointerEvents: 'none'
+		});
+		this._targetSnapshot = snapshot;
+		return snapshot;
+	}
+
+	private _cloneComposedNode(source: Node): Node | null {
+		if (source.nodeType === Node.TEXT_NODE) return source.cloneNode(false);
+		if (!(source instanceof Element)) return null;
+
+		if (source instanceof HTMLSlotElement) {
+			const fragment = document.createDocumentFragment();
+			const nodes = source.assignedNodes({ flatten: true });
+			for (const node of nodes.length ? nodes : Array.from(source.childNodes)) {
+				const child = this._cloneComposedNode(node);
+				if (child) fragment.appendChild(child);
+			}
+			return fragment;
+		}
+
+		// No clonamos directamente un Custom Element con Shadow DOM: su
+		// constructor crearía una segunda sombra y duplicaría el render. Una
+		// superficie neutra recibe en cambio el árbol visual ya compuesto.
+		const clone = (source.shadowRoot
+			? document.createElement('div')
+			: source.cloneNode(false)) as HTMLElement;
+		if (source instanceof HTMLImageElement && clone instanceof HTMLImageElement) {
+			// El snapshot vive menos de medio segundo: no puede depender de que el
+			// lazy-loader observe nuevamente una imagen que ya estaba renderizada.
+			clone.loading = 'eager';
+			clone.decoding = 'sync';
+			if (source.currentSrc) clone.src = source.currentSrc;
+		}
+		clone.removeAttribute('id');
+		clone.removeAttribute('name');
+		clone.setAttribute('aria-hidden', 'true');
+		const computed = window.getComputedStyle(source);
+		for (let index = 0; index < computed.length; index += 1) {
+			const property = computed.item(index);
+			clone.style.setProperty(property, computed.getPropertyValue(property), computed.getPropertyPriority(property));
+		}
+
+		const children = source.shadowRoot
+			? Array.from(source.shadowRoot.childNodes).filter(
+				(node) => !(node instanceof HTMLStyleElement)
+			)
+			: Array.from(source.childNodes);
+		for (const node of children) {
+			const child = this._cloneComposedNode(node);
+			if (child) clone.appendChild(child);
+		}
+		return clone;
 	}
 
 	private _isColorTransparent(color: string | null | undefined): boolean {
@@ -1320,6 +1842,51 @@ export class MoniMorphModal extends MoniElement {
 			c.includes(',0)') ||
 			c.includes('/0)')
 		);
+	}
+
+	private _readTransformState(el: HTMLElement): {
+		rotation: number;
+		skewX: number;
+		scaleX: number;
+		scaleY: number;
+	} {
+		const transform = window.getComputedStyle(el).transform;
+		if (!transform || transform === 'none') {
+			return { rotation: 0, skewX: 0, scaleX: 1, scaleY: 1 };
+		}
+		try {
+			const values = transform.match(/matrix(?:3d)?\(([^)]+)\)/)?.[1]
+				.split(',')
+				.map((value) => Number.parseFloat(value.trim()));
+			let a: number;
+			let b: number;
+			let c: number;
+			let d: number;
+			if (values?.length === 6) {
+				[a, b, c, d] = values;
+			} else if (values?.length === 16) {
+				a = values[0];
+				b = values[1];
+				c = values[4];
+				d = values[5];
+			} else {
+				const matrix = new DOMMatrix(transform);
+				({ a, b, c, d } = matrix);
+			}
+			const scaleX = Math.hypot(a, b) || 1;
+			const determinant = a * d - b * c;
+			const scaleY = determinant / scaleX || 1;
+			return {
+				rotation: Math.atan2(b, a) * (180 / Math.PI),
+				skewX:
+					Math.atan2(a * c + b * d, scaleX * scaleX) *
+					(180 / Math.PI),
+				scaleX,
+				scaleY
+			};
+		} catch {
+			return { rotation: 0, skewX: 0, scaleX: 1, scaleY: 1 };
+		}
 	}
 
 	private _applyRect(el: HTMLElement, rect: DOMRect): void {

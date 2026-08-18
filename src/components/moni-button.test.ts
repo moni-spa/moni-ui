@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import './moni-button.js';
-import type { MoniButton } from './moni-button.js';
+import { MoniButton } from './moni-button.js';
 
 describe('moni-button', () => {
 	let el: MoniButton;
@@ -149,6 +148,13 @@ describe('moni-button', () => {
 			'button'
 		) as HTMLButtonElement;
 		expect(button.disabled).toBe(true);
+	});
+
+	it('usa la altura visual del tamaño como ancho de los botones circle', () => {
+		const cssText = String(MoniButton.styles).replace(/\s+/g, '');
+		expect(cssText).toContain(
+			'inline-size:var(--moni-button-height,var(--_button-visual-height))'
+		);
 	});
 
 	it('registra una advertencia de obsolescencia cuando se usa size="extra" (usar size="xlarge" según M3)', async () => {

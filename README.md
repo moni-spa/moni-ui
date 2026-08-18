@@ -98,7 +98,7 @@ El mapa completo se publica en `dist/cdn/importmap.json`. Los módulos comparten
 
 ## Guía del Componente Core: Botón Expresivo (`<moni-button>`) 🧩
 
-Moni UI incluye múltiples componentes (Carruseles, Selectores con Categorías, Formas vectoriales, etc.) cuya documentación detallada está disponible en [COMPONENTS.md](file:///c:/Users/MonitasNET/Desktop/Codigo/Moni/packages/moni-ui/docs/COMPONENTS.md). A continuación, se detalla el uso del componente base:
+Moni UI incluye documentación completa, API estructurada y referencias visuales en la [documentación de componentes](docs/README.md). Para agentes y LLM también están disponibles [llms.txt](docs/llms.txt) y [api.json](docs/api.json). A continuación se detalla el uso del componente base:
 
 ### Ejemplo de Uso:
 ```html
@@ -121,7 +121,7 @@ Moni UI incluye múltiples componentes (Carruseles, Selectores con Categorías, 
 - **`loading`**: Reemplaza el icono por un spinner indeterminado interactivo.
 
 > [!NOTE]
-> Para ver el listado completo de propiedades, ranuras (slots) y eventos del botón, o para aprender a usar otros componentes como `<moni-carousel>` y `<moni-select>`, consulta la [Guía de Componentes Individuales](file:///c:/Users/MonitasNET/Desktop/Codigo/Moni/packages/moni-ui/docs/COMPONENTS.md).
+> Para ver propiedades, slots, eventos, métodos, CSS Parts y capturas por variable, consulta la [ficha de Button](docs/components/button.md).
 
 ---
 
@@ -162,7 +162,7 @@ Puedes controlar el tema de color, densidad, fuentes y esquinas de forma reactiv
 
 ## Contribuir al Proyecto 🛠️
 
-¿Deseas agregar nuevos componentes web, ajustar estilos o reportar bugs? Lee nuestra [Guía de Contribución y Estándar de Código (CONTRIBUTING.md)](file:///c:/Users/MonitasNET/Desktop/Codigo/Moni/packages/moni-ui/CONTRIBUTING.md) para comprender el flujo de desarrollo, estándares Lit/TypeScript y convenciones Git.
+¿Deseas agregar nuevos componentes web, ajustar estilos o reportar bugs? Lee nuestra [Guía de Contribución y Estándar de Código](CONTRIBUTING.md) para comprender el flujo de desarrollo, estándares Lit/TypeScript y convenciones Git.
 
 ## Publicación 📦
 

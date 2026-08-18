@@ -214,7 +214,10 @@ export class MoniFileField extends MoniElement {
 	 * se muestra en su lugar el atributo `label` o un marcador de posición genérico.
 	 */
 	override render() {
-		const isActive = Boolean(this.value);
+		// The picker action is meaningful visible content, not a placeholder.
+		// Keep the label lifted so it cannot collide with buttonLabel.
+		const displayValue = this.value || this.buttonLabel;
+		const isActive = Boolean(displayValue);
 		const hasLeading = Boolean(this.icon);
 		const hasTrailing = Boolean(this.trailingIcon);
 		const fieldClasses = {
@@ -250,8 +253,8 @@ export class MoniFileField extends MoniElement {
 				type="text"
 				part="display"
 				readonly
-				placeholder=${this.buttonLabel}
-				.value=${this.value}
+				placeholder=""
+				.value=${displayValue}
 				?disabled=${this.disabled}
 				name=${ifDefined(this.name ? `${this.name}-display` : undefined)}
 				class=${isActive ? 'active' : ''}

@@ -286,8 +286,8 @@ export class MoniButton extends MoniElement {
 			.button.circle {
 				padding: 0 !important;
 				border-radius: 50%;
-				inline-size: var(--moni-button-height, 3.5rem);
-				min-inline-size: var(--moni-button-height, 3.5rem);
+				inline-size: var(--moni-button-height, var(--_button-visual-height));
+				min-inline-size: var(--moni-button-height, var(--_button-visual-height));
 				aspect-ratio: 1;
 			}
 			.button.round.icon-only {

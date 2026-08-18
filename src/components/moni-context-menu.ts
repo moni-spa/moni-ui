@@ -117,7 +117,12 @@ export class MoniContextMenu extends MoniElement {
 		e.preventDefault();
 		if (this._target) {
 			const rect = this._target.getBoundingClientRect();
-			this._x = e.clientX - rect.left;
+			const menuWidth = Math.min(192, window.innerWidth - 16);
+			const globalX = Math.min(
+				Math.max(8, e.clientX),
+				window.innerWidth - menuWidth - 8
+			);
+			this._x = globalX - rect.left;
 			this._y = e.clientY - rect.top;
 		} else {
 			this._x = e.clientX;
@@ -136,7 +141,6 @@ export class MoniContextMenu extends MoniElement {
 	 * colisiona con el borde del Viewport, invirtiendo top/bottom o left/right.
 	 */
 	private _maybeFlip() {
-		if (!this.flip) return;
 		const menu = this._menuEl?.shadowRoot?.querySelector('menu') as HTMLElement | null;
 		if (!menu) return;
 		const rect = menu.getBoundingClientRect();
@@ -144,6 +148,11 @@ export class MoniContextMenu extends MoniElement {
 		const vh = window.innerHeight;
 		const overflowsBottom = rect.bottom > vh;
 		const overflowsRight = rect.right > vw;
+		// Context menus must always remain horizontally reachable, regardless of
+		// whether placement flipping was requested.
+		if (overflowsRight) this._x = Math.max(8, this._x - (rect.right - vw) - 8);
+		if (rect.left < 8) this._x += 8 - rect.left;
+		if (!this.flip) return;
 		if (this.placement === 'bottom' && overflowsBottom) {
 			this._resolvedPlacement = 'top';
 		} else if (this.placement === 'top' && rect.top < 0) {
@@ -188,6 +197,8 @@ export class MoniContextMenu extends MoniElement {
 				position: absolute;
 				inset-inline-start: var(--_x, 0);
 				inset-block-start: var(--_y, 0);
+				inline-size: min(12rem, calc(100vw - 1rem));
+				min-inline-size: min(12rem, calc(100vw - 1rem));
 				z-index: 200;
 			}
 		`
@@ -218,6 +229,7 @@ export class MoniContextMenu extends MoniElement {
 		>
 			<moni-menu
 				placement=${effectivePlacement}
+				no-wrap
 				?active=${this._open}
 			>
 				<slot></slot>

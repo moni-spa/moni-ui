@@ -73,7 +73,7 @@ export class MoniTooltip extends MoniElement {
 
 	/**
 	 * Ubicación preferida relativa al ancla/activador.
-	 * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end'}
+	 * @type {'top' | 'top-start' | 'top-end' | 'bottom' | 'bottom-start' | 'bottom-end' | 'left' | 'right'}
 	 * @default 'top'
 	 */
 	@property({ reflect: true })
@@ -83,7 +83,13 @@ export class MoniTooltip extends MoniElement {
 		| 'top-end'
 		| 'bottom'
 		| 'bottom-start'
-		| 'bottom-end' = 'top';
+		| 'bottom-end'
+		| 'left'
+		| 'right' = 'top';
+
+	/** Si está activo, el tooltip conserva el ángulo visual del trigger. */
+	@property({ type: Boolean, attribute: 'rotate-with-target', reflect: true })
+	rotateWithTarget = false;
 
 	/**
 	 * Mapeo de tamaño opcional (usado por hojas de estilo internas para escalar fuente/relleno).
@@ -106,12 +112,33 @@ export class MoniTooltip extends MoniElement {
 	 * Mantiene fijo el contexto léxico para registrar/desregistrar limpiamente.
 	 */
 	private _docKeydown = (e: KeyboardEvent) => this._handleDocKeydown(e);
+	private _reposition = () => {
+		if (this._tooltipEl?.classList.contains('visible')) this._positionTooltip();
+	};
+	private _trackingFrame = 0;
+	private _popoverCloseTimer = 0;
+	private _trackTarget = () => {
+		if (!this._tooltipEl?.classList.contains('visible')) {
+			this._trackingFrame = 0;
+			return;
+		}
+		this._positionTooltip();
+		this._trackingFrame = requestAnimationFrame(this._trackTarget);
+	};
 	/**
 	 * Nombre de anclaje CSS (`anchor-name`) registrado en el activador padre para que el tooltip
 	 * pueda usar `position-anchor` para vincularse a él. Generado por instancia vía
 	 * `crypto.randomUUID()` cuando el posicionamiento de anclaje CSS está soportado.
 	 */
 	private _anchorName: string | null = null;
+
+	override firstUpdated(): void {
+		this._tooltipEl = this.shadowRoot?.querySelector('.tooltip') as HTMLElement | null;
+		// Prepara posición, vector de origen y escala antes de que pueda ocurrir
+		// la primera interacción. Así el primer hover comparte exactamente el
+		// mismo estado inicial que todos los siguientes.
+		this._positionTooltip();
+	}
 
 	/**
 	 * Hook de inicialización (Lit).
@@ -154,6 +181,8 @@ export class MoniTooltip extends MoniElement {
 			}
 		}
 		document.addEventListener('keydown', this._docKeydown);
+		window.addEventListener('resize', this._reposition);
+		document.addEventListener('scroll', this._reposition, true);
 	}
 
 	/**
@@ -173,6 +202,12 @@ export class MoniTooltip extends MoniElement {
 			}
 		}
 		document.removeEventListener('keydown', this._docKeydown);
+		window.removeEventListener('resize', this._reposition);
+		document.removeEventListener('scroll', this._reposition, true);
+		if (this._trackingFrame) cancelAnimationFrame(this._trackingFrame);
+		this._trackingFrame = 0;
+		if (this._popoverCloseTimer) window.clearTimeout(this._popoverCloseTimer);
+		this._popoverCloseTimer = 0;
 		super.disconnectedCallback();
 	}
 
@@ -185,9 +220,96 @@ export class MoniTooltip extends MoniElement {
 			this._tooltipEl = this.shadowRoot?.querySelector('.tooltip') as HTMLElement;
 		}
 		if (this._tooltipEl) {
+			if (this._popoverCloseTimer) window.clearTimeout(this._popoverCloseTimer);
+			this._popoverCloseTimer = 0;
+			try {
+				if (!this._tooltipEl.matches(':popover-open')) this._tooltipEl.showPopover?.();
+			} catch {
+				// Fallback para navegadores sin Popover API o árboles aún desconectados.
+			}
+			this._tooltipEl.classList.remove('visible');
+			this._positionTooltip();
+			// Materializa el estado inicial ya posicionado antes de activar la
+			// transición. Sin este frame, el navegador puede interpolar desde las
+			// coordenadas antiguas del fallback/anchor.
+			void this._tooltipEl.offsetWidth;
 			this._tooltipEl.classList.add('visible');
+			if (!this._trackingFrame) {
+				this._trackingFrame = requestAnimationFrame(this._trackTarget);
+			}
 		}
 	};
+
+	private _positionTooltip(): void {
+		if (!this._target || !this._tooltipEl) return;
+		const target = this._target.getBoundingClientRect();
+		const width = this._tooltipEl.offsetWidth;
+		const height = this._tooltipEl.offsetHeight;
+		const gap = 8;
+		const edge = 8;
+		let left = target.left + (target.width - width) / 2;
+		let top = target.top - height - gap;
+
+		switch (this.position) {
+			case 'top-start':
+				left = target.left;
+				break;
+			case 'top-end':
+				left = target.right - width;
+				break;
+			case 'bottom':
+				top = target.bottom + gap;
+				break;
+			case 'bottom-start':
+				left = target.left;
+				top = target.bottom + gap;
+				break;
+			case 'bottom-end':
+				left = target.right - width;
+				top = target.bottom + gap;
+				break;
+			case 'left':
+				left = target.left - width - gap;
+				top = target.top + (target.height - height) / 2;
+				break;
+			case 'right':
+				left = target.right + gap;
+				top = target.top + (target.height - height) / 2;
+				break;
+		}
+
+		left = Math.min(window.innerWidth - width - edge, Math.max(edge, left));
+		top = Math.min(window.innerHeight - height - edge, Math.max(edge, top));
+		this._tooltipEl.style.left = `${left}px`;
+		this._tooltipEl.style.top = `${top}px`;
+		const originX = target.left + target.width / 2 - (left + width / 2);
+		const originY = target.top + target.height / 2 - (top + height / 2);
+		this._tooltipEl.style.setProperty('--_tooltip-origin-x', `${originX}px`);
+		this._tooltipEl.style.setProperty('--_tooltip-origin-y', `${originY}px`);
+		this._tooltipEl.style.setProperty(
+			'--_tooltip-target-rotation',
+			`${this.rotateWithTarget ? this._readTargetRotation() : 0}deg`
+		);
+		this._tooltipEl.style.transformOrigin = 'center';
+	}
+
+	private _readTargetRotation(): number {
+		if (!this._target) return 0;
+		const quadTarget = this._target as HTMLElement & {
+			getBoxQuads?: () => Array<{ p1: DOMPoint; p2: DOMPoint }>;
+		};
+		const quad = quadTarget.getBoxQuads?.()[0];
+		if (quad) {
+			return Math.atan2(quad.p2.y - quad.p1.y, quad.p2.x - quad.p1.x) * (180 / Math.PI);
+		}
+		const transform = window.getComputedStyle(this._target).transform;
+		const values = transform.match(/matrix(?:3d)?\(([^)]+)\)/)?.[1]
+			.split(',')
+			.map((value) => Number.parseFloat(value.trim()));
+		if (values?.length === 6) return Math.atan2(values[1], values[0]) * (180 / Math.PI);
+		if (values?.length === 16) return Math.atan2(values[1], values[0]) * (180 / Math.PI);
+		return 0;
+	}
 
 	/**
 	 * Retira la clase activa (`.visible`), desvaneciendo el globo con gracia.
@@ -198,6 +320,18 @@ export class MoniTooltip extends MoniElement {
 		}
 		if (this._tooltipEl) {
 			this._tooltipEl.classList.remove('visible');
+		}
+		if (this._trackingFrame) cancelAnimationFrame(this._trackingFrame);
+		this._trackingFrame = 0;
+		if (this._tooltipEl?.hidePopover) {
+			this._popoverCloseTimer = window.setTimeout(() => {
+				try {
+					if (this._tooltipEl?.matches(':popover-open')) this._tooltipEl.hidePopover();
+				} catch {
+					// El tooltip pudo desconectarse durante el cierre.
+				}
+				this._popoverCloseTimer = 0;
+			}, 180);
 		}
 	};
 
@@ -283,7 +417,9 @@ export class MoniTooltip extends MoniElement {
 				white-space: nowrap;
 				font-weight: 500;
 				opacity: 0;
-				transition: all var(--speed2);
+				transition:
+					opacity var(--speed2) cubic-bezier(0.2, 0, 0, 1),
+					transform var(--speed2) cubic-bezier(0.2, 0, 0, 1);
 				line-height: normal;
 				transform: translate(-50%, -100%) scale(0.9);
 				margin-block-start: var(--_space);
@@ -374,6 +510,59 @@ export class MoniTooltip extends MoniElement {
 			.tooltip.visible.bottom-end { transform: translate(0, 100%) scale(1); }
 			.tooltip.visible.left { transform: translate(-100%, -50%) scale(1); }
 			.tooltip.visible.right { transform: translate(100%, -50%) scale(1); }
+
+			/* CSS Anchor Positioning ya resuelve la alineación respecto al centro
+			   del trigger. Los translate del fallback absoluto no deben acumularse,
+			   pues desplazarían el tooltip media anchura hacia un costado. */
+			@supports (anchor-name: --moni-tooltip-test) {
+				.tooltip {
+					inset: auto;
+					margin: 0;
+					transform: scale(0.9);
+				}
+				.tooltip.top,
+				.tooltip.top-start,
+				.tooltip.top-end { margin-block-end: 0.5rem; }
+				.tooltip.bottom,
+				.tooltip.bottom-start,
+				.tooltip.bottom-end { margin-block-start: 0.5rem; }
+				.tooltip.left { margin-inline-end: 0.5rem; }
+				.tooltip.right { margin-inline-start: 0.5rem; }
+				.tooltip.visible,
+				.tooltip.visible.top,
+				.tooltip.visible.top-start,
+				.tooltip.visible.top-end,
+				.tooltip.visible.bottom,
+				.tooltip.visible.bottom-start,
+				.tooltip.visible.bottom-end,
+				.tooltip.visible.left,
+				.tooltip.visible.right { transform: scale(1); }
+			}
+
+			.tooltip.js-positioned {
+				position: fixed;
+				inset: auto;
+				margin: 0;
+				border: 0;
+				transform:
+					translate(var(--_tooltip-origin-x, 0), var(--_tooltip-origin-y, 0))
+					rotate(var(--_tooltip-target-rotation, 0deg))
+					scale(0.05);
+			}
+			.tooltip.js-positioned.visible,
+			.tooltip.js-positioned.visible.top,
+			.tooltip.js-positioned.visible.top-start,
+			.tooltip.js-positioned.visible.top-end,
+			.tooltip.js-positioned.visible.bottom,
+			.tooltip.js-positioned.visible.bottom-start,
+			.tooltip.js-positioned.visible.bottom-end,
+			.tooltip.js-positioned.visible.left,
+			.tooltip.js-positioned.visible.right {
+				transform:
+					translate(0, 0)
+					rotate(var(--_tooltip-target-rotation, 0deg))
+					scale(1);
+			}
 		`
 	];
 
@@ -398,11 +587,13 @@ export class MoniTooltip extends MoniElement {
 	override render() {
 		const classes = [
 			'tooltip',
+			'js-positioned',
 			this.position,
 			this.size
 		].filter(Boolean).join(' ');
 		return html`<div
 			class=${classes}
+			popover="manual"
 			role="tooltip"
 			id=${this.id || ''}
 			part="tooltip"

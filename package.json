@@ -44,6 +44,7 @@
   "files": [
     "dist",
     "src",
+    "docs",
     "custom-elements.json",
     "README.md",
     "package.json"
@@ -77,6 +78,10 @@
   },
   "scripts": {
     "build": "node scripts/build.js",
+    "docs": "node scripts/generate-docs.mjs",
+    "docs:capture": "node scripts/capture-docs.mjs",
+    "docs:all": "npm run build && npm run docs && npm run docs:capture",
+    "docs:check": "node scripts/generate-docs.mjs --check",
     "analyze": "custom-elements-manifest analyze",
     "test": "vitest run",
     "test:verbose": "vitest run --reporter=verbose",
