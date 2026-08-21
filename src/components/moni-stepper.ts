@@ -108,6 +108,10 @@ export class MoniStepper extends MoniElement {
 				stepElement.orientation = this.orientation;
 				stepElement.completed = stepIndex < this.current;
 				stepElement.active = stepIndex === this.current;
+				// El <ol> proyecta hosts <moni-step>, no <li>. Sin un rol explícito
+				// el árbol aplanado deja una lista cuyos hijos no son elementos de
+				// lista, y los lectores de pantalla no anuncian "1 de N".
+				stepElement.setAttribute('role', 'listitem');
 			});
 		});
 	}

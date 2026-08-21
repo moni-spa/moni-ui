@@ -171,3 +171,19 @@ describe('moni-textarea', () => {
 		expect(textarea.style.blockSize).toBe('');
 	});
 });
+
+describe('moni-textarea · nombre accesible', () => {
+	it('asocia la etiqueta con el textarea mediante for/id', async () => {
+		const el = document.createElement('moni-textarea') as MoniTextarea;
+		el.label = 'Comentario';
+		document.body.appendChild(el);
+		await el.updateComplete;
+
+		const control = el.shadowRoot?.querySelector('textarea');
+		const label = el.shadowRoot?.querySelector('label');
+		expect(control?.id).toBe('input');
+		expect(label?.getAttribute('for')).toBe('input');
+		expect(control?.nextElementSibling).toBe(label);
+		el.remove();
+	});
+})

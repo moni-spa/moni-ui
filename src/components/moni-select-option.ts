@@ -108,6 +108,25 @@ export class MoniSelectOption extends MoniElement {
 	 * Cuando `selected=true`, se renderiza un icono de marca de verificación principal (leading checkmark) a través de `<moni-icon name="check">`
 	 * en lugar del slot del icono principal, según la especificación de opciones de Select de M3.
 	 */
+	/*
+	 * Este `<li>` no declara `role="option"` ni `aria-selected`, aunque la ficha
+	 * del componente diga que sí.
+	 *
+	 * Hoy no afecta a nadie: `moni-select` proyecta a sus hijos en un
+	 * `<slot style="display:none">` y los usa sólo como fuente de datos —
+	 * redibuja la lista visible con sus propios `<li class="option-item">`—, así
+	 * que estos nodos no llegan al árbol de accesibilidad de Chrome (comprobado
+	 * con `Accessibility.getFullAXTree`: cero nodos). axe sí los reporta como
+	 * `listitem` porque no sigue el `display:none` a través del límite del slot.
+	 *
+	 * Añadir `role="option"` aquí empeora las cosas: exige un ancestro
+	 * `role="listbox"` y en el árbol aplanado queda el host sin rol entre medio,
+	 * con lo que aparece `aria-required-parent`. La corrección completa es marcar
+	 * como `listbox` los `<ul>` de las cinco rutas de render de `moni-select`
+	 * (desplegable, drilldown, submenu y hoja), mover `role="option"` al host y
+	 * dejar el `<li>` en `presentation`. Queda fuera de este cambio porque toca
+	 * el manejo de teclado del componente.
+	 */
 	override render() {
 		return html`<li
 			part="option"

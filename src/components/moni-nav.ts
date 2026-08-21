@@ -7,6 +7,7 @@
 
 import { html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { ifDefined } from 'lit/directives/if-defined.js';
 import { MoniElement, sharedStyles } from './_base/index.js';
 
 /**
@@ -341,9 +342,11 @@ export class MoniNav extends MoniElement {
 		return html`${scrim}<nav
 				class=${classes}
 				part="nav"
-				role=${isModalDrawer ? 'dialog' : undefined}
-				aria-modal=${isModalDrawer ? 'true' : undefined}
-				aria-expanded=${isModalDrawer ? (this.open ? 'true' : 'false') : undefined}
+				role=${ifDefined(isModalDrawer ? 'dialog' : undefined)}
+				aria-modal=${ifDefined(isModalDrawer ? 'true' : undefined)}
+				aria-expanded=${ifDefined(
+					isModalDrawer ? (this.open ? 'true' : 'false') : undefined
+				)}
 			>
 				<slot name="header"></slot>
 				<slot @slotchange=${this._propagateToItems}></slot>
