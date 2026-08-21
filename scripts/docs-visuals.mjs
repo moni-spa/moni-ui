@@ -1,5 +1,6 @@
 const behaviorOnly = new Set([
-  'closeOnClickOutside', 'closeOnEsc', 'morphLabelSelector', 'target', 'debug',
+	'closeOnClickOutside', 'closeOnEsc', 'morphLabelSelector', 'target', 'debug',
+	'fullscreen', 'responsiveFullscreen', 'fullscreenBreakpoint',
 ]);
 
 const animationOnly = new Set(['blurContent', 'coverTarget', 'hideTarget', 'morphLabel']);

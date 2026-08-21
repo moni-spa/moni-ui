@@ -184,25 +184,3 @@ Si es true, el modal calcula automáticamente su tamaño final basándose en el 
 ![moni-morph-modal — auto-size=false](../assets/moni-morph-modal/autoSize--false.png)
 
 ![moni-morph-modal — auto-size=true](../assets/moni-morph-modal/autoSize--true.png)
-
-### `fullscreen`
-
-Fuerza al modal expandido a ocupar todo el viewport.
-
-![moni-morph-modal — fullscreen=false](../assets/moni-morph-modal/fullscreen--false.png)
-
-![moni-morph-modal — fullscreen=true](../assets/moni-morph-modal/fullscreen--true.png)
-
-### `responsive-fullscreen`
-
-Activa fullscreen únicamente cuando el viewport no supera el breakpoint configurado.
-
-![moni-morph-modal — responsive-fullscreen=false](../assets/moni-morph-modal/responsiveFullscreen--false.png)
-
-![moni-morph-modal — responsive-fullscreen=true](../assets/moni-morph-modal/responsiveFullscreen--true.png)
-
-### `fullscreen-breakpoint`
-
-Ancho máximo del viewport, en píxeles, para aplicar responsive-fullscreen.
-
-![moni-morph-modal — fullscreen-breakpoint=default](../assets/moni-morph-modal/fullscreenBreakpoint--default.png)
