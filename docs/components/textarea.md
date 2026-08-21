@@ -96,7 +96,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `rows` | `rows` | `number` | `3` | Número por defecto de líneas de texto visibles. |
 | `autosize` | `autosize` | `boolean` | `false` | Hace que el textarea crezca y se reduzca según su contenido. |
 | `max-rows` | `maxRows` | `number` | `0` | Número máximo de filas visibles cuando `autosize` está activo. Cero no impone límite. |
-| `maxlength` | `maxlength` | `number \| null` | `null` | Número máximo de caracteres permitidos en el área de texto. También habilita la visualización del contador de caracteres a menos que `noCounter` sea true. |
+| `maxlength` | `maxlength` | `number \| null` | `null` | Número máximo de caracteres permitidos en el área de texto. También habilita la visualización del contador de caracteres a menos que `noCounter` sea true. |
 | `required` | `required` | `boolean` | `false` | Marca el campo como obligatorio y lo integra en la validación del formulario. |
 | `readonly` | `readonly` | `boolean` | `false` | Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. |
 | `minlength` | `minlength` | `number \| null` | `null` | Mínimo de caracteres aceptados. |
@@ -105,7 +105,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `loading` | `loading` | `boolean` | `false` | Si es true, muestra un indicador de carga (progreso circular) al final. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el área de texto. |
 | `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
+| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es true, establece el campo en un estado de error. |
 | `value` | `value` | `string` | `''` | El valor actual del área de texto. |
 | `placeholder` | `placeholder` | `string` | `''` | Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante. |

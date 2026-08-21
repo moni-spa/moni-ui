@@ -100,7 +100,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `suffix-button-icon` | `suffixButtonIcon` | `string` | `''` | Icono del botón interactivo ubicado al final del campo. |
 | `suffix-button-label` | `suffixButtonLabel` | `string` | `'Acción del campo'` | Etiqueta accesible del botón suffix. |
 | `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
+| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es true, establece el campo en un estado de error. |
 | `loading` | `loading` | `boolean` | `false` | Si es true, muestra un indicador de carga (progreso lineal/circular) al final. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo de texto. |
@@ -116,7 +116,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `max` | `max` | `string` | `''` | Valor máximo para `number` y los tipos de fecha y hora. |
 | `step` | `step` | `string` | `''` | Incremento para `number` y los tipos de fecha y hora. |
 | `pattern` | `pattern` | `string` | `''` | Expresión regular que debe cumplir el valor. |
-| `mask` | `mask` | `string` | `''` | Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `\|`, cuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT). |
+| `mask` | `mask` | `string` | `''` | Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `\|`, cuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT). |
 | `mask-alias` | `maskAlias` | `string` | `''` | Alias integrado de Inputmask, por ejemplo `email`, `datetime`, `numeric`, `currency` o `ip`. |
 | `mask-options` | `maskOptions` | `InputmaskOptions` | `{}` | Opciones avanzadas de Inputmask. También acepta JSON mediante el atributo `mask-options`. |
 
