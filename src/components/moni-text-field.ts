@@ -114,7 +114,7 @@ export class MoniTextField extends MoniElement {
 
 	/**
 	 * El tipo de input HTML nativo.
-	 * @type {'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search'}
+	 * @type {'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color'}
 	 * @default 'text'
 	 */
 	@property({ reflect: true })
@@ -125,7 +125,13 @@ export class MoniTextField extends MoniElement {
 		| 'number'
 		| 'tel'
 		| 'url'
-		| 'search' = 'text';
+		| 'search'
+		| 'date'
+		| 'time'
+		| 'datetime-local'
+		| 'month'
+		| 'week'
+		| 'color' = 'text';
 
 	/**
 	 * Nombre del icono inicial (leading) (Material Symbols).
@@ -201,6 +207,50 @@ export class MoniTextField extends MoniElement {
 	 * @type {string}
 	 */
 	@property({ reflect: true }) placeholder = '';
+
+	/*
+	 * Restricciones nativas.
+	 *
+	 * Antes ninguna de estas llegaba al `<input>` interno: el componente sólo
+	 * reenviaba `type`, `placeholder`, `disabled`, `value` y `name`. Eso dejaba
+	 * fuera el autocompletado de contraseñas, el teclado correcto en móvil, el
+	 * límite de caracteres y toda la validación de restricciones, así que cada
+	 * consumidor que necesitaba una de ellas tenía que renunciar al componente y
+	 * usar un input nativo.
+	 *
+	 * Se reflejan al host además de reenviarse para que `[required]` y compañía
+	 * puedan usarse como selectores CSS desde fuera.
+	 */
+
+	/** Marca el campo como obligatorio y lo integra en la validación del formulario. */
+	@property({ type: Boolean, reflect: true }) required = false;
+
+	/** Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. */
+	@property({ type: Boolean, reflect: true }) readonly = false;
+
+	/** Pista de autocompletado del navegador, por ejemplo `email` o `current-password`. */
+	@property({ reflect: true }) autocomplete = '';
+
+	/** Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`. */
+	@property({ reflect: true }) inputmode = '';
+
+	/** Máximo de caracteres aceptados. */
+	@property({ type: Number, reflect: true }) maxlength: number | null = null;
+
+	/** Mínimo de caracteres aceptados. */
+	@property({ type: Number, reflect: true }) minlength: number | null = null;
+
+	/** Valor mínimo para `number` y los tipos de fecha y hora. */
+	@property({ reflect: true }) min = '';
+
+	/** Valor máximo para `number` y los tipos de fecha y hora. */
+	@property({ reflect: true }) max = '';
+
+	/** Incremento para `number` y los tipos de fecha y hora. */
+	@property({ reflect: true }) step = '';
+
+	/** Expresión regular que debe cumplir el valor. */
+	@property({ reflect: true }) pattern = '';
 
 	/**
 	 * Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `|`,
@@ -334,11 +384,58 @@ export class MoniTextField extends MoniElement {
 			}
 			if (changed.has('disabled')) this._input.disabled = this.disabled;
 		}
+		this._syncValidity();
+	}
+
+	/**
+	 * Copia la validez del `<input>` interno al host.
+	 *
+	 * Reenviar `required` o `pattern` no basta: el navegador valida el
+	 * formulario mirando los controles asociados a él, y el que aquí participa
+	 * es el host, no el input del Shadow DOM. Sin este puente el campo se
+	 * pintaría como obligatorio pero el envío no se detendría.
+	 *
+	 * El tercer argumento ancla el globo de validación al input real, para que
+	 * el navegador tenga dónde mostrarlo y a dónde mover el foco.
+	 */
+/**
+	 * API de validación equivalente a la de un control nativo.
+	 *
+	 * Los elementos form-associated participan en la validación del formulario,
+	 * pero no reciben estos miembros automáticamente: hay que exponerlos para que
+	 * un `moni-text-field` se pueda interrogar igual que un `<input>`.
+	 */
+	get validity(): ValidityState {
+		return this._internals.validity;
+	}
+
+	get validationMessage(): string {
+		return this._internals.validationMessage;
+	}
+
+	checkValidity(): boolean {
+		return this._internals.checkValidity();
+	}
+
+	reportValidity(): boolean {
+		return this._internals.reportValidity();
+	}
+
+	private _syncValidity() {
+		if (!this._input || !this._internals?.setValidity) return;
+		this._internals.setValidity(
+			this._input.validity,
+			this._input.validationMessage,
+			this._input
+		);
 	}
 
 	private _handleInput(e: Event) {
 		const target = e.target as HTMLInputElement;
 		this.value = target.value;
+		// Al teclear, `value` no siempre cambia de referencia (máscaras), así que
+		// la validez se refresca aquí y no sólo desde `updated()`.
+		this._syncValidity();
 		emitMoniEvent(this, 'moni-input', {
 			detail: { value: this.value, unmaskedValue: this.unmaskedValue, originalEvent: e }
 		});
@@ -499,6 +596,16 @@ export class MoniTextField extends MoniElement {
 				type=${this.type}
 				placeholder=${placeholder}
 				?disabled=${this.disabled}
+				?required=${this.required}
+				?readonly=${this.readonly}
+				autocomplete=${ifDefined(this.autocomplete || undefined)}
+				inputmode=${ifDefined(this.inputmode || undefined)}
+				maxlength=${ifDefined(this.maxlength ?? undefined)}
+				minlength=${ifDefined(this.minlength ?? undefined)}
+				min=${ifDefined(this.min || undefined)}
+				max=${ifDefined(this.max || undefined)}
+				step=${ifDefined(this.step || undefined)}
+				pattern=${ifDefined(this.pattern || undefined)}
 				.value=${this.value}
 				name=${ifDefined(this.name || undefined)}
 				class=${isActive ? 'active' : ''}

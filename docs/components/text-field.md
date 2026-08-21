@@ -92,7 +92,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `variant` | `variant` | `'filled' \| 'outlined' \| 'underlined'` | `'filled'` | Variante visual del campo de texto. |
 | `size` | `size` | `'small' \| 'medium' \| 'large' \| 'extra'` | `'medium'` | Define las dimensiones del campo de texto. |
 | `shape` | `shape` | `'round' \| 'no-round'` | `'no-round'` | Forma del radio del borde (border-radius) del campo. |
-| `type` | `type` | `'text' \| 'password' \| 'email' \| 'number' \| 'tel' \| 'url' \| 'search'` | `'text'` | El tipo de input HTML nativo. |
+| `type` | `type` | `'text' \| 'password' \| 'email' \| 'number' \| 'tel' \| 'url' \| 'search' \| 'date' \| 'time' \| 'datetime-local' \| 'month' \| 'week' \| 'color'` | `'text'` | El tipo de input HTML nativo. |
 | `icon` | `icon` | `string` | `''` | Nombre del icono inicial (leading) (Material Symbols). |
 | `trailing-icon` | `trailingIcon` | `string` | `''` | Nombre del icono final (trailing) (Material Symbols). |
 | `prefix` | `prefix` | `string` | `''` | Prefijo de texto corto mostrado antes del valor del input. |
@@ -106,6 +106,16 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo de texto. |
 | `value` | `value` | `string` | `''` | El valor actual del input. |
 | `placeholder` | `placeholder` | `string` | `''` | Texto de marcador de posición (placeholder) mostrado cuando el input está vacío y la etiqueta es flotante. |
+| `required` | `required` | `boolean` | `false` | Marca el campo como obligatorio y lo integra en la validación del formulario. |
+| `readonly` | `readonly` | `boolean` | `false` | Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. |
+| `autocomplete` | `autocomplete` | `string` | `''` | Pista de autocompletado del navegador, por ejemplo `email` o `current-password`. |
+| `inputmode` | `inputmode` | `string` | `''` | Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`. |
+| `maxlength` | `maxlength` | `number \| null` | `null` | Máximo de caracteres aceptados. |
+| `minlength` | `minlength` | `number \| null` | `null` | Mínimo de caracteres aceptados. |
+| `min` | `min` | `string` | `''` | Valor mínimo para `number` y los tipos de fecha y hora. |
+| `max` | `max` | `string` | `''` | Valor máximo para `number` y los tipos de fecha y hora. |
+| `step` | `step` | `string` | `''` | Incremento para `number` y los tipos de fecha y hora. |
+| `pattern` | `pattern` | `string` | `''` | Expresión regular que debe cumplir el valor. |
 | `mask` | `mask` | `string` | `''` | Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `\|`, cuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT). |
 | `mask-alias` | `maskAlias` | `string` | `''` | Alias integrado de Inputmask, por ejemplo `email`, `datetime`, `numeric`, `currency` o `ip`. |
 | `mask-options` | `maskOptions` | `InputmaskOptions` | `{}` | Opciones avanzadas de Inputmask. También acepta JSON mediante el atributo `mask-options`. |
@@ -131,6 +141,8 @@ Este componente no declara slots públicos.
 - `formatWithMask(value: string, metadata = false): string |` — Método público formatWithMask.
 - `setMaskedValue(value: string): void` — Método público setMaskedValue.
 - `removeMask(): void` — Método público removeMask.
+- `checkValidity(): boolean` — Método público checkValidity.
+- `reportValidity(): boolean` — Método público reportValidity.
 
 ## CSS Parts
 
@@ -216,6 +228,18 @@ El tipo de input HTML nativo.
 
 ![moni-text-field — type=search](../assets/moni-text-field/type--search.png)
 
+![moni-text-field — type=date](../assets/moni-text-field/type--date.png)
+
+![moni-text-field — type=time](../assets/moni-text-field/type--time.png)
+
+![moni-text-field — type=datetime-local](../assets/moni-text-field/type--datetime-local.png)
+
+![moni-text-field — type=month](../assets/moni-text-field/type--month.png)
+
+![moni-text-field — type=week](../assets/moni-text-field/type--week.png)
+
+![moni-text-field — type=color](../assets/moni-text-field/type--color.png)
+
 ### `icon`
 
 Nombre del icono inicial (leading) (Material Symbols).
@@ -300,6 +324,70 @@ El valor actual del input.
 Texto de marcador de posición (placeholder) mostrado cuando el input está vacío y la etiqueta es flotante.
 
 ![moni-text-field — placeholder=default](../assets/moni-text-field/placeholder--default.png)
+
+### `required`
+
+Marca el campo como obligatorio y lo integra en la validación del formulario.
+
+![moni-text-field — required=false](../assets/moni-text-field/required--false.png)
+
+![moni-text-field — required=true](../assets/moni-text-field/required--true.png)
+
+### `readonly`
+
+Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`.
+
+![moni-text-field — readonly=false](../assets/moni-text-field/readonly--false.png)
+
+![moni-text-field — readonly=true](../assets/moni-text-field/readonly--true.png)
+
+### `autocomplete`
+
+Pista de autocompletado del navegador, por ejemplo `email` o `current-password`.
+
+![moni-text-field — autocomplete=default](../assets/moni-text-field/autocomplete--default.png)
+
+### `inputmode`
+
+Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`.
+
+![moni-text-field — inputmode=default](../assets/moni-text-field/inputmode--default.png)
+
+### `maxlength`
+
+Máximo de caracteres aceptados.
+
+![moni-text-field — maxlength=default](../assets/moni-text-field/maxlength--default.png)
+
+### `minlength`
+
+Mínimo de caracteres aceptados.
+
+![moni-text-field — minlength=default](../assets/moni-text-field/minlength--default.png)
+
+### `min`
+
+Valor mínimo para `number` y los tipos de fecha y hora.
+
+![moni-text-field — min=default](../assets/moni-text-field/min--default.png)
+
+### `max`
+
+Valor máximo para `number` y los tipos de fecha y hora.
+
+![moni-text-field — max=default](../assets/moni-text-field/max--default.png)
+
+### `step`
+
+Incremento para `number` y los tipos de fecha y hora.
+
+![moni-text-field — step=default](../assets/moni-text-field/step--default.png)
+
+### `pattern`
+
+Expresión regular que debe cumplir el valor.
+
+![moni-text-field — pattern=default](../assets/moni-text-field/pattern--default.png)
 
 ### `mask`
 

@@ -159,6 +159,15 @@ export class MoniSelect extends MoniElement {
 	@property({ type: Boolean, reflect: true }) disabled = false;
 
 	/**
+	 * Obliga a elegir una opción antes de enviar el formulario.
+	 *
+	 * El `<input>` visible es de sólo lectura, así que la validación nativa no
+	 * se aplica sobre él: la restricción se declara en el host con
+	 * `ElementInternals.setValidity`, que es lo que mira el formulario.
+	 */
+	@property({ type: Boolean, reflect: true }) required = false;
+
+	/**
 	 * Si es verdadero, muestra un indicador de carga (progreso lineal).
 	 * @type {boolean}
 	 */
@@ -281,6 +290,50 @@ export class MoniSelect extends MoniElement {
 
 	@query('slot') private _slot!: HTMLSlotElement;
 	@query('input') private _input!: HTMLInputElement;
+
+	/**
+	 * Declara la validez del host según `required`.
+	 *
+	 * No se puede delegar en el `<input>` interno porque es `readonly`, y un
+	 * campo de sólo lectura queda excluido de la validación de restricciones. El
+	 * ancla sigue siendo ese input para que el navegador tenga dónde mostrar el
+	 * mensaje y a dónde llevar el foco.
+	 */
+/**
+	 * API de validación equivalente a la de un control nativo.
+	 *
+	 * Los elementos form-associated participan en la validación del formulario,
+	 * pero no reciben estos miembros automáticamente: hay que exponerlos para que
+	 * un `moni-select` se pueda interrogar igual que un `<input>`.
+	 */
+	get validity(): ValidityState {
+		return this._internals.validity;
+	}
+
+	get validationMessage(): string {
+		return this._internals.validationMessage;
+	}
+
+	checkValidity(): boolean {
+		return this._internals.checkValidity();
+	}
+
+	reportValidity(): boolean {
+		return this._internals.reportValidity();
+	}
+
+	private _syncValidity() {
+		if (!this._internals?.setValidity) return;
+		if (this.required && !this.value) {
+			this._internals.setValidity(
+				{ valueMissing: true },
+				'Selecciona una opción.',
+				this._input ?? undefined
+			);
+			return;
+		}
+		this._internals.setValidity({});
+	}
 	@query('.dropdown-menu') private _menu?: HTMLElement;
 
 	static override styles = [
@@ -664,6 +717,7 @@ export class MoniSelect extends MoniElement {
 		if (changedProperties.has('value')) {
 			this._internals?.setFormValue?.(this.value);
 		}
+		this._syncValidity();
 		if (
 			changedProperties.has('_open') ||
 			changedProperties.has('_drilldownPath') ||

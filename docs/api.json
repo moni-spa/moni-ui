@@ -1,6 +1,6 @@
 {
   "package": "@moni-labs/moni-ui",
-  "generatedAt": "2026-08-21T19:45:25.278Z",
+  "generatedAt": "2026-08-21T20:39:02.697Z",
   "componentCount": 49,
   "components": [
     {
@@ -3827,6 +3827,15 @@
           "reflect": true
         },
         {
+          "name": "required",
+          "attribute": "required",
+          "type": "boolean",
+          "default": "false",
+          "description": "Obliga a elegir una opción antes de enviar el formulario.\n\nEl `<input>` visible es de sólo lectura, así que la validación nativa no\nse aplica sobre él: la restricción se declara en el host con\n`ElementInternals.setValidity`, que es lo que mira el formulario.",
+          "options": [],
+          "reflect": true
+        },
+        {
           "name": "loading",
           "attribute": "loading",
           "type": "boolean",
@@ -3972,7 +3981,18 @@
           "reflect": true
         }
       ],
-      "methods": [],
+      "methods": [
+        {
+          "name": "checkValidity",
+          "signature": "checkValidity(): boolean",
+          "description": "Método público checkValidity."
+        },
+        {
+          "name": "reportValidity",
+          "signature": "reportValidity(): boolean",
+          "description": "Método público reportValidity."
+        }
+      ],
       "events": [],
       "slots": [
         {
@@ -5264,7 +5284,7 @@
         {
           "name": "type",
           "attribute": "type",
-          "type": "'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search'",
+          "type": "'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color'",
           "default": "'text'",
           "description": "El tipo de input HTML nativo.",
           "options": [
@@ -5274,7 +5294,13 @@
             "number",
             "tel",
             "url",
-            "search"
+            "search",
+            "date",
+            "time",
+            "datetime-local",
+            "month",
+            "week",
+            "color"
           ],
           "reflect": true
         },
@@ -5396,6 +5422,96 @@
           "reflect": true
         },
         {
+          "name": "required",
+          "attribute": "required",
+          "type": "boolean",
+          "default": "false",
+          "description": "Marca el campo como obligatorio y lo integra en la validación del formulario.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "readonly",
+          "attribute": "readonly",
+          "type": "boolean",
+          "default": "false",
+          "description": "Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "autocomplete",
+          "attribute": "autocomplete",
+          "type": "string",
+          "default": "''",
+          "description": "Pista de autocompletado del navegador, por ejemplo `email` o `current-password`.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "inputmode",
+          "attribute": "inputmode",
+          "type": "string",
+          "default": "''",
+          "description": "Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "maxlength",
+          "attribute": "maxlength",
+          "type": "number | null",
+          "default": "null",
+          "description": "Máximo de caracteres aceptados.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "minlength",
+          "attribute": "minlength",
+          "type": "number | null",
+          "default": "null",
+          "description": "Mínimo de caracteres aceptados.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "min",
+          "attribute": "min",
+          "type": "string",
+          "default": "''",
+          "description": "Valor mínimo para `number` y los tipos de fecha y hora.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "max",
+          "attribute": "max",
+          "type": "string",
+          "default": "''",
+          "description": "Valor máximo para `number` y los tipos de fecha y hora.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "step",
+          "attribute": "step",
+          "type": "string",
+          "default": "''",
+          "description": "Incremento para `number` y los tipos de fecha y hora.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "pattern",
+          "attribute": "pattern",
+          "type": "string",
+          "default": "''",
+          "description": "Expresión regular que debe cumplir el valor.",
+          "options": [],
+          "reflect": true
+        },
+        {
           "name": "mask",
           "attribute": "mask",
           "type": "string",
@@ -5478,6 +5594,16 @@
           "name": "removeMask",
           "signature": "removeMask(): void",
           "description": "Método público removeMask."
+        },
+        {
+          "name": "checkValidity",
+          "signature": "checkValidity(): boolean",
+          "description": "Método público checkValidity."
+        },
+        {
+          "name": "reportValidity",
+          "signature": "reportValidity(): boolean",
+          "description": "Método público reportValidity."
         }
       ],
       "events": [
@@ -5677,6 +5803,42 @@
           "reflect": true
         },
         {
+          "name": "required",
+          "attribute": "required",
+          "type": "boolean",
+          "default": "false",
+          "description": "Marca el campo como obligatorio y lo integra en la validación del formulario.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "readonly",
+          "attribute": "readonly",
+          "type": "boolean",
+          "default": "false",
+          "description": "Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "minlength",
+          "attribute": "minlength",
+          "type": "number | null",
+          "default": "null",
+          "description": "Mínimo de caracteres aceptados.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "autocomplete",
+          "attribute": "autocomplete",
+          "type": "string",
+          "default": "''",
+          "description": "Pista de autocompletado del navegador.",
+          "options": [],
+          "reflect": true
+        },
+        {
           "name": "noCounter",
           "attribute": "no-counter",
           "type": "boolean",
@@ -5749,7 +5911,18 @@
           "reflect": true
         }
       ],
-      "methods": [],
+      "methods": [
+        {
+          "name": "checkValidity",
+          "signature": "checkValidity(): boolean",
+          "description": "Método público checkValidity."
+        },
+        {
+          "name": "reportValidity",
+          "signature": "reportValidity(): boolean",
+          "description": "Método público reportValidity."
+        }
+      ],
       "events": [],
       "slots": [],
       "cssParts": [

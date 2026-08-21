@@ -96,6 +96,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `size` | `size` | `'small' \| 'medium' \| 'large' \| 'extra'` | `'medium'` | Define las dimensiones del campo select. |
 | `shape` | `shape` | `'round' \| 'square' \| 'no-round'` | `'no-round'` | Forma (radio de borde) del campo. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo select. |
+| `required` | `required` | `boolean` | `false` | Obliga a elegir una opción antes de enviar el formulario.  El `<input>` visible es de sólo lectura, así que la validación nativa no se aplica sobre él: la restricción se declara en el host con `ElementInternals.setValidity`, que es lo que mira el formulario. |
 | `loading` | `loading` | `boolean` | `false` | Si es verdadero, muestra un indicador de carga (progreso lineal). |
 | `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
 | `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Reemplaza al texto de ayuda. |
@@ -122,7 +123,8 @@ No declara eventos propios.
 
 ## Métodos públicos
 
-No expone métodos públicos adicionales.
+- `checkValidity(): boolean` — Método público checkValidity.
+- `reportValidity(): boolean` — Método público reportValidity.
 
 ## CSS Parts
 
@@ -204,6 +206,18 @@ Deshabilita el campo select.
 ![moni-select — disabled=false](../assets/moni-select/disabled--false.png)
 
 ![moni-select — disabled=true](../assets/moni-select/disabled--true.png)
+
+### `required`
+
+Obliga a elegir una opción antes de enviar el formulario.
+
+El `<input>` visible es de sólo lectura, así que la validación nativa no
+se aplica sobre él: la restricción se declara en el host con
+`ElementInternals.setValidity`, que es lo que mira el formulario.
+
+![moni-select — required=false](../assets/moni-select/required--false.png)
+
+![moni-select — required=true](../assets/moni-select/required--true.png)
 
 ### `loading`
 

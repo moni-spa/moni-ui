@@ -254,3 +254,81 @@ describe('moni-text-field · nombre accesible', () => {
 		el.remove();
 	});
 })
+
+describe('moni-text-field · restricciones nativas', () => {
+	/*
+	 * El componente sólo reenviaba type/placeholder/disabled/value/name, así que
+	 * cualquier campo con `required` o `autocomplete` tenía que renunciar a
+	 * moni-ui y usar un input nativo.
+	 */
+	it('reenvía las restricciones al input interno', async () => {
+		const el = document.createElement('moni-text-field') as HTMLElement & {
+			updateComplete: Promise<unknown>;
+			[key: string]: unknown;
+		};
+		Object.assign(el, {
+			label: 'Correo',
+			type: 'email',
+			required: true,
+			autocomplete: 'email',
+			maxlength: 40,
+			minlength: 5,
+			pattern: '.+@.+',
+			inputmode: 'email'
+		});
+		document.body.appendChild(el);
+		await el.updateComplete;
+
+		const input = el.shadowRoot?.querySelector('input') as HTMLInputElement;
+		expect(input.required).toBe(true);
+		expect(input.getAttribute('autocomplete')).toBe('email');
+		expect(input.maxLength).toBe(40);
+		expect(input.minLength).toBe(5);
+		expect(input.getAttribute('pattern')).toBe('.+@.+');
+		expect(input.getAttribute('inputmode')).toBe('email');
+		el.remove();
+	});
+
+	it('acepta los tipos de fecha y hora', async () => {
+		const el = document.createElement('moni-text-field') as HTMLElement & {
+			type: string;
+			updateComplete: Promise<unknown>;
+		};
+		el.type = 'date';
+		document.body.appendChild(el);
+		await el.updateComplete;
+		expect(el.shadowRoot?.querySelector('input')?.getAttribute('type')).toBe('date');
+		el.remove();
+	});
+
+	it('publica la validez en el host para que el formulario la vea', async () => {
+		// jsdom no implementa checkValidity() en custom elements form-associated,
+		// así que se observa la llamada a setValidity. El bloqueo real del envío
+		// se verifica en navegador.
+		const calls: Array<Record<string, unknown>> = [];
+		const originalAttach = HTMLElement.prototype.attachInternals;
+		HTMLElement.prototype.attachInternals = function spy(this: HTMLElement) {
+			const internals = originalAttach.call(this);
+			const setValidity = internals.setValidity.bind(internals);
+			internals.setValidity = ((flags, message, anchor) => {
+				// ValidityState expone sus flags como getters del prototipo, así que un
+				// spread devolvería {}: hay que leerlas uña a uña.
+				calls.push({ valueMissing: flags?.valueMissing === true });
+				return setValidity(flags, message, anchor);
+			}) as typeof internals.setValidity;
+			return internals;
+		};
+		const el = document.createElement('moni-text-field') as HTMLElement & {
+			required: boolean;
+			updateComplete: Promise<unknown>;
+		};
+		HTMLElement.prototype.attachInternals = originalAttach;
+
+		el.required = true;
+		document.body.appendChild(el);
+		await el.updateComplete;
+
+		expect(calls.some((c) => c.valueMissing === true)).toBe(true);
+		el.remove();
+	});
+})

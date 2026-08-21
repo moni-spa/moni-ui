@@ -148,6 +148,24 @@ export class MoniTextarea extends MoniElement {
 	 */
 	@property({ type: Number, reflect: true }) maxlength: number | null = null;
 
+	/*
+	 * Restricciones nativas. Antes sólo `maxlength` llegaba al `<textarea>`
+	 * interno, así que un campo obligatorio o de sólo lectura obligaba a
+	 * abandonar el componente y usar un control nativo.
+	 */
+
+	/** Marca el campo como obligatorio y lo integra en la validación del formulario. */
+	@property({ type: Boolean, reflect: true }) required = false;
+
+	/** Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. */
+	@property({ type: Boolean, reflect: true }) readonly = false;
+
+	/** Mínimo de caracteres aceptados. */
+	@property({ type: Number, reflect: true }) minlength: number | null = null;
+
+	/** Pista de autocompletado del navegador. */
+	@property({ reflect: true }) autocomplete = '';
+
 	/**
 	 * Oculta la visualización del contador de caracteres cuando se establece `maxlength`.
 	 * @type {boolean}
@@ -266,6 +284,46 @@ export class MoniTextarea extends MoniElement {
 				changed.has('maxRows')
 			) this._resizeTextarea();
 		}
+		this._syncValidity();
+	}
+
+	/**
+	 * Copia la validez del `<textarea>` interno al host.
+	 *
+	 * El navegador valida mirando los controles asociados al formulario, y el
+	 * que participa es el host, no el control del Shadow DOM: sin este puente
+	 * `required` se pintaría pero no detendría el envío.
+	 */
+/**
+	 * API de validación equivalente a la de un control nativo.
+	 *
+	 * Los elementos form-associated participan en la validación del formulario,
+	 * pero no reciben estos miembros automáticamente: hay que exponerlos para que
+	 * un `moni-textarea` se pueda interrogar igual que un `<input>`.
+	 */
+	get validity(): ValidityState {
+		return this._internals.validity;
+	}
+
+	get validationMessage(): string {
+		return this._internals.validationMessage;
+	}
+
+	checkValidity(): boolean {
+		return this._internals.checkValidity();
+	}
+
+	reportValidity(): boolean {
+		return this._internals.reportValidity();
+	}
+
+	private _syncValidity() {
+		if (!this._input || !this._internals?.setValidity) return;
+		this._internals.setValidity(
+			this._input.validity,
+			this._input.validationMessage,
+			this._input
+		);
 	}
 
 	static override styles = [sharedStyles, fieldStyles, css`
@@ -361,8 +419,12 @@ export class MoniTextarea extends MoniElement {
 				part="input"
 				rows=${this.rows}
 				maxlength=${ifDefined(this.maxlength ?? undefined)}
+				minlength=${ifDefined(this.minlength ?? undefined)}
 				placeholder=${placeholder}
 				?disabled=${this.disabled}
+				?required=${this.required}
+				?readonly=${this.readonly}
+				autocomplete=${ifDefined(this.autocomplete || undefined)}
 				.value=${this.value}
 				name=${ifDefined(this.name || undefined)}
 				class=${isActive ? 'active' : ''}

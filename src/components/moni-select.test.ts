@@ -422,3 +422,37 @@ describe('moni-select · nombre accesible', () => {
 		el.remove();
 	});
 })
+
+describe('moni-select · required', () => {
+	/*
+	 * Su input visible es readonly y por tanto queda fuera de la validación de
+	 * restricciones, así que `required` se declara en el host.
+	 */
+	it('declara valueMissing mientras no haya valor', async () => {
+		// Igual que en text-field: jsdom no expone checkValidity() aquí.
+		const calls: Array<Record<string, unknown>> = [];
+		const originalAttach = HTMLElement.prototype.attachInternals;
+		HTMLElement.prototype.attachInternals = function spy(this: HTMLElement) {
+			const internals = originalAttach.call(this);
+			const setValidity = internals.setValidity.bind(internals);
+			internals.setValidity = ((flags, message, anchor) => {
+				calls.push({ valueMissing: flags?.valueMissing === true });
+				return setValidity(flags, message, anchor);
+			}) as typeof internals.setValidity;
+			return internals;
+		};
+		const el = document.createElement('moni-select') as MoniSelect;
+		HTMLElement.prototype.attachInternals = originalAttach;
+
+		el.required = true;
+		document.body.appendChild(el);
+		await el.updateComplete;
+		expect(calls.some((c) => c.valueMissing === true)).toBe(true);
+
+		calls.length = 0;
+		el.value = 'uno';
+		await el.updateComplete;
+		expect(calls.at(-1)).toEqual({ valueMissing: false });
+		el.remove();
+	});
+})

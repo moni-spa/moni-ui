@@ -4767,6 +4767,16 @@
             },
             {
               "kind": "field",
+              "name": "required",
+              "attribute": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Obliga a elegir una opción antes de enviar el formulario.\n\nEl `<input>` visible es de sólo lectura, así que la validación nativa no\nse aplica sobre él: la restricción se declara en el host con\n`ElementInternals.setValidity`, que es lo que mira el formulario."
+            },
+            {
+              "kind": "field",
               "name": "loading",
               "attribute": "loading",
               "type": {
@@ -4914,6 +4924,16 @@
               },
               "default": "''",
               "description": "Límite manual opcional para la altura del menú.\n\nAcepta cualquier longitud CSS válida, por ejemplo `240px`, `40vh` o\n`calc(100vh - 8rem)`. El valor nunca supera el límite automático calculado\nsegún el viewport, la posición del campo y el tope predeterminado de 75vh.\nUna cadena vacía conserva el cálculo automático."
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Método público checkValidity."
+            },
+            {
+              "kind": "method",
+              "name": "reportValidity",
+              "description": "Método público reportValidity."
             }
           ],
           "events": [],
@@ -6593,7 +6613,7 @@
               "name": "type",
               "attribute": "type",
               "type": {
-                "text": "'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search'"
+                "text": "'text' | 'password' | 'email' | 'number' | 'tel' | 'url' | 'search' | 'date' | 'time' | 'datetime-local' | 'month' | 'week' | 'color'"
               },
               "default": "'text'",
               "description": "El tipo de input HTML nativo."
@@ -6730,6 +6750,106 @@
             },
             {
               "kind": "field",
+              "name": "required",
+              "attribute": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Marca el campo como obligatorio y lo integra en la validación del formulario."
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "attribute": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`."
+            },
+            {
+              "kind": "field",
+              "name": "autocomplete",
+              "attribute": "autocomplete",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Pista de autocompletado del navegador, por ejemplo `email` o `current-password`."
+            },
+            {
+              "kind": "field",
+              "name": "inputmode",
+              "attribute": "inputmode",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`."
+            },
+            {
+              "kind": "field",
+              "name": "maxlength",
+              "attribute": "maxlength",
+              "type": {
+                "text": "number | null"
+              },
+              "default": "null",
+              "description": "Máximo de caracteres aceptados."
+            },
+            {
+              "kind": "field",
+              "name": "minlength",
+              "attribute": "minlength",
+              "type": {
+                "text": "number | null"
+              },
+              "default": "null",
+              "description": "Mínimo de caracteres aceptados."
+            },
+            {
+              "kind": "field",
+              "name": "min",
+              "attribute": "min",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Valor mínimo para `number` y los tipos de fecha y hora."
+            },
+            {
+              "kind": "field",
+              "name": "max",
+              "attribute": "max",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Valor máximo para `number` y los tipos de fecha y hora."
+            },
+            {
+              "kind": "field",
+              "name": "step",
+              "attribute": "step",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Incremento para `number` y los tipos de fecha y hora."
+            },
+            {
+              "kind": "field",
+              "name": "pattern",
+              "attribute": "pattern",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Expresión regular que debe cumplir el valor."
+            },
+            {
+              "kind": "field",
               "name": "mask",
               "attribute": "mask",
               "type": {
@@ -6812,6 +6932,16 @@
               "kind": "method",
               "name": "removeMask",
               "description": "Método público removeMask."
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Método público checkValidity."
+            },
+            {
+              "kind": "method",
+              "name": "reportValidity",
+              "description": "Método público reportValidity."
             }
           ],
           "events": [
@@ -7036,6 +7166,46 @@
             },
             {
               "kind": "field",
+              "name": "required",
+              "attribute": "required",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Marca el campo como obligatorio y lo integra en la validación del formulario."
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "attribute": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "description": "Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`."
+            },
+            {
+              "kind": "field",
+              "name": "minlength",
+              "attribute": "minlength",
+              "type": {
+                "text": "number | null"
+              },
+              "default": "null",
+              "description": "Mínimo de caracteres aceptados."
+            },
+            {
+              "kind": "field",
+              "name": "autocomplete",
+              "attribute": "autocomplete",
+              "type": {
+                "text": "string"
+              },
+              "default": "''",
+              "description": "Pista de autocompletado del navegador."
+            },
+            {
+              "kind": "field",
               "name": "noCounter",
               "attribute": "no-counter",
               "type": {
@@ -7113,6 +7283,16 @@
               },
               "default": "''",
               "description": "Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante."
+            },
+            {
+              "kind": "method",
+              "name": "checkValidity",
+              "description": "Método público checkValidity."
+            },
+            {
+              "kind": "method",
+              "name": "reportValidity",
+              "description": "Método público reportValidity."
             }
           ],
           "events": [],
