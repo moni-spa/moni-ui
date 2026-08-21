@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
+import { visualSafeName as safe, visualValues } from './docs-visuals.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const api = JSON.parse(fs.readFileSync(path.join(root, 'docs', 'api.json'), 'utf8'));
@@ -38,7 +39,7 @@ const children = {
   'moni-bottom-sheet': '<span slot="headline">Opciones</span><p>Contenido del bottom sheet.</p>',
   'moni-side-sheet': '<span slot="headline">Detalles</span><p>Contenido del side sheet.</p>',
   'moni-dialog': '<span slot="headline">Confirmar acción</span><p>¿Deseas continuar?</p><moni-button slot="actions">Aceptar</moni-button>',
-  'moni-morph-modal': '<span slot="header">Nuevo proyecto</span><p>Contenido del modal expresivo.</p>',
+  'moni-morph-modal': '<span slot="header">Nuevo proyecto</span><p>Crea un espacio para organizar las ideas, archivos y tareas de tu equipo.</p><div slot="footer"><moni-button variant="text">Cancelar</moni-button><moni-button variant="filled">Crear proyecto</moni-button></div>',
   'moni-context-menu': '<moni-menu-item>Copiar</moni-menu-item><moni-menu-item>Pegar</moni-menu-item>',
 };
 
@@ -48,7 +49,6 @@ const preferred = {
   open: true, active: true, checked: true, selected: true, expanded: true, show: true, visible: true,
 };
 const kebab = (name) => name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-const safe = (value) => String(value).replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'empty';
 const stripQuotes = (value) => String(value ?? '').replace(/^['"`]|['"`]$/g, '');
 const boolType = (prop) => prop.type === 'boolean' || /Boolean/.test(prop.type);
 
@@ -65,8 +65,7 @@ function defaultValue(prop) {
 
 function scenarios(component) {
   return component.properties.flatMap((prop) => {
-    if (!prop.attribute) return [];
-    const values = prop.options.length ? prop.options : boolType(prop) ? [false, true] : [defaultValue(prop)];
+    const values = visualValues(component, prop, defaultValue(prop));
     return values.map((value) => ({ prop, value, key: prop.options.length || boolType(prop) ? value : 'default' }));
   });
 }
@@ -80,8 +79,84 @@ function markup(component, scenario) {
     else if (value !== '' && value != null && !['styles'].includes(prop.name)) attrs.push(`${prop.attribute}="${String(value).replace(/"/g, '&quot;')}"`);
   }
   if (component.tag === 'moni-progress' && !attrs.some((item) => item.startsWith('value='))) attrs.push('value="62"');
-  if (['moni-dialog', 'moni-bottom-sheet', 'moni-side-sheet', 'moni-morph-modal', 'moni-menu', 'moni-context-menu', 'moni-fab-menu', 'moni-snackbar'].includes(component.tag) && scenario.prop.name !== 'open') attrs.push('open');
-  return `<${component.tag} ${attrs.join(' ')}>${children[component.tag] ?? ''}</${component.tag}>`;
+  if (['moni-dialog', 'moni-bottom-sheet', 'moni-side-sheet', 'moni-morph-modal', 'moni-menu', 'moni-context-menu', 'moni-fab-menu', 'moni-snackbar'].includes(component.tag) && scenario.prop.name !== 'open' && !attrs.includes('open')) attrs.push('open');
+  const element = `<${component.tag} data-docs-subject ${attrs.join(' ')}>${children[component.tag] ?? ''}</${component.tag}>`;
+  if (component.tag === 'moni-morph-modal') {
+    return `<div class="morph-demo"><div class="demo-copy"><span class="eyebrow">MONI WORKSPACE</span><h1>Proyectos que se sienten vivos</h1><p>Un escenario real permite entender de dónde nace la transformación.</p></div><moni-button id="morph-docs-trigger" variant="filled" icon="add"><span class="trigger-label">Nuevo proyecto</span></moni-button>${element}</div>`;
+  }
+  if (component.tag === 'moni-context-menu') {
+    return `<div class="context-demo" data-docs-anchor><moni-card variant="outlined"><strong>Documento de diseño</strong><p>Haz clic secundario para ver las acciones disponibles.</p></moni-card>${element}</div>`;
+  }
+  return element;
+}
+
+const overlayTags = new Set(['moni-dialog', 'moni-bottom-sheet', 'moni-side-sheet', 'moni-morph-modal']);
+
+async function settleScenario(page, component, scenario) {
+  await page.evaluate(async ({ tag, propName, value }) => {
+    await customElements.whenDefined(tag);
+    const subject = document.querySelector('[data-docs-subject]');
+    if (!subject) throw new Error(`Missing docs subject for ${tag}`);
+    const update = async (element) => {
+      if (element && 'updateComplete' in element) await element.updateComplete;
+    };
+    await update(subject);
+    if (tag === 'moni-morph-modal') {
+      subject.target = '#morph-docs-trigger';
+      await update(subject);
+      const shouldOpen = propName !== 'open' || value === true || value === 'true';
+      if (shouldOpen) subject.show();
+    }
+    if (tag === 'moni-tooltip') {
+      const target = subject.querySelector('moni-button') ?? subject;
+      target.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true, composed: true }));
+      target.dispatchEvent(new MouseEvent('mouseover', { bubbles: true, composed: true }));
+    }
+    if (tag === 'moni-context-menu') {
+      const anchor = subject.parentElement;
+      const rect = anchor.getBoundingClientRect();
+      anchor.dispatchEvent(new MouseEvent('contextmenu', {
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+        clientX: rect.left + rect.width * 0.62,
+        clientY: rect.top + rect.height * 0.56,
+      }));
+      await update(subject);
+      await update(subject.shadowRoot?.querySelector('moni-menu'));
+    }
+    await update(subject);
+    if (document.fonts?.ready) await document.fonts.ready;
+  }, { tag: component.tag, propName: scenario.prop.name, value: scenario.value });
+
+  const delay = component.tag === 'moni-morph-modal' ? 950 : overlayTags.has(component.tag) ? 420 : 180;
+  await page.waitForTimeout(delay);
+}
+
+async function validateScenario(page, component, scenario) {
+  const result = await page.evaluate(({ tag, propName, value }) => {
+    const subject = document.querySelector('[data-docs-subject]');
+    const visible = (element) => {
+      if (!element) return false;
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      return rect.width >= 1 && rect.height >= 1 && style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity || 1) > 0;
+    };
+    const visibleTree = (root) => [...(root?.querySelectorAll('*') ?? [])].some((element) => visible(element) || visibleTree(element.shadowRoot));
+    const visibleSubject = visible(subject) || visibleTree(subject?.shadowRoot);
+    const shouldOpen = propName !== 'open' || value === true || value === 'true';
+    if (tag === 'moni-morph-modal') {
+      const panel = subject?.shadowRoot?.querySelector('.panel');
+      const trigger = document.querySelector('#morph-docs-trigger');
+      return { valid: shouldOpen ? visible(panel) : visible(trigger), subject: visible(subject), panel: visible(panel), trigger: visible(trigger) };
+    }
+    if (['moni-dialog', 'moni-bottom-sheet', 'moni-side-sheet'].includes(tag) && shouldOpen) {
+      const dialog = subject?.shadowRoot?.querySelector('dialog');
+      return { valid: visible(dialog) && dialog.open, subject: visible(subject), dialog: visible(dialog), open: Boolean(dialog?.open) };
+    }
+    return { valid: visibleSubject, subject: visible(subject), shadowContent: visibleSubject };
+  }, { tag: component.tag, propName: scenario.prop.name, value: scenario.value });
+  if (!result.valid) throw new Error(`Invalid visual scenario ${component.tag}/${scenario.prop.name}=${scenario.key}: ${JSON.stringify(result)}`);
 }
 
 const browser = await chromium.launch({ headless: true });
@@ -89,7 +164,7 @@ const page = await browser.newPage({ viewport: { width: 960, height: 720 }, devi
 await page.setContent('<!doctype html><html><body><main id="stage"></main></body></html>');
 await page.addStyleTag({ path: browserStyles });
 const symbolFont = fs.readFileSync(path.join(root, 'dist', 'assets', 'material-symbols-rounded.woff2')).toString('base64');
-await page.addStyleTag({ content: `@font-face{font-family:'Material Symbols Rounded';src:url(data:font/woff2;base64,${symbolFont}) format('woff2');font-style:normal;font-weight:100 700}html{color-scheme:light}body{margin:0;background:#f8f7ff;color:#1d1b20;font-family:Arial,sans-serif}#stage{box-sizing:border-box;min-height:720px;padding:72px;display:grid;place-items:center;overflow:visible}#stage>*,#stage>div{max-width:760px}moni-dialog,moni-bottom-sheet,moni-side-sheet,moni-morph-modal{position:relative!important}` });
+await page.addStyleTag({ content: `@font-face{font-family:'Material Symbols Rounded';src:url(data:font/woff2;base64,${symbolFont}) format('woff2');font-style:normal;font-weight:100 700}html{color-scheme:light}*{box-sizing:border-box}body{margin:0;background:#f7f5fc;color:#1d1b20;font-family:Arial,sans-serif}body:before{content:'';position:fixed;inset:0;pointer-events:none;background:#f7f5fc}#stage{position:relative;box-sizing:border-box;min-height:720px;padding:72px;display:grid;place-items:center;overflow:hidden}#stage>*{max-width:760px}moni-divider,moni-progress,moni-slider{width:min(100%,560px)}.morph-demo{width:min(100%,760px);min-height:480px;padding:56px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:28px;border:1px solid rgba(73,69,79,.16);border-radius:36px;background:rgba(255,255,255,.74)}.demo-copy{max-width:520px}.demo-copy h1{margin:10px 0 14px;font-size:48px;line-height:1.02;letter-spacing:-.04em}.demo-copy p{margin:0;color:#625b71;font-size:18px;line-height:1.55}.eyebrow{font-size:12px;font-weight:700;letter-spacing:.16em;color:#6750a4}.context-demo{position:relative;width:520px}` });
 await page.addScriptTag({ path: browserScript });
 
 let count = 0;
@@ -100,8 +175,9 @@ for (const component of api.components.filter((item) => !componentFilter || item
   for (const scenario of scenarios(component)) {
     const file = path.join(dir, `${scenario.prop.name}--${safe(scenario.key)}.png`);
     await page.locator('#stage').evaluate((stage, html) => { stage.innerHTML = html; }, markup(component, scenario));
-    await page.waitForTimeout(120);
-    await page.locator('#stage').screenshot({ path: file });
+    await settleScenario(page, component, scenario);
+    await validateScenario(page, component, scenario);
+    await page.screenshot({ path: file, animations: 'disabled' });
     count++;
   }
 }

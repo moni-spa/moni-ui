@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript';
+import { visualSafeName, visualValues } from './docs-visuals.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const sourceDir = path.join(root, 'src', 'components');
@@ -190,10 +191,11 @@ function markdown(component) {
   const title = component.tag.replace('moni-', '').split('-').map((word) => word[0].toUpperCase() + word.slice(1)).join(' ');
   const propertyRows = component.properties.map((prop) => `| ${code(prop.attribute)} | ${code(prop.name)} | ${escapeCell(code(prop.type))} | ${escapeCell(code(prop.default))} | ${escapeCell(prop.description)} |`).join('\n') || '| — | — | — | — | Sin propiedades públicas. |';
   const visualSections = component.properties.map((prop) => {
-    const values = prop.options.length ? prop.options : prop.type === 'boolean' ? ['false', 'true'] : ['default'];
-    const images = values.map((value) => `![${component.tag} — ${prop.attribute ?? prop.name}=${value}](../assets/${component.tag}/${prop.name}--${String(value).replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'empty'}.png)`).join('\n\n');
+    const values = visualValues(component, prop, 'default');
+    if (!values.length) return '';
+    const images = values.map((value) => `![${component.tag} — ${prop.attribute ?? prop.name}=${value}](../assets/${component.tag}/${prop.name}--${visualSafeName(value)}.png)`).join('\n\n');
     return `### ${code(prop.attribute ?? prop.name)}\n\n${prop.description}\n\n${images}`;
-  }).join('\n\n');
+  }).filter(Boolean).join('\n\n');
   const rawExample = component.examples[0] || fallbackExample(component);
   const example = rawExample.startsWith('```') ? rawExample : `\`\`\`html\n${rawExample}\n\`\`\``;
   const tips = recommendations(component).map((item) => `- ${item}`).join('\n');
@@ -238,9 +240,9 @@ if (checkOnly) {
   for (const component of components) {
     for (const prop of component.properties) {
       if (!prop.attribute) continue;
-      const values = prop.options.length ? prop.options : prop.type === 'boolean' ? ['false', 'true'] : ['default'];
+      const values = visualValues(component, prop, 'default');
       for (const value of values) {
-        const imageName = `${prop.name}--${String(value).replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase() || 'empty'}.png`;
+        const imageName = `${prop.name}--${visualSafeName(value)}.png`;
         const image = path.join(docsDir, 'assets', component.tag, imageName);
         if (!fs.existsSync(image)) missingImages.push(path.relative(root, image));
       }

@@ -153,8 +153,6 @@ Deshabilita el ajuste de texto dentro del menú.
 
 Controla si el menú está visible.
 
-![moni-menu — active=false](../assets/moni-menu/active--false.png)
-
 ![moni-menu — active=true](../assets/moni-menu/active--true.png)
 
 ### `space`

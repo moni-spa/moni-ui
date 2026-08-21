@@ -141,8 +141,6 @@ Cada imagen se genera con el componente real: cambia solo la variable indicada y
 
 Controla si la superficie superpuesta está abierta.
 
-![moni-side-sheet — open=false](../assets/moni-side-sheet/open--false.png)
-
 ![moni-side-sheet — open=true](../assets/moni-side-sheet/open--true.png)
 
 ### `modal`

@@ -275,9 +275,3 @@ Tipo nativo del botón (cuando se renderiza como un `<button>`).
 Si está establecido, renderiza el botón como un elemento `<a>` con esta URL.
 
 ![moni-button — href=default](../assets/moni-button/href--default.png)
-
-### `target`
-
-Atributo target para los botones tipo enlace.
-
-![moni-button — target=default](../assets/moni-button/target--default.png)

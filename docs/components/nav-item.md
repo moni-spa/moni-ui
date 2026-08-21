@@ -130,12 +130,6 @@ Define `href`. Conserva el tipo indicado y usa la propiedad JavaScript cuando el
 
 ![moni-nav-item — href=default](../assets/moni-nav-item/href--default.png)
 
-### `target`
-
-Define `target`. Conserva el tipo indicado y usa la propiedad JavaScript cuando el valor no sea una cadena.
-
-![moni-nav-item — target=default](../assets/moni-nav-item/target--default.png)
-
 ### `icon`
 
 Nombre de Material Symbol mostrado por el componente.
