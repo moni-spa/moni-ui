@@ -229,6 +229,18 @@ export class MoniMorphModal extends MoniElement {
 	@property({ type: Boolean, reflect: true, attribute: 'auto-size', converter: litBool })
 	autoSize = false;
 
+	/** Fuerza al modal expandido a ocupar todo el viewport. */
+	@property({ type: Boolean, reflect: true, converter: litBool })
+	fullscreen = false;
+
+	/** Activa fullscreen únicamente cuando el viewport no supera el breakpoint configurado. */
+	@property({ type: Boolean, reflect: true, attribute: 'responsive-fullscreen', converter: litBool })
+	responsiveFullscreen = false;
+
+	/** Ancho máximo del viewport, en píxeles, para aplicar responsive-fullscreen. */
+	@property({ type: Number, reflect: true, attribute: 'fullscreen-breakpoint' })
+	fullscreenBreakpoint = 600;
+
 	/**
 	 * Si es true, aplica un efecto de desenfoque (blur) al contenido durante la animación de entrada y salida.
 	 * @type {boolean}
@@ -1896,9 +1908,15 @@ export class MoniMorphModal extends MoniElement {
 		el.style.height = `${rect.height}px`;
 	}
 
+	private _usesFullscreen(): boolean {
+		if (this.fullscreen) return true;
+		return this.responsiveFullscreen && typeof window !== 'undefined' && window.innerWidth <= this.fullscreenBreakpoint;
+	}
+
 	private _computeFinalRect(targetRect: DOMRect, naturalSize?: { width: number; height: number }): DOMRect {
 		const vw = window.innerWidth;
 		const vh = window.innerHeight;
+		if (this._usesFullscreen()) return new DOMRect(0, 0, vw, vh);
 		const padding = 16;
 
 		let width = this.autoSize && naturalSize ? naturalSize.width : this._parseSize(this.expandedWidth, vw);
@@ -2082,6 +2100,19 @@ export class MoniMorphModal extends MoniElement {
 				z-index: var(--_z-index, 100);
 			}
 
+			.panel.fullscreen {
+				border-radius: 0;
+				box-shadow: none;
+			}
+
+			.panel.fullscreen header {
+				padding-block-start: max(1.25rem, env(safe-area-inset-top));
+			}
+
+			.panel.fullscreen footer {
+				padding-block-end: max(1.5rem, env(safe-area-inset-bottom));
+			}
+
 			.panel-inner {
 				display: flex;
 				flex-direction: column;
@@ -2191,6 +2222,7 @@ export class MoniMorphModal extends MoniElement {
 	override render() {
 		const visible = this._visible || this.open;
 		const headerEmpty = !this._hasHeader && !this.showCloseButton;
+		const fullscreen = this._usesFullscreen();
 		return html`
 			${this.hasBackdrop ? html`
 				<div
@@ -2199,7 +2231,7 @@ export class MoniMorphModal extends MoniElement {
 					style="${!this.modal ? 'background-color: transparent;' : ''}"
 				></div>
 			` : ''}
-			<div class="panel" part="panel">
+			<div class="panel ${fullscreen ? 'fullscreen' : ''}" part="panel">
 				<div class="panel-inner" part="panel-inner">
 					<header
 						class="${headerEmpty ? 'is-empty' : ''}"

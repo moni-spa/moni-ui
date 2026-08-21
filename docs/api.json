@@ -1,6 +1,6 @@
 {
   "package": "@moni-labs/moni-ui",
-  "generatedAt": "2026-08-21T20:39:02.697Z",
+  "generatedAt": "2026-08-21T22:24:03.426Z",
   "componentCount": 49,
   "components": [
     {
@@ -1452,7 +1452,7 @@
       "tag": "moni-color-field",
       "className": "MoniColorField",
       "source": "src/components/moni-color-field.ts",
-      "description": "Componente Material Design 3 Color Field (Campo de Color).\n\nUn campo de texto especializado para la entrada de color que combina un\n`<input type=\"color\">` nativo con una visualización de texto de solo lectura del\nvalor hexadecimal seleccionado, envuelto en la carcasa estándar de campo M3.\n\n**Arquitectura visual:**\nExtiende el patrón de estilo de campo usado por `<moni-text-field>`. El\nslot de icono inicial se reemplaza por una muestra de color circular (`.swatch`)\nque se posiciona absolutamente sobre una entrada de color nativa invisible.\nAl hacer clic en la muestra se abre el selector de color del sistema. La parte de entrada de texto\nmuestra el código hexadecimal seleccionado y es estrictamente `readOnly`.\n\n**Sincronización de estado:**\nEl componente escucha el evento nativo `change` en la entrada de color,\nactualiza la propiedad `value`, y re-despacha un evento compuesto `'change'`.\nNo escucha `input` (arrastre continuo en el selector de color) para evitar\nel disparo excesivo de eventos, pero los consumidores pueden adjuntar sus propios\nescuchas de `input` directamente al elemento si se necesita una vista previa en vivo.",
+      "description": "Componente Material Design 3 Color Field (Campo de Color).\r\n\r\nUn campo de texto especializado para la entrada de color que combina un\r\n`<input type=\"color\">` nativo con una visualización de texto de solo lectura del\r\nvalor hexadecimal seleccionado, envuelto en la carcasa estándar de campo M3.\r\n\r\n**Arquitectura visual:**\r\nExtiende el patrón de estilo de campo usado por `<moni-text-field>`. El\r\nslot de icono inicial se reemplaza por una muestra de color circular (`.swatch`)\r\nque se posiciona absolutamente sobre una entrada de color nativa invisible.\r\nAl hacer clic en la muestra se abre el selector de color del sistema. La parte de entrada de texto\r\nmuestra el código hexadecimal seleccionado y es estrictamente `readOnly`.\r\n\r\n**Sincronización de estado:**\r\nEl componente escucha el evento nativo `change` en la entrada de color,\r\nactualiza la propiedad `value`, y re-despacha un evento compuesto `'change'`.\r\nNo escucha `input` (arrastre continuo en el selector de color) para evitar\r\nel disparo excesivo de eventos, pero los consumidores pueden adjuntar sus propios\r\nescuchas de `input` directamente al elemento si se necesita una vista previa en vivo.",
       "properties": [
         {
           "name": "name",
@@ -1534,7 +1534,7 @@
           "attribute": "error-text",
           "type": "string",
           "default": "''",
-          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\nSobrescribe el texto de ayuda.",
+          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\r\nSobrescribe el texto de ayuda.",
           "options": [],
           "reflect": true
         },
@@ -1599,7 +1599,7 @@
         "--outline"
       ],
       "examples": [
-        "```html\n<moni-color-field\n  label=\"Color del Tema\"\n  name=\"primaryColor\"\n  value=\"#6750a4\"\n  variant=\"outlined\"\n></moni-color-field>\n```"
+        "```html\r\n<moni-color-field\r\n  label=\"Color del Tema\"\r\n  name=\"primaryColor\"\r\n  value=\"#6750a4\"\r\n  variant=\"outlined\"\r\n></moni-color-field>\r\n```"
       ]
     },
     {
@@ -2177,7 +2177,7 @@
       "tag": "moni-file-field",
       "className": "MoniFileField",
       "source": "src/components/moni-file-field.ts",
-      "description": "Componente Material Design 3 File Field (Campo de Archivo).\n\nUn componente de campo especializado que proporciona una alternativa estilizada y accesible\nal `<input type=\"file\">` nativo. Envuelve un input de archivo nativo dentro de\nla carcasa `.field` de M3 y presenta un input de texto de solo lectura que muestra los\nnombres de archivo(s) seleccionado(s) junto a un botón de acción \"Seleccionar archivo\" estilizado.\n\n**Arquitectura visual:**\nEl componente aprovecha los patrones CSS `fieldStyles`. La estructura interna del DOM\nestá ordenada específicamente como:\n`[text input] -> [label] -> [file input] -> [output]`\nEste ordenamiento específico asegura que el selector CSS de hermano adyacente\n(`input + label`) pueda flotar correctamente la etiqueta cuando el campo está poblado,\na pesar de que el campo visible sea realmente el input de texto de solo lectura.\n\n**Gestión del estado:**\nCuando el usuario selecciona archivos a través del input de archivo oculto, el componente escucha\nel evento nativo `change`, lee `input.files`, y actualiza el input de texto\nde solo lectura con una lista separada por comas de los nombres de archivo. La propiedad `value`\nse mantiene sincronizada, y se re-despacha un evento compuesto `'change'`.",
+      "description": "Componente Material Design 3 File Field (Campo de Archivo).\r\n\r\nUn componente de campo especializado que proporciona una alternativa estilizada y accesible\r\nal `<input type=\"file\">` nativo. Envuelve un input de archivo nativo dentro de\r\nla carcasa `.field` de M3 y presenta un input de texto de solo lectura que muestra los\r\nnombres de archivo(s) seleccionado(s) junto a un botón de acción \"Seleccionar archivo\" estilizado.\r\n\r\n**Arquitectura visual:**\r\nEl componente aprovecha los patrones CSS `fieldStyles`. La estructura interna del DOM\r\nestá ordenada específicamente como:\r\n`[text input] -> [label] -> [file input] -> [output]`\r\nEste ordenamiento específico asegura que el selector CSS de hermano adyacente\r\n(`input + label`) pueda flotar correctamente la etiqueta cuando el campo está poblado,\r\na pesar de que el campo visible sea realmente el input de texto de solo lectura.\r\n\r\n**Gestión del estado:**\r\nCuando el usuario selecciona archivos a través del input de archivo oculto, el componente escucha\r\nel evento nativo `change`, lee `input.files`, y actualiza el input de texto\r\nde solo lectura con una lista separada por comas de los nombres de archivo. La propiedad `value`\r\nse mantiene sincronizada, y se re-despacha un evento compuesto `'change'`.",
       "properties": [
         {
           "name": "name",
@@ -2286,7 +2286,7 @@
           "attribute": "error-text",
           "type": "string",
           "default": "''",
-          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\nSobrescribe el texto de ayuda.",
+          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\r\nSobrescribe el texto de ayuda.",
           "options": [],
           "reflect": true
         },
@@ -2374,7 +2374,7 @@
       ],
       "cssProperties": [],
       "examples": [
-        "```html\n<!-- Carga de un solo archivo -->\n<moni-file-field\n  label=\"Foto de perfil\"\n  name=\"avatar\"\n  accept=\"image/png, image/jpeg\"\n  button-label=\"Explorar...\"\n></moni-file-field>\n\n<!-- Carga de múltiples archivos con estado de error -->\n<moni-file-field\n  label=\"Documentos\"\n  multiple\n  error\n  error-text=\"Los archivos superan el límite de tamaño máximo\"\n></moni-file-field>\n```"
+        "```html\r\n<!-- Carga de un solo archivo -->\r\n<moni-file-field\r\n  label=\"Foto de perfil\"\r\n  name=\"avatar\"\r\n  accept=\"image/png, image/jpeg\"\r\n  button-label=\"Explorar...\"\r\n></moni-file-field>\r\n\r\n<!-- Carga de múltiples archivos con estado de error -->\r\n<moni-file-field\r\n  label=\"Documentos\"\r\n  multiple\r\n  error\r\n  error-text=\"Los archivos superan el límite de tamaño máximo\"\r\n></moni-file-field>\r\n```"
       ]
     },
     {
@@ -2868,7 +2868,7 @@
           "attribute": "target",
           "type": "string",
           "default": "''",
-          "description": "Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button').\nSi se omite, el modal aún puede activarse programáticamente estableciendo `open = true`.",
+          "description": "Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button').\r\nSi se omite, el modal aún puede activarse programáticamente estableciendo `open = true`.",
           "options": [],
           "reflect": true
         },
@@ -2877,7 +2877,7 @@
           "attribute": "open",
           "type": "boolean",
           "default": "false",
-          "description": "Controla el estado abierto/cerrado del modal.\nPuede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`.",
+          "description": "Controla el estado abierto/cerrado del modal.\r\nPuede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`.",
           "options": [],
           "reflect": true
         },
@@ -2999,6 +2999,33 @@
           "reflect": true
         },
         {
+          "name": "fullscreen",
+          "attribute": "fullscreen",
+          "type": "boolean",
+          "default": "false",
+          "description": "Fuerza al modal expandido a ocupar todo el viewport.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "responsiveFullscreen",
+          "attribute": "responsive-fullscreen",
+          "type": "boolean",
+          "default": "false",
+          "description": "Activa fullscreen únicamente cuando el viewport no supera el breakpoint configurado.",
+          "options": [],
+          "reflect": true
+        },
+        {
+          "name": "fullscreenBreakpoint",
+          "attribute": "fullscreen-breakpoint",
+          "type": "number",
+          "default": "600",
+          "description": "Ancho máximo del viewport, en píxeles, para aplicar responsive-fullscreen.",
+          "options": [],
+          "reflect": true
+        },
+        {
           "name": "blurContent",
           "attribute": "blur-content",
           "type": "boolean",
@@ -3021,12 +3048,12 @@
         {
           "name": "show",
           "signature": "show(): void",
-          "description": "Dispara la apertura del modal y coordina la animación de FLIP (First, Last, Invert, Play) / Morphing.\n1. Oculta visualmente el target original.\n2. Posiciona el modal colapsado exactamente sobre el target original (mismas dimensiones, color, y radios).\n3. Expande fluidamente el modal a sus dimensiones finales mediante transformaciones CSS."
+          "description": "Dispara la apertura del modal y coordina la animación de FLIP (First, Last, Invert, Play) / Morphing.\r\n1. Oculta visualmente el target original.\r\n2. Posiciona el modal colapsado exactamente sobre el target original (mismas dimensiones, color, y radios).\r\n3. Expande fluidamente el modal a sus dimensiones finales mediante transformaciones CSS."
         },
         {
           "name": "showFrom",
           "signature": "showFrom(target: HTMLElement): void",
-          "description": "Abre el modal realizando el morph desde un elemento proporcionado directamente.\nÚtil cuando el trigger vive dentro de un Shadow DOM y no puede resolverse con `target`."
+          "description": "Abre el modal realizando el morph desde un elemento proporcionado directamente.\r\nÚtil cuando el trigger vive dentro de un Shadow DOM y no puede resolverse con `target`."
         },
         {
           "name": "resizeTo",
@@ -3758,7 +3785,7 @@
       "tag": "moni-select",
       "className": "MoniSelect",
       "source": "src/components/moni-select.ts",
-      "description": "Componente Material Design 3 Select (Menú Desplegable).\n\nUn menú desplegable select personalizado completo con capacidad de búsqueda, grupos de opciones,\nnavegación por teclado, animación y un modo de cajón/hoja (drawer/sheet) móvil opcional.\nReemplaza el elemento nativo `<select>` con una alternativa completamente estilizada y accesible\nque cumple con M3.\n\n**Referencia a la especificación M3:** `m3-docs/components/menus/specs.md` (menús desplegables)\n\n**Resumen de características:**\n- Variantes Filled y Outlined que coinciden con los estilos de campo de texto de M3.\n- Etiqueta flotante (floating label) con la animación estándar de etiqueta flotante de estilos de campo.\n- Modo de búsqueda: el atributo `searchable` agrega un campo de entrada de filtro en línea.\n- Grupos de opciones: elementos `<moni-select-group>` en el slot para opciones jerárquicas.\n- Cajón móvil: el atributo `drawer` abre las opciones en un `<moni-bottom-sheet>`\n  en lugar de un popup desplegable, ideal para interfaces táctiles (touch UIs).\n- Navegación por teclado: Teclas de flecha, Enter, Escape y Tab según combobox de ARIA.\n- Estado de carga: `loading` muestra un progreso circular indeterminado.\n- Soporte multi-valor: `multiple` permite selección múltiple.\n\n**Fuentes de opciones:**\nLas opciones se pueden proporcionar de dos maneras:\n1. **Elementos `<moni-select-option>` en la ranura (slot)** (por defecto, recomendado para SSR).\n2. **Propiedad `options`** — un array de `DropdownNode[]` para un control completamente programático.\n\n**Vinculación de valores (Value binding):**\nLa propiedad `value` contiene la cadena de valor de la opción actualmente seleccionada.\nPara selección múltiple, `values` contiene `string[]`. Al cambiar, se dispara un\nevento compuesto `'moni-change'`.",
+      "description": "Componente Material Design 3 Select (Menú Desplegable).\r\n\r\nUn menú desplegable select personalizado completo con capacidad de búsqueda, grupos de opciones,\r\nnavegación por teclado, animación y un modo de cajón/hoja (drawer/sheet) móvil opcional.\r\nReemplaza el elemento nativo `<select>` con una alternativa completamente estilizada y accesible\r\nque cumple con M3.\r\n\r\n**Referencia a la especificación M3:** `m3-docs/components/menus/specs.md` (menús desplegables)\r\n\r\n**Resumen de características:**\r\n- Variantes Filled y Outlined que coinciden con los estilos de campo de texto de M3.\r\n- Etiqueta flotante (floating label) con la animación estándar de etiqueta flotante de estilos de campo.\r\n- Modo de búsqueda: el atributo `searchable` agrega un campo de entrada de filtro en línea.\r\n- Grupos de opciones: elementos `<moni-select-group>` en el slot para opciones jerárquicas.\r\n- Cajón móvil: el atributo `drawer` abre las opciones en un `<moni-bottom-sheet>`\r\n  en lugar de un popup desplegable, ideal para interfaces táctiles (touch UIs).\r\n- Navegación por teclado: Teclas de flecha, Enter, Escape y Tab según combobox de ARIA.\r\n- Estado de carga: `loading` muestra un progreso circular indeterminado.\r\n- Soporte multi-valor: `multiple` permite selección múltiple.\r\n\r\n**Fuentes de opciones:**\r\nLas opciones se pueden proporcionar de dos maneras:\r\n1. **Elementos `<moni-select-option>` en la ranura (slot)** (por defecto, recomendado para SSR).\r\n2. **Propiedad `options`** — un array de `DropdownNode[]` para un control completamente programático.\r\n\r\n**Vinculación de valores (Value binding):**\r\nLa propiedad `value` contiene la cadena de valor de la opción actualmente seleccionada.\r\nPara selección múltiple, `values` contiene `string[]`. Al cambiar, se dispara un\r\nevento compuesto `'moni-change'`.",
       "properties": [
         {
           "name": "name",
@@ -3831,7 +3858,7 @@
           "attribute": "required",
           "type": "boolean",
           "default": "false",
-          "description": "Obliga a elegir una opción antes de enviar el formulario.\n\nEl `<input>` visible es de sólo lectura, así que la validación nativa no\nse aplica sobre él: la restricción se declara en el host con\n`ElementInternals.setValidity`, que es lo que mira el formulario.",
+          "description": "Obliga a elegir una opción antes de enviar el formulario.\r\n\r\nEl `<input>` visible es de sólo lectura, así que la validación nativa no\r\nse aplica sobre él: la restricción se declara en el host con\r\n`ElementInternals.setValidity`, que es lo que mira el formulario.",
           "options": [],
           "reflect": true
         },
@@ -3858,7 +3885,7 @@
           "attribute": "error-text",
           "type": "string",
           "default": "''",
-          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\nReemplaza al texto de ayuda.",
+          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\r\nReemplaza al texto de ayuda.",
           "options": [],
           "reflect": true
         },
@@ -3939,7 +3966,7 @@
           "attribute": "positioning",
           "type": "'absolute' | 'fixed' | 'body'",
           "default": "'absolute'",
-          "description": "Estrategia de posicionamiento para el menú desplegable.\n\n- `'absolute'`: permanece en el contexto de posicionamiento del select.\n- `'fixed'`: usa coordenadas del viewport, pero conserva su contexto de apilamiento.\n- `'body'`: usa la capa superior nativa (Popover API) para escapar de `overflow`,\n  diálogos, bottom sheets y contextos de apilamiento.",
+          "description": "Estrategia de posicionamiento para el menú desplegable.\r\n\r\n- `'absolute'`: permanece en el contexto de posicionamiento del select.\r\n- `'fixed'`: usa coordenadas del viewport, pero conserva su contexto de apilamiento.\r\n- `'body'`: usa la capa superior nativa (Popover API) para escapar de `overflow`,\r\n  diálogos, bottom sheets y contextos de apilamiento.",
           "options": [
             "absolute",
             "fixed",
@@ -3967,7 +3994,7 @@
           "attribute": "dropdown-width",
           "type": "string",
           "default": "'trigger'",
-          "description": "Restricción de ancho del menú desplegable.\n- `'trigger'`: Coincide con el ancho del campo de entrada.\n- `'auto'`: Coincide con el ancho del contenido del menú desplegable.\n- O cualquier valor CSS de ancho válido (ej. '200px').",
+          "description": "Restricción de ancho del menú desplegable.\r\n- `'trigger'`: Coincide con el ancho del campo de entrada.\r\n- `'auto'`: Coincide con el ancho del contenido del menú desplegable.\r\n- O cualquier valor CSS de ancho válido (ej. '200px').",
           "options": [],
           "reflect": true
         },
@@ -3976,7 +4003,7 @@
           "attribute": "dropdown-max-height",
           "type": "string",
           "default": "''",
-          "description": "Límite manual opcional para la altura del menú.\n\nAcepta cualquier longitud CSS válida, por ejemplo `240px`, `40vh` o\n`calc(100vh - 8rem)`. El valor nunca supera el límite automático calculado\nsegún el viewport, la posición del campo y el tope predeterminado de 75vh.\nUna cadena vacía conserva el cálculo automático.",
+          "description": "Límite manual opcional para la altura del menú.\r\n\r\nAcepta cualquier longitud CSS válida, por ejemplo `240px`, `40vh` o\r\n`calc(100vh - 8rem)`. El valor nunca supera el límite automático calculado\r\nsegún el viewport, la posición del campo y el tope predeterminado de 75vh.\r\nUna cadena vacía conserva el cálculo automático.",
           "options": [],
           "reflect": true
         }
@@ -4050,7 +4077,7 @@
         "--tertiary-container"
       ],
       "examples": [
-        "```html\n<moni-select label=\"País\" name=\"country\" variant=\"outlined\">\n  <moni-select-option value=\"us\">Estados Unidos</moni-select-option>\n  <moni-select-option value=\"gb\">Reino Unido</moni-select-option>\n  <moni-select-option value=\"de\">Alemania</moni-select-option>\n</moni-select>\n\n<!-- Select con búsqueda -->\n<moni-select label=\"Idioma\" searchable>\n  <moni-select-option value=\"ts\">TypeScript</moni-select-option>\n  <moni-select-option value=\"py\">Python</moni-select-option>\n</moni-select>\n```"
+        "```html\r\n<moni-select label=\"País\" name=\"country\" variant=\"outlined\">\r\n  <moni-select-option value=\"us\">Estados Unidos</moni-select-option>\r\n  <moni-select-option value=\"gb\">Reino Unido</moni-select-option>\r\n  <moni-select-option value=\"de\">Alemania</moni-select-option>\r\n</moni-select>\r\n\r\n<!-- Select con búsqueda -->\r\n<moni-select label=\"Idioma\" searchable>\r\n  <moni-select-option value=\"ts\">TypeScript</moni-select-option>\r\n  <moni-select-option value=\"py\">Python</moni-select-option>\r\n</moni-select>\r\n```"
       ]
     },
     {
@@ -5222,7 +5249,7 @@
       "tag": "moni-text-field",
       "className": "MoniTextField",
       "source": "src/components/moni-text-field.ts",
-      "description": "Componente Material Design 3 Text Field (Campo de texto).\n\nUn campo de entrada con todas las funciones que envuelve un `<input>` nativo dentro de la\nestructura de campo M3 (clase `.field` de `fieldStyles`). Soporta etiquetas flotantes,\nvariantes llenas (filled) y contorneadas (outlined), iconos iniciales/finales (leading/trailing),\ntexto de ayuda y estados de error.\n\n**Referencia a la especificación M3:** `m3-docs/components/text-fields/specs.md`\n\n**Arquitectura visual:**\nUtiliza `fieldStyles` para toda la estructura CSS del campo. El contenedor del campo\nes un `<div class=\"field [modifiers]\">` que envuelve:\n1. Icono inicial (leading) opcional.\n2. Elemento `<input>` nativo.\n3. `<label>` flotante (cuando se establece `label`).\n4. Icono final (trailing) opcional o indicador de carga (spinner).\n5. `<output>` para texto de ayuda/error.\n\n**Sincronización de eventos:**\nEmite `moni-input` en cada tipeo y `moni-change` al consolidar el valor (blur/enter).\nEl valor interno del componente (`this.value`) se mantiene sincronizado automáticamente.",
+      "description": "Componente Material Design 3 Text Field (Campo de texto).\r\n\r\nUn campo de entrada con todas las funciones que envuelve un `<input>` nativo dentro de la\r\nestructura de campo M3 (clase `.field` de `fieldStyles`). Soporta etiquetas flotantes,\r\nvariantes llenas (filled) y contorneadas (outlined), iconos iniciales/finales (leading/trailing),\r\ntexto de ayuda y estados de error.\r\n\r\n**Referencia a la especificación M3:** `m3-docs/components/text-fields/specs.md`\r\n\r\n**Arquitectura visual:**\r\nUtiliza `fieldStyles` para toda la estructura CSS del campo. El contenedor del campo\r\nes un `<div class=\"field [modifiers]\">` que envuelve:\r\n1. Icono inicial (leading) opcional.\r\n2. Elemento `<input>` nativo.\r\n3. `<label>` flotante (cuando se establece `label`).\r\n4. Icono final (trailing) opcional o indicador de carga (spinner).\r\n5. `<output>` para texto de ayuda/error.\r\n\r\n**Sincronización de eventos:**\r\nEmite `moni-input` en cada tipeo y `moni-change` al consolidar el valor (blur/enter).\r\nEl valor interno del componente (`this.value`) se mantiene sincronizado automáticamente.",
       "properties": [
         {
           "name": "name",
@@ -5372,7 +5399,7 @@
           "attribute": "error-text",
           "type": "string",
           "default": "''",
-          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\nSobrescribe el texto de ayuda.",
+          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\r\nSobrescribe el texto de ayuda.",
           "options": [],
           "reflect": true
         },
@@ -5516,7 +5543,7 @@
           "attribute": "mask",
           "type": "string",
           "default": "''",
-          "description": "Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `|`,\ncuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT).",
+          "description": "Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `|`,\r\ncuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT).",
           "options": [],
           "reflect": true
         },
@@ -5664,14 +5691,14 @@
         "--primary"
       ],
       "examples": [
-        "```html\n<moni-text-field\n  label=\"Dirección de correo\"\n  type=\"email\"\n  name=\"email\"\n  icon=\"mail\"\n  variant=\"outlined\"\n  helper=\"Nunca compartiremos tu correo.\"\n></moni-text-field>\n\n<moni-text-field\n  label=\"Monto\"\n  type=\"number\"\n  prefix=\"$\"\n  error\n  error-text=\"El valor debe ser positivo\"\n></moni-text-field>\n```"
+        "```html\r\n<moni-text-field\r\n  label=\"Dirección de correo\"\r\n  type=\"email\"\r\n  name=\"email\"\r\n  icon=\"mail\"\r\n  variant=\"outlined\"\r\n  helper=\"Nunca compartiremos tu correo.\"\r\n></moni-text-field>\r\n\r\n<moni-text-field\r\n  label=\"Monto\"\r\n  type=\"number\"\r\n  prefix=\"$\"\r\n  error\r\n  error-text=\"El valor debe ser positivo\"\r\n></moni-text-field>\r\n```"
       ]
     },
     {
       "tag": "moni-textarea",
       "className": "MoniTextarea",
       "source": "src/components/moni-textarea.ts",
-      "description": "Componente Material Design 3 Textarea (Área de texto).\n\nUn campo de entrada de texto multilínea diseñado para recolectar cantidades mayores de texto,\ncomo comentarios, descripciones o mensajes.\n\n**Referencia a la especificación M3:** `m3-docs/components/text-fields/specs.md`\n\n**Arquitectura visual:**\nComparte exactamente el mismo contenedor `.field` y motor de estilos que\n`<moni-text-field>`, pero internamente renderiza un `<textarea>` nativo en lugar\nde un `<input>`. Esto asegura la consistencia visual en todos los elementos del formulario\nen cuanto a etiquetas flotantes, texto de ayuda, estados de error e iconos.\n\n**Contador de caracteres:**\nSi se establece el atributo `maxlength`, el área de texto muestra automáticamente\nun contador de caracteres (`{longitud actual} / {maxlength}`) ubicado en el\nborde final (trailing) del área de texto de soporte (abajo a la derecha). Esto puede\nsuprimirse estableciendo el atributo `no-counter`.\n\n**Gestión del estado:**\nEste componente es puramente visual y representacional. Refleja los atributos\nhacia el textarea nativo, pero NO adjunta listeners internos para `@input` o\n`@change`. Los consumidores deben adjuntar listeners estándar del DOM directamente\na este elemento para capturar la entrada del usuario, tal como lo harían con un\ntextarea nativo.",
+      "description": "Componente Material Design 3 Textarea (Área de texto).\r\n\r\nUn campo de entrada de texto multilínea diseñado para recolectar cantidades mayores de texto,\r\ncomo comentarios, descripciones o mensajes.\r\n\r\n**Referencia a la especificación M3:** `m3-docs/components/text-fields/specs.md`\r\n\r\n**Arquitectura visual:**\r\nComparte exactamente el mismo contenedor `.field` y motor de estilos que\r\n`<moni-text-field>`, pero internamente renderiza un `<textarea>` nativo en lugar\r\nde un `<input>`. Esto asegura la consistencia visual en todos los elementos del formulario\r\nen cuanto a etiquetas flotantes, texto de ayuda, estados de error e iconos.\r\n\r\n**Contador de caracteres:**\r\nSi se establece el atributo `maxlength`, el área de texto muestra automáticamente\r\nun contador de caracteres (`{longitud actual} / {maxlength}`) ubicado en el\r\nborde final (trailing) del área de texto de soporte (abajo a la derecha). Esto puede\r\nsuprimirse estableciendo el atributo `no-counter`.\r\n\r\n**Gestión del estado:**\r\nEste componente es puramente visual y representacional. Refleja los atributos\r\nhacia el textarea nativo, pero NO adjunta listeners internos para `@input` o\r\n`@change`. Los consumidores deben adjuntar listeners estándar del DOM directamente\r\na este elemento para capturar la entrada del usuario, tal como lo harían con un\r\ntextarea nativo.",
       "properties": [
         {
           "name": "name",
@@ -5798,7 +5825,7 @@
           "attribute": "maxlength",
           "type": "number | null",
           "default": "null",
-          "description": "Número máximo de caracteres permitidos en el área de texto.\nTambién habilita la visualización del contador de caracteres a menos que `noCounter` sea true.",
+          "description": "Número máximo de caracteres permitidos en el área de texto.\r\nTambién habilita la visualización del contador de caracteres a menos que `noCounter` sea true.",
           "options": [],
           "reflect": true
         },
@@ -5879,7 +5906,7 @@
           "attribute": "error-text",
           "type": "string",
           "default": "''",
-          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\nSobrescribe el texto de ayuda.",
+          "description": "Texto de error mostrado debajo del campo cuando `error` es true.\r\nSobrescribe el texto de ayuda.",
           "options": [],
           "reflect": true
         },
@@ -5969,7 +5996,7 @@
       ],
       "cssProperties": [],
       "examples": [
-        "```html\n<!-- Textarea llenado (filled) estándar -->\n<moni-textarea label=\"Descripción\" rows=\"4\"></moni-textarea>\n\n<!-- Textarea contorneado (outlined) con contador de caracteres -->\n<moni-textarea\n  variant=\"outlined\"\n  label=\"Biografía\"\n  maxlength=\"160\"\n></moni-textarea>\n```"
+        "```html\r\n<!-- Textarea llenado (filled) estándar -->\r\n<moni-textarea label=\"Descripción\" rows=\"4\"></moni-textarea>\r\n\r\n<!-- Textarea contorneado (outlined) con contador de caracteres -->\r\n<moni-textarea\r\n  variant=\"outlined\"\r\n  label=\"Biografía\"\r\n  maxlength=\"160\"\r\n></moni-textarea>\r\n```"
       ]
     },
     {

@@ -117,6 +117,32 @@ describe('moni-morph-modal', () => {
 		expect(el.hasAttribute('open')).toBe(true);
 	});
 
+	it('ocupa todo el viewport cuando fullscreen está activo', async () => {
+		el.fullscreen = true;
+		await el.updateComplete;
+		const rect = (el as unknown as { _computeFinalRect: (target: DOMRect) => DOMRect })
+			._computeFinalRect(new DOMRect(24, 700, 56, 56));
+
+		expect(el.hasAttribute('fullscreen')).toBe(true);
+		expect(rect.x).toBe(0);
+		expect(rect.y).toBe(0);
+		expect(rect.width).toBe(window.innerWidth);
+		expect(rect.height).toBe(window.innerHeight);
+		expect(el.shadowRoot?.querySelector('.panel')?.classList.contains('fullscreen')).toBe(true);
+	});
+
+	it('aplica fullscreen responsive sólo bajo el breakpoint', () => {
+		el.responsiveFullscreen = true;
+		el.fullscreenBreakpoint = 600;
+		const usesFullscreen = () => (el as unknown as { _usesFullscreen: () => boolean })._usesFullscreen();
+
+		vi.stubGlobal('innerWidth', 480);
+		expect(usesFullscreen()).toBe(true);
+		vi.stubGlobal('innerWidth', 900);
+		expect(usesFullscreen()).toBe(false);
+		vi.unstubAllGlobals();
+	});
+
 	it('proyecta el contenido del slot por defecto', async () => {
 		const content = document.createElement('p');
 		content.textContent = 'Hello';

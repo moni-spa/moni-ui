@@ -65,6 +65,9 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `hide-target` | `hideTarget` | `boolean` | `false` | Si es true, oculta el elemento disparador (target) mientras el modal está abierto. |
 | `cover-target` | `coverTarget` | `boolean` | `false` | Si es true, fuerza al modal a cubrir visualmente la ubicación original del target antes de expandirse. |
 | `auto-size` | `autoSize` | `boolean` | `false` | Si es true, el modal calcula automáticamente su tamaño final basándose en el contenido interno (ignora expandedWidth y expandedHeight). |
+| `fullscreen` | `fullscreen` | `boolean` | `false` | Fuerza al modal expandido a ocupar todo el viewport. |
+| `responsive-fullscreen` | `responsiveFullscreen` | `boolean` | `false` | Activa fullscreen únicamente cuando el viewport no supera el breakpoint configurado. |
+| `fullscreen-breakpoint` | `fullscreenBreakpoint` | `number` | `600` | Ancho máximo del viewport, en píxeles, para aplicar `responsive-fullscreen`. |
 | `blur-content` | `blurContent` | `boolean` | `false` | Si es true, aplica un efecto de desenfoque (blur) al contenido durante la animación de entrada y salida. |
 | `debug` | `debug` | `boolean` | `false` | Muestra en consola el origen, geometría y estrategia usada por cada morph. |
 
