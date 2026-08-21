@@ -97,6 +97,10 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `autosize` | `autosize` | `boolean` | `false` | Hace que el textarea crezca y se reduzca según su contenido. |
 | `max-rows` | `maxRows` | `number` | `0` | Número máximo de filas visibles cuando `autosize` está activo. Cero no impone límite. |
 | `maxlength` | `maxlength` | `number \| null` | `null` | Número máximo de caracteres permitidos en el área de texto. También habilita la visualización del contador de caracteres a menos que `noCounter` sea true. |
+| `required` | `required` | `boolean` | `false` | Marca el campo como obligatorio y lo integra en la validación del formulario. |
+| `readonly` | `readonly` | `boolean` | `false` | Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. |
+| `minlength` | `minlength` | `number \| null` | `null` | Mínimo de caracteres aceptados. |
+| `autocomplete` | `autocomplete` | `string` | `''` | Pista de autocompletado del navegador. |
 | `no-counter` | `noCounter` | `boolean` | `false` | Oculta la visualización del contador de caracteres cuando se establece `maxlength`. |
 | `loading` | `loading` | `boolean` | `false` | Si es true, muestra un indicador de carga (progreso circular) al final. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el área de texto. |
@@ -116,7 +120,8 @@ No declara eventos propios.
 
 ## Métodos públicos
 
-No expone métodos públicos adicionales.
+- `checkValidity(): boolean` — Método público checkValidity.
+- `reportValidity(): boolean` — Método público reportValidity.
 
 ## CSS Parts
 
@@ -231,6 +236,34 @@ Número máximo de caracteres permitidos en el área de texto.
 También habilita la visualización del contador de caracteres a menos que `noCounter` sea true.
 
 ![moni-textarea — maxlength=default](../assets/moni-textarea/maxlength--default.png)
+
+### `required`
+
+Marca el campo como obligatorio y lo integra en la validación del formulario.
+
+![moni-textarea — required=false](../assets/moni-textarea/required--false.png)
+
+![moni-textarea — required=true](../assets/moni-textarea/required--true.png)
+
+### `readonly`
+
+Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`.
+
+![moni-textarea — readonly=false](../assets/moni-textarea/readonly--false.png)
+
+![moni-textarea — readonly=true](../assets/moni-textarea/readonly--true.png)
+
+### `minlength`
+
+Mínimo de caracteres aceptados.
+
+![moni-textarea — minlength=default](../assets/moni-textarea/minlength--default.png)
+
+### `autocomplete`
+
+Pista de autocompletado del navegador.
+
+![moni-textarea — autocomplete=default](../assets/moni-textarea/autocomplete--default.png)
 
 ### `no-counter`
 
