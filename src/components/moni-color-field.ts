@@ -266,6 +266,7 @@ export class MoniColorField extends MoniElement {
 				.value=${this.value}
 				?disabled=${this.disabled}
 				tabindex="-1"
+				aria-label=${ifDefined(this.label || undefined)}
 				@input=${this._onColorInput}
 				@change=${this._onColorChange}
 			/>
