@@ -1679,6 +1679,7 @@ export class MoniSelect extends MoniElement {
 		return html`<div class=${classMap(fieldClasses)} part="field">
 			${leading}
 			<input
+				id="input"
 				type="text"
 				part="input"
 				.value=${displayValue}
@@ -1693,6 +1694,7 @@ export class MoniSelect extends MoniElement {
 			/>
 			${this.label
 				? html`<label
+						for="input"
 						part="label"
 						class=${classMap({ active: isActive })}
 						>${this.label}</label

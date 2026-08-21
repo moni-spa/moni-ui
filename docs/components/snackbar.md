@@ -155,8 +155,6 @@ Alterne este atributo para mostrar/ocultar el snackbar. La transición CSS
 maneja la animación de desvanecimiento/deslizamiento hacia arriba (fade-in/slide-up) automáticamente.
 Los consumidores son responsables de implementar el temporizador de cierre automático.
 
-![moni-snackbar — active=false](../assets/moni-snackbar/active--false.png)
-
 ![moni-snackbar — active=true](../assets/moni-snackbar/active--true.png)
 
 ### `max-lines`

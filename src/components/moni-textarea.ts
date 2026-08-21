@@ -357,6 +357,7 @@ export class MoniTextarea extends MoniElement {
 		return html`<div class=${classMap(fieldClasses)} part="field">
 			${leading}
 			<textarea
+				id="input"
 				part="input"
 				rows=${this.rows}
 				maxlength=${ifDefined(this.maxlength ?? undefined)}
@@ -369,6 +370,7 @@ export class MoniTextarea extends MoniElement {
 			></textarea>
 			${this.label
 				? html`<label
+						for="input"
 						part="label"
 						class=${classMap({ active: isActive })}
 						>${this.label}</label

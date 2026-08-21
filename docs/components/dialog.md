@@ -128,8 +128,6 @@ Cuando se establece en `true`, el componente llama a `dialog.showModal()` (si `m
 o `dialog.show()`. Cuando se establece en `false`, llama a `dialog.close()`.
 Reflejado como un atributo HTML para CSS y lectores de estado externos.
 
-![moni-dialog — open=false](../assets/moni-dialog/open--false.png)
-
 ![moni-dialog — open=true](../assets/moni-dialog/open--true.png)
 
 ### `modal`

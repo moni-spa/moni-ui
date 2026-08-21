@@ -406,3 +406,19 @@ describe('moni-select', () => {
 		expect(menu.classList.contains('open')).toBe(true);
 	});
 });
+
+describe('moni-select · nombre accesible', () => {
+	it('asocia la etiqueta con el input mediante for/id', async () => {
+		const el = document.createElement('moni-select') as MoniSelect;
+		el.label = 'Estado';
+		document.body.appendChild(el);
+		await el.updateComplete;
+
+		const input = el.shadowRoot?.querySelector('input');
+		const label = el.shadowRoot?.querySelector('label');
+		expect(input?.id).toBe('input');
+		expect(label?.getAttribute('for')).toBe('input');
+		expect(input?.nextElementSibling).toBe(label);
+		el.remove();
+	});
+})

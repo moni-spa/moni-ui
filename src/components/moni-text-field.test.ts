@@ -229,3 +229,28 @@ describe('moni-text-field', () => {
 		expect(MoniTextField.Inputmask.isValid('123-456', { mask: '999-999' })).toBe(true);
 	});
 });
+
+describe('moni-text-field · nombre accesible', () => {
+	/*
+	 * El <label> y el <input> son hermanos dentro del mismo shadow root: sin
+	 * `for`/`id` no hay asociación y el lector de pantalla anuncia el campo sin
+	 * nombre. La adyacencia no se puede cambiar porque `field-styles` la usa
+	 * (`:focus + label`) para elevar la etiqueta, así que la unión va por id.
+	 */
+	it('asocia la etiqueta con el input mediante for/id', async () => {
+		const el = document.createElement('moni-text-field') as HTMLElement & {
+			label: string;
+			updateComplete: Promise<unknown>;
+		};
+		el.label = 'Correo';
+		document.body.appendChild(el);
+		await el.updateComplete;
+
+		const input = el.shadowRoot?.querySelector('input');
+		const label = el.shadowRoot?.querySelector('label');
+		expect(input?.id).toBe('input');
+		expect(label?.getAttribute('for')).toBe('input');
+		expect(input?.nextElementSibling).toBe(label);
+		el.remove();
+	});
+})

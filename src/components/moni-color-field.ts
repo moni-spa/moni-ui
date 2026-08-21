@@ -10,6 +10,7 @@ import { customElement, property, query } from 'lit/decorators.js';
 import { ifDefined } from 'lit/directives/if-defined.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
+import { emitMoniEvent } from '../utils/event-emitter.js';
 
 /**
  * Componente Material Design 3 Color Field (Campo de Color).
@@ -45,6 +46,11 @@ import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
  * ></moni-color-field>
  * ```
  *
+ * @fires moni-input  - Burbujea y está compuesto. Se emite mientras se arrastra
+ *                      en el selector nativo. `detail.value` trae el hexadecimal.
+ * @fires moni-change - Burbujea y está compuesto. Se emite al confirmar el color.
+ *                      `detail.value` trae el hexadecimal.
+ *
  * @csspart field       - El contenedor div exterior `.field`.
  * @csspart swatch      - El elemento de vista previa de color circular.
  * @csspart input-color - El `<input type="color">` nativo, visualmente oculto.
@@ -53,6 +59,20 @@ import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
  */
 @customElement('moni-color-field')
 export class MoniColorField extends MoniElement {
+	/*
+	 * Los `<input>` internos viven en el Shadow DOM, así que no participan en el
+	 * formulario del documento por mucho que lleven `name`: el valor nunca
+	 * llegaba al envío. La asociación se hace con `ElementInternals`, igual que
+	 * en `moni-text-field`.
+	 */
+	static formAssociated = true;
+	private _internals: ElementInternals;
+
+	constructor() {
+		super();
+		this._internals = this.attachInternals();
+	}
+
 	/**
 	 * El nombre del input, enviado con los datos del formulario.
 	 * @type {string}
@@ -138,6 +158,32 @@ export class MoniColorField extends MoniElement {
 			if (this._colorInput) this._colorInput.disabled = this.disabled;
 			if (this._textInput) this._textInput.disabled = this.disabled;
 		}
+		// Sin condicionar a `changed`: el valor por defecto también tiene que
+		// viajar en el envío aunque nadie haya tocado el campo.
+		this._internals?.setFormValue?.(this.value);
+	}
+
+	/**
+	 * Propaga la elección del selector nativo.
+	 *
+	 * El `<input type="color">` interno no tenía ningún manejador, así que
+	 * `this.value` nunca cambiaba: la muestra y el texto seguían mostrando el
+	 * color anterior y el componente no informaba la elección ni por evento ni
+	 * por formulario. Emite los mismos eventos que `moni-text-field` para que el
+	 * consumidor no tenga que distinguir entre campos.
+	 */
+	private _onColorInput(event: Event) {
+		const target = event.target as HTMLInputElement;
+		this.value = target.value;
+		this._internals?.setFormValue?.(this.value);
+		emitMoniEvent(this, 'moni-input', { detail: { value: this.value, originalEvent: event } });
+	}
+
+	private _onColorChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		this.value = target.value;
+		this._internals?.setFormValue?.(this.value);
+		emitMoniEvent(this, 'moni-change', { detail: { value: this.value, originalEvent: event } });
 	}
 
 	static override styles = [
@@ -219,10 +265,12 @@ export class MoniColorField extends MoniElement {
 				part="color"
 				.value=${this.value}
 				?disabled=${this.disabled}
-				name=${ifDefined(this.name ? `${this.name}-color` : undefined)}
 				tabindex="-1"
+				@input=${this._onColorInput}
+				@change=${this._onColorChange}
 			/>
 			<input
+				id="input"
 				type="text"
 				part="text"
 				readonly
@@ -233,6 +281,7 @@ export class MoniColorField extends MoniElement {
 			/>
 			${this.label
 				? html`<label
+						for="input"
 						part="label"
 						class=${classMap({ active: isActive })}
 						>${this.label}</label

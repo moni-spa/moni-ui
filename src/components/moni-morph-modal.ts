@@ -109,7 +109,7 @@ interface MorphElements {
  *
  * @slot default - El contenido del cuerpo principal del modal.
  * @slot header  - Contenido de encabezado personalizado (sobrescribe el atributo `title`).
- * @slot actions - Botones de acción mostrados en la parte inferior derecha.
+ * @slot footer  - Botones de acción mostrados en la parte inferior derecha.
  */
 
 const litBool = {

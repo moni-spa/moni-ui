@@ -125,19 +125,10 @@ No declara eventos propios.
 
 Cada imagen se genera con el componente real: cambia solo la variable indicada y mantiene estable el resto del escenario. Úsala para comparar estados, no como sustituto de la API.
 
-### `target`
-
-Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button').
-Si se omite, el modal aún puede activarse programáticamente estableciendo `open = true`.
-
-![moni-morph-modal — target=default](../assets/moni-morph-modal/target--default.png)
-
 ### `open`
 
 Controla el estado abierto/cerrado del modal.
 Puede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`.
-
-![moni-morph-modal — open=false](../assets/moni-morph-modal/open--false.png)
 
 ![moni-morph-modal — open=true](../assets/moni-morph-modal/open--true.png)
 
@@ -167,22 +158,6 @@ La altura del modal cuando está completamente expandido.
 
 ![moni-morph-modal — expanded-height=default](../assets/moni-morph-modal/expandedHeight--default.png)
 
-### `close-on-click-outside`
-
-Si es true, hacer clic fuera del modal lo cerrará.
-
-![moni-morph-modal — close-on-click-outside=false](../assets/moni-morph-modal/closeOnClickOutside--false.png)
-
-![moni-morph-modal — close-on-click-outside=true](../assets/moni-morph-modal/closeOnClickOutside--true.png)
-
-### `close-on-esc`
-
-Si es true, presionar la tecla Escape cerrará el modal.
-
-![moni-morph-modal — close-on-esc=false](../assets/moni-morph-modal/closeOnEsc--false.png)
-
-![moni-morph-modal — close-on-esc=true](../assets/moni-morph-modal/closeOnEsc--true.png)
-
 ### `show-close-button`
 
 Si es true, muestra un botón de icono de cierre por defecto en el encabezado.
@@ -190,20 +165,6 @@ Si es true, muestra un botón de icono de cierre por defecto en el encabezado.
 ![moni-morph-modal — show-close-button=false](../assets/moni-morph-modal/showCloseButton--false.png)
 
 ![moni-morph-modal — show-close-button=true](../assets/moni-morph-modal/showCloseButton--true.png)
-
-### `morph-label`
-
-Si es true, intenta fundir/transformar una etiqueta del disparador hacia el encabezado del modal.
-
-![moni-morph-modal — morph-label=false](../assets/moni-morph-modal/morphLabel--false.png)
-
-![moni-morph-modal — morph-label=true](../assets/moni-morph-modal/morphLabel--true.png)
-
-### `morph-label-selector`
-
-Un selector CSS personalizado utilizado para encontrar el elemento de etiqueta específico dentro del target a transformar.
-
-![moni-morph-modal — morph-label-selector=default](../assets/moni-morph-modal/morphLabelSelector--default.png)
 
 ### `has-backdrop`
 
@@ -213,22 +174,6 @@ Si es true, renderiza un fondo atenuado detrás del modal.
 
 ![moni-morph-modal — has-backdrop=true](../assets/moni-morph-modal/hasBackdrop--true.png)
 
-### `hide-target`
-
-Si es true, oculta el elemento disparador (target) mientras el modal está abierto.
-
-![moni-morph-modal — hide-target=false](../assets/moni-morph-modal/hideTarget--false.png)
-
-![moni-morph-modal — hide-target=true](../assets/moni-morph-modal/hideTarget--true.png)
-
-### `cover-target`
-
-Si es true, fuerza al modal a cubrir visualmente la ubicación original del target antes de expandirse.
-
-![moni-morph-modal — cover-target=false](../assets/moni-morph-modal/coverTarget--false.png)
-
-![moni-morph-modal — cover-target=true](../assets/moni-morph-modal/coverTarget--true.png)
-
 ### `auto-size`
 
 Si es true, el modal calcula automáticamente su tamaño final basándose en el contenido interno (ignora expandedWidth y expandedHeight).
@@ -236,19 +181,3 @@ Si es true, el modal calcula automáticamente su tamaño final basándose en el 
 ![moni-morph-modal — auto-size=false](../assets/moni-morph-modal/autoSize--false.png)
 
 ![moni-morph-modal — auto-size=true](../assets/moni-morph-modal/autoSize--true.png)
-
-### `blur-content`
-
-Si es true, aplica un efecto de desenfoque (blur) al contenido durante la animación de entrada y salida.
-
-![moni-morph-modal — blur-content=false](../assets/moni-morph-modal/blurContent--false.png)
-
-![moni-morph-modal — blur-content=true](../assets/moni-morph-modal/blurContent--true.png)
-
-### `debug`
-
-Muestra en consola el origen, geometría y estrategia usada por cada morph.
-
-![moni-morph-modal — debug=false](../assets/moni-morph-modal/debug--false.png)
-
-![moni-morph-modal — debug=true](../assets/moni-morph-modal/debug--true.png)

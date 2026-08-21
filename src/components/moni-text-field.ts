@@ -494,6 +494,7 @@ export class MoniTextField extends MoniElement {
 		return html`<div class=${classMap(fieldClasses)} part="field">
 			${leading}
 			<input
+				id="input"
 				part="input"
 				type=${this.type}
 				placeholder=${placeholder}
@@ -506,6 +507,7 @@ export class MoniTextField extends MoniElement {
 			/>
 			${this.label
 				? html`<label
+						for="input"
 						part="label"
 						class=${classMap({ active: isActive })}
 						>${this.label}</label

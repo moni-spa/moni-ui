@@ -134,8 +134,6 @@ Controla el estado abierto/cerrado del bottom sheet.
 Cuando se establece en `true`, llama a `dialog.showModal()` o `dialog.show()`
 dependiendo de la propiedad `modal`. Cuando se establece en `false`, llama a `dialog.close()`.
 
-![moni-bottom-sheet — open=false](../assets/moni-bottom-sheet/open--false.png)
-
 ![moni-bottom-sheet — open=true](../assets/moni-bottom-sheet/open--true.png)
 
 ### `size`
