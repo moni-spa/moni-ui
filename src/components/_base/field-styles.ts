@@ -410,6 +410,11 @@ export const fieldStyles = css`
 	.field.label[class*='round'] > label {
 		inset: -0.5rem 1.9375rem 0 var(--_start);
 	}
+	/* Compact rounding keeps the label closer to the edge than pill fields. */
+	.field.label.small-round > label {
+		--_start: 1rem;
+		inset: -0.5rem 0.9375rem 0 var(--_start);
+	}
 
 	/* ─── Label lift selector group ──────────────────────────────────────────── */
 	/* The label lifts (scales down + moves up) in four conditions:
@@ -531,6 +536,16 @@ export const fieldStyles = css`
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
 	.field.label.border.prefix:not(.fill) > select {
 		clip-path: polygon(-2% -2%,1.25rem -2%,1.25rem .5rem,calc(100% - 2rem) .5rem,calc(100% - 2rem) -2%,102% -2%,102% 102%,-2% 102%);
+	}
+
+	/* The compact shape needs a narrower leading segment so it never crosses
+	   the first glyph of the floating label. */
+	.field.label.border.small-round:not(.fill)
+		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
+	.field.label.border.small-round:not(.fill) > select,
+	.field.label.border.small-round:not(.fill) > input.active,
+	.field.label.border.small-round:not(.fill) > select.active {
+		clip-path: polygon(-2% -2%,.75rem -2%,.75rem .5rem,calc(100% - 1rem) .5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	/* ─── Label color changes ─────────────────────────────────────────────────── */
