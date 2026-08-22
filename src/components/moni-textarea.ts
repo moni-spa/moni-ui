@@ -98,11 +98,11 @@ export class MoniTextarea extends MoniElement {
 
 	/**
 	 * Forma del radio del borde (border-radius) del campo.
-	 * @type {'round' | 'square' | 'no-round'}
+	 * @type {'round' | 'small-round' | 'square' | 'no-round'}
 	 * @default 'no-round'
 	 */
 	@property({ reflect: true })
-	shape: 'round' | 'square' | 'no-round' = 'no-round';
+	shape: 'round' | 'small-round' | 'square' | 'no-round' = 'no-round';
 
 	/**
 	 * Nombre del icono inicial (leading) (Material Symbols).
@@ -364,6 +364,7 @@ export class MoniTextarea extends MoniElement {
 			suffix: hasTrailing,
 			invalid: this.error,
 			round: this.shape === 'round',
+			'small-round': this.shape === 'small-round',
 			square: this.shape === 'no-round'
 		};
 		const placeholder = this.placeholder || (this.label ? ' ' : '');

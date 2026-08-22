@@ -106,11 +106,11 @@ export class MoniTextField extends MoniElement {
 
 	/**
 	 * Forma del radio del borde (border-radius) del campo.
-	 * @type {'round' | 'no-round'}
+	 * @type {'round' | 'small-round' | 'no-round'}
 	 * @default 'no-round'
 	 */
 	@property({ reflect: true })
-	shape: 'round' | 'no-round' = 'no-round';
+	shape: 'round' | 'small-round' | 'no-round' = 'no-round';
 
 	/**
 	 * El tipo de input HTML nativo.
@@ -544,6 +544,7 @@ export class MoniTextField extends MoniElement {
 			'suffix-action-field': Boolean(this.suffixButtonIcon) || this._hasSuffixSlot,
 			invalid: this.error,
 			round: this.shape === 'round' && this.variant !== 'underlined',
+			'small-round': this.shape === 'small-round' && this.variant !== 'underlined',
 			square: this.shape === 'no-round'
 		};
 		const placeholder = this.placeholder || (this.label ? ' ' : '');

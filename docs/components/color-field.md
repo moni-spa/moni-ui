@@ -81,7 +81,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `shape` | `shape` | `'round' \| 'square' \| 'no-round'` | `'no-round'` | Forma del radio del borde del campo. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo de color. |
 | `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
+| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es true, establece el campo en un estado de error. |
 | `value` | `value` | `string` | `'#6750a4'` | El valor actual del color hexadecimal. |
 

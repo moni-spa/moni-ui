@@ -86,6 +86,14 @@ describe('moni-text-field', () => {
 		expect(field?.classList.contains('round')).toBe(true);
 	});
 
+	it('aplica la clase small-round para un redondeado compacto', async () => {
+		el.shape = 'small-round';
+		await el.updateComplete;
+		const field = el.shadowRoot?.querySelector('.field');
+		expect(field?.classList.contains('small-round')).toBe(true);
+		expect(field?.classList.contains('square')).toBe(false);
+	});
+
 	it('renderiza underlined sin fondo, contorno completo ni forma redondeada', async () => {
 		el.variant = 'underlined';
 		el.shape = 'round';

@@ -50,8 +50,8 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 
 | Atributo | Propiedad | Tipo | Default | Descripción |
 |---|---|---|---|---|
-| `target` | `target` | `string` | `''` | Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button'). Si se omite, el modal aún puede activarse programáticamente estableciendo `open = true`. |
-| `open` | `open` | `boolean` | `false` | Controla el estado abierto/cerrado del modal. Puede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`. |
+| `target` | `target` | `string` | `''` | Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button'). Si se omite, el modal aún puede activarse programáticamente estableciendo `open = true`. |
+| `open` | `open` | `boolean` | `false` | Controla el estado abierto/cerrado del modal. Puede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`. |
 | `modal` | `modal` | `boolean` | `true` | Si es true, renderiza un fondo y atrapa el foco, actuando como un verdadero diálogo modal. |
 | `placement` | `placement` | `Placement` | `'center'` | Posición preferida del modal en relación con la ventana gráfica. |
 | `expanded-width` | `expandedWidth` | `string` | `'22rem'` | El ancho del modal cuando está completamente expandido. |

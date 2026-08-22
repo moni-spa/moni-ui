@@ -143,6 +143,13 @@ export const fieldStyles = css`
 	.field[class*='round'].extra {
 		border-radius: 2rem;
 	}
+	/* Compact rounding for dense forms without falling back to square corners. */
+	.field.small-round,
+	.field.small-round.small,
+	.field.small-round.large,
+	.field.small-round.extra {
+		border-radius: 0.5rem;
+	}
 
 	/* ─── Icon positioning ───────────────────────────────────────────────────── */
 	/* Generic rule: absolutely positions any icon/image/svg inside the field. */

@@ -146,11 +146,11 @@ export class MoniSelect extends MoniElement {
 
 	/**
 	 * Forma (radio de borde) del campo.
-	 * @type {'round' | 'square' | 'no-round'}
+	 * @type {'round' | 'small-round' | 'square' | 'no-round'}
 	 * @default 'no-round'
 	 */
 	@property({ reflect: true })
-	shape: 'round' | 'square' | 'no-round' = 'no-round';
+	shape: 'round' | 'small-round' | 'square' | 'no-round' = 'no-round';
 
 	/**
 	 * Deshabilita el campo select.
@@ -1694,6 +1694,7 @@ export class MoniSelect extends MoniElement {
 			suffix: true,
 			invalid: this.error,
 			round: this.shape === 'round',
+			'small-round': this.shape === 'small-round',
 			square: this.shape === 'no-round'
 		};
 

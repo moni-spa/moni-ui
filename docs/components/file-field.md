@@ -95,7 +95,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `button-label` | `buttonLabel` | `string` | `'Choose file'` | Texto para el botón de selección de archivo. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo de archivo. |
 | `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
+| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es true, establece el campo en un estado de error. |
 | `value` | `value` | `string` | `''` | La representación en cadena de los archivos seleccionados (solo lectura para el usuario). |
 | `icon` | `icon` | `string` | `''` | Nombre del icono inicial (Material Symbols). |

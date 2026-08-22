@@ -97,6 +97,14 @@ describe('moni-textarea', () => {
 		expect(field?.classList.contains('round')).toBe(true);
 	});
 
+	it('aplica la clase small-round para un redondeado compacto', async () => {
+		el.shape = 'small-round';
+		await el.updateComplete;
+		const field = el.shadowRoot?.querySelector('.field');
+		expect(field?.classList.contains('small-round')).toBe(true);
+		expect(field?.classList.contains('square')).toBe(false);
+	});
+
 	it('no aplica la clase de forma (shape) en el contenedor de campo para shape=square', async () => {
 		el.shape = 'square';
 		await el.updateComplete;

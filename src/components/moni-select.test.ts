@@ -23,6 +23,14 @@ describe('moni-select', () => {
 		expect(input?.getAttribute('readonly')).toBe('');
 	});
 
+	it('aplica la clase small-round para un redondeado compacto', async () => {
+		el.shape = 'small-round';
+		await el.updateComplete;
+		const field = el.shadowRoot?.querySelector('.field');
+		expect(field?.classList.contains('small-round')).toBe(true);
+		expect(field?.classList.contains('square')).toBe(false);
+	});
+
 	it('analiza las opciones insertadas en slots (slotted)', async () => {
 		const opt1 = document.createElement('moni-select-option');
 		opt1.setAttribute('value', 'v1');
