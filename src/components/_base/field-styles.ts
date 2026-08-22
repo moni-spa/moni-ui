@@ -410,11 +410,6 @@ export const fieldStyles = css`
 	.field.label[class*='round'] > label {
 		inset: -0.5rem 1.9375rem 0 var(--_start);
 	}
-	/* Compact rounding keeps the label closer to the edge than pill fields. */
-	.field.label.small-round > label {
-		--_start: 1rem;
-		inset: -0.5rem 0.9375rem 0 var(--_start);
-	}
 
 	/* ─── Label lift selector group ──────────────────────────────────────────── */
 	/* The label lifts (scales down + moves up) in four conditions:
@@ -447,6 +442,12 @@ export const fieldStyles = css`
 			input.active + label
 		) {
 		--_start: 1.5rem;
+	}
+	/* Compact rounding keeps the label closer to the edge than pill fields.
+	   This must follow the generic [class*='round'] rule. */
+	.field.label.small-round > label {
+		--_start: 1rem;
+		inset: -0.5rem 0.9375rem 0 var(--_start);
 	}
 
 	/* Prefix fields: shift the label's inline-start to clear the leading icon. */
@@ -545,7 +546,7 @@ export const fieldStyles = css`
 	.field.label.border.small-round:not(.fill) > select,
 	.field.label.border.small-round:not(.fill) > input.active,
 	.field.label.border.small-round:not(.fill) > select.active {
-		clip-path: polygon(-2% -2%,.75rem -2%,.75rem .5rem,calc(100% - 1rem) .5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%);
+		clip-path: polygon(-2% -2%,.25rem -2%,.25rem .5rem,calc(100% - 1rem) .5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%) !important;
 	}
 
 	/* ─── Label color changes ─────────────────────────────────────────────────── */
