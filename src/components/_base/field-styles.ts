@@ -527,7 +527,7 @@ export const fieldStyles = css`
 	.field.label.border:not(.fill)
 		> :is(input, textarea):is(:focus, [placeholder]:not(:placeholder-shown), .active),
 	.field.label.border:not(.fill) > select {
-		clip-path: polygon(-2% -2%,1.25rem -2%,1.25rem .5rem,calc(100% - 2rem) .5rem,calc(100% - 2rem) -2%,102% -2%,102% 102%,-2% 102%);
+		clip-path: polygon(-2% -2%,0.75rem -2%,0.75rem 0.5rem,calc(100% - 1rem) 0.5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	.field.label.border.prefix[class*='round']:not(.fill)
@@ -546,7 +546,7 @@ export const fieldStyles = css`
 	.field.label.border.small-round:not(.fill) > select,
 	.field.label.border.small-round:not(.fill) > input.active,
 	.field.label.border.small-round:not(.fill) > select.active {
-		clip-path: polygon(-2% -2%,.25rem -2%,.25rem .5rem,calc(100% - 1rem) .5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%) !important;
+		clip-path: polygon(-2% -2%,0.75rem -2%,0.75rem 0.5rem,calc(100% - 1rem) 0.5rem,calc(100% - 1rem) -2%,102% -2%,102% 102%,-2% 102%);
 	}
 
 	/* ─── Label color changes ─────────────────────────────────────────────────── */
