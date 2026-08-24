@@ -87,37 +87,37 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 
 | Atributo | Propiedad | Tipo | Default | Descripción |
 |---|---|---|---|---|
-| `name` | `name` | `string` | `''` | El nombre del input, enviado con los datos del formulario. |
-| `label` | `label` | `string` | `''` | El texto de la etiqueta flotante. |
-| `variant` | `variant` | `'filled' \| 'outlined' \| 'underlined'` | `'filled'` | Variante visual del campo de texto. |
-| `size` | `size` | `'small' \| 'medium' \| 'large' \| 'extra'` | `'medium'` | Define las dimensiones del campo de texto. |
-| `shape` | `shape` | `'round' \| 'small-round' \| 'no-round'` | `'no-round'` | Forma del radio del borde (border-radius) del campo. |
-| `type` | `type` | `'text' \| 'password' \| 'email' \| 'number' \| 'tel' \| 'url' \| 'search' \| 'date' \| 'time' \| 'datetime-local' \| 'month' \| 'week' \| 'color'` | `'text'` | El tipo de input HTML nativo. |
-| `icon` | `icon` | `string` | `''` | Nombre del icono inicial (leading) (Material Symbols). |
-| `trailing-icon` | `trailingIcon` | `string` | `''` | Nombre del icono final (trailing) (Material Symbols). |
-| `prefix` | `prefix` | `string` | `''` | Prefijo de texto corto mostrado antes del valor del input. |
-| `suffix` | `suffix` | `string` | `''` | Sufijo de texto corto mostrado después del valor del input. |
-| `suffix-button-icon` | `suffixButtonIcon` | `string` | `''` | Icono del botón interactivo ubicado al final del campo. |
-| `suffix-button-label` | `suffixButtonLabel` | `string` | `'Acción del campo'` | Etiqueta accesible del botón suffix. |
-| `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
+| `name` | `name` | `string` | `""` | El nombre del input, enviado con los datos del formulario. |
+| `label` | `label` | `string` | `""` | El texto de la etiqueta flotante. |
+| `variant` | `variant` | `"filled" \| "outlined" \| "underlined"` | `"filled"` | Variante visual del campo de texto. |
+| `size` | `size` | `"small" \| "medium" \| "large" \| "extra"` | `"medium"` | Define las dimensiones del campo de texto. |
+| `shape` | `shape` | `"round" \| "small-round" \| "no-round"` | `"no-round"` | Forma del radio del borde (border-radius) del campo. |
+| `type` | `type` | `"text" \| "password" \| "email" \| "number" \| "tel" \| "url" \| "search" \| "date" \| "time" \| "datetime-local" \| "month" \| "week" \| "color"` | `"text"` | El tipo de input HTML nativo. |
+| `icon` | `icon` | `string` | `""` | Nombre del icono inicial (leading) (Material Symbols). |
+| `trailing-icon` | `trailingIcon` | `string` | `""` | Nombre del icono final (trailing) (Material Symbols). |
+| `prefix` | `prefix` | `string` | `""` | Prefijo de texto corto mostrado antes del valor del input. |
+| `suffix` | `suffix` | `string` | `""` | Sufijo de texto corto mostrado después del valor del input. |
+| `suffix-button-icon` | `suffixButtonIcon` | `string` | `""` | Icono del botón interactivo ubicado al final del campo. |
+| `suffix-button-label` | `suffixButtonLabel` | `string` | `"Acción del campo"` | Etiqueta accesible del botón suffix. |
+| `helper` | `helper` | `string` | `""` | Texto de ayuda mostrado debajo del campo. |
+| `error-text` | `errorText` | `string` | `""` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es true, establece el campo en un estado de error. |
 | `loading` | `loading` | `boolean` | `false` | Si es true, muestra un indicador de carga (progreso lineal/circular) al final. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo de texto. |
-| `value` | `value` | `string` | `''` | El valor actual del input. |
-| `placeholder` | `placeholder` | `string` | `''` | Texto de marcador de posición (placeholder) mostrado cuando el input está vacío y la etiqueta es flotante. |
+| `value` | `value` | `string` | `""` | El valor actual del input. |
+| `placeholder` | `placeholder` | `string` | `""` | Texto de marcador de posición (placeholder) mostrado cuando el input está vacío y la etiqueta es flotante. |
 | `required` | `required` | `boolean` | `false` | Marca el campo como obligatorio y lo integra en la validación del formulario. |
 | `readonly` | `readonly` | `boolean` | `false` | Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. |
-| `autocomplete` | `autocomplete` | `string` | `''` | Pista de autocompletado del navegador, por ejemplo `email` o `current-password`. |
-| `inputmode` | `inputmode` | `string` | `''` | Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`. |
+| `autocomplete` | `autocomplete` | `string` | `""` | Pista de autocompletado del navegador, por ejemplo `email` o `current-password`. |
+| `inputmode` | `inputmode` | `string` | `""` | Teclado virtual a mostrar en móvil, por ejemplo `numeric` o `tel`. |
 | `maxlength` | `maxlength` | `number \| null` | `null` | Máximo de caracteres aceptados. |
 | `minlength` | `minlength` | `number \| null` | `null` | Mínimo de caracteres aceptados. |
-| `min` | `min` | `string` | `''` | Valor mínimo para `number` y los tipos de fecha y hora. |
-| `max` | `max` | `string` | `''` | Valor máximo para `number` y los tipos de fecha y hora. |
-| `step` | `step` | `string` | `''` | Incremento para `number` y los tipos de fecha y hora. |
-| `pattern` | `pattern` | `string` | `''` | Expresión regular que debe cumplir el valor. |
-| `mask` | `mask` | `string` | `''` | Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `\|`, cuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT). |
-| `mask-alias` | `maskAlias` | `string` | `''` | Alias integrado de Inputmask, por ejemplo `email`, `datetime`, `numeric`, `currency` o `ip`. |
+| `min` | `min` | `string` | `""` | Valor mínimo para `number` y los tipos de fecha y hora. |
+| `max` | `max` | `string` | `""` | Valor máximo para `number` y los tipos de fecha y hora. |
+| `step` | `step` | `string` | `""` | Incremento para `number` y los tipos de fecha y hora. |
+| `pattern` | `pattern` | `string` | `""` | Expresión regular que debe cumplir el valor. |
+| `mask` | `mask` | `string` | `""` | Patrón Inputmask. Admite opcionales `[]`, grupos `()`, alternadores `\|`, cuantificadores `{n,m}` y los tokens `9`, `a`, `*` y `K` (RUT). |
+| `mask-alias` | `maskAlias` | `string` | `""` | Alias integrado de Inputmask, por ejemplo `email`, `datetime`, `numeric`, `currency` o `ip`. |
 | `mask-options` | `maskOptions` | `InputmaskOptions` | `{}` | Opciones avanzadas de Inputmask. También acepta JSON mediante el atributo `mask-options`. |
 
 ## Slots
@@ -131,14 +131,23 @@ Este componente no declara slots públicos.
 ## Métodos públicos
 
 - `maskOption(name: string): unknown;` — Lee o actualiza opciones de la instancia activa.
-- `maskOption(options: InputmaskOptions, noRemask?: boolean): InputmaskInstance | undefined;` — Método público maskOption.
-- `maskOption(nameOrOptions: string | InputmaskOptions, noRemask = false): unknown` — Método público maskOption.
+- `maskOption(
+    options: InputmaskOptions,
+    noRemask?: boolean,
+  ): InputmaskInstance | undefined;` — Método público maskOption.
+- `maskOption(
+    nameOrOptions: string | InputmaskOptions,
+    noRemask = false,
+  ): unknown` — Método público maskOption.
 - `getEmptyMask(): string` — Método público getEmptyMask.
 - `hasMaskedValue(): boolean` — Método público hasMaskedValue.
 - `isMaskComplete(): boolean` — Método público isMaskComplete.
 - `isMaskValid(value?: string): boolean` — Método público isMaskValid.
 - `getMaskMetadata(): unknown` — Método público getMaskMetadata.
-- `formatWithMask(value: string, metadata = false): string |` — Método público formatWithMask.
+- `formatWithMask(
+    value: string,
+    metadata = false,
+  ): string |` — Método público formatWithMask.
 - `setMaskedValue(value: string): void` — Método público setMaskedValue.
 - `removeMask(): void` — Método público removeMask.
 - `checkValidity(): boolean` — Método público checkValidity.

@@ -229,6 +229,10 @@ export class MoniMorphModal extends MoniElement {
 	@property({ type: Boolean, reflect: true, attribute: 'auto-size', converter: litBool })
 	autoSize = false;
 
+	/** Ajusta sólo la altura al contenido, sin superar expanded-height. */
+	@property({ type: Boolean, reflect: true, attribute: 'auto-height', converter: litBool })
+	autoHeight = false;
+
 	/** Fuerza al modal expandido a ocupar todo el viewport. */
 	@property({ type: Boolean, reflect: true, converter: litBool })
 	fullscreen = false;
@@ -271,6 +275,12 @@ export class MoniMorphModal extends MoniElement {
 	private _originFallbacks: HTMLElement[] = [];
 	private static _openStack: MoniMorphModal[] = [];
 	private _targetStylesCache = new Map<HTMLElement, { opacity: string; color: string }>();
+	private static _scrollLockOwners = new Set<MoniMorphModal>();
+	private static _scrollLockSnapshot: {
+		documentOverflow: string;
+		bodyOverflow: string;
+		bodyOverscrollBehavior: string;
+	} | null = null;
 
 	/**
 	 * Handler encapsulado para el evento click en el trigger.
@@ -312,6 +322,7 @@ export class MoniMorphModal extends MoniElement {
 		this.style.removeProperty('--_z-index');
 		this.style.removeProperty('--_backdrop-duration');
 		this.style.removeProperty('--_backdrop-ease');
+		this._releaseDocumentScrollLock();
 		this._cleanupMorphElements();
 		this._restoreTargetContent();
 		super.disconnectedCallback();
@@ -332,6 +343,44 @@ export class MoniMorphModal extends MoniElement {
 			if (this.open) this.show();
 			else this.hide();
 		}
+		if ((changed.has('hasBackdrop') || changed.has('fullscreen') || changed.has('responsiveFullscreen') || changed.has('fullscreenBreakpoint')) && (this.open || this._visible)) {
+			this._syncDocumentScrollLock();
+		}
+	}
+
+	private _shouldLockDocumentScroll(): boolean {
+		return this.hasBackdrop || this._usesFullscreen();
+	}
+
+	private _syncDocumentScrollLock(): void {
+		if (this._shouldLockDocumentScroll()) this._acquireDocumentScrollLock();
+		else this._releaseDocumentScrollLock();
+	}
+
+	private _acquireDocumentScrollLock(): void {
+		if (MoniMorphModal._scrollLockOwners.has(this)) return;
+		if (MoniMorphModal._scrollLockOwners.size === 0) {
+			MoniMorphModal._scrollLockSnapshot = {
+				documentOverflow: document.documentElement.style.overflow,
+				bodyOverflow: document.body.style.overflow,
+				bodyOverscrollBehavior: document.body.style.overscrollBehavior
+			};
+			document.documentElement.style.overflow = 'hidden';
+			document.body.style.overflow = 'hidden';
+			document.body.style.overscrollBehavior = 'none';
+		}
+		MoniMorphModal._scrollLockOwners.add(this);
+	}
+
+	private _releaseDocumentScrollLock(): void {
+		if (!MoniMorphModal._scrollLockOwners.delete(this) || MoniMorphModal._scrollLockOwners.size > 0) return;
+		const snapshot = MoniMorphModal._scrollLockSnapshot;
+		if (snapshot) {
+			document.documentElement.style.overflow = snapshot.documentOverflow;
+			document.body.style.overflow = snapshot.bodyOverflow;
+			document.body.style.overscrollBehavior = snapshot.bodyOverscrollBehavior;
+		}
+		MoniMorphModal._scrollLockSnapshot = null;
 	}
 
 	/**
@@ -379,6 +428,7 @@ export class MoniMorphModal extends MoniElement {
 		this._handlingOpenChange = true;
 		this.open = true;
 		this._handlingOpenChange = false;
+		this._syncDocumentScrollLock();
 
 		// Apilamos el modal globalmente para manejar correctamente el z-index en modales anidados
 		MoniMorphModal._openStack.push(this);
@@ -480,31 +530,7 @@ export class MoniMorphModal extends MoniElement {
 
 			// Fase "Last": Calculamos las dimensiones expandidas del modal basándonos en la configuración
 			let naturalSize: { width: number; height: number } | undefined;
-			if (this.autoSize) {
-				const prevW = panel.style.getPropertyValue('--_panel-width');
-				const prevH = panel.style.getPropertyValue('--_panel-height');
-				const prevPanelW = panel.style.width;
-				const prevPanelH = panel.style.height;
-				
-				panel.style.width = 'auto';
-				panel.style.height = 'auto';
-				panel.style.setProperty('--_panel-width', 'max-content');
-				panel.style.setProperty('--_panel-height', 'max-content');
-				
-				const bodyEl = this.shadowRoot!.querySelector('.body') as HTMLElement;
-				const prevOverflow = bodyEl ? bodyEl.style.overflow : '';
-				if (bodyEl) bodyEl.style.overflow = 'visible';
-
-				// Forzamos al panel-inner a expandirse para medir su contenido real
-				naturalSize = { width: this._inner.scrollWidth, height: this._inner.scrollHeight };
-				
-				panel.style.setProperty('--_panel-width', prevW);
-				panel.style.setProperty('--_panel-height', prevH);
-				panel.style.width = prevPanelW;
-				panel.style.height = prevPanelH;
-				
-				if (bodyEl) bodyEl.style.overflow = prevOverflow;
-			}
+			if (this.autoSize || this.autoHeight) naturalSize = this._measureNaturalSize(panel);
 
 			const finalRect = this._computeFinalRect(targetState.rect, naturalSize);
 			panel.style.setProperty('--_panel-width', `${finalRect.width}px`);
@@ -819,30 +845,7 @@ export class MoniMorphModal extends MoniElement {
 					}
 					
 					let naturalSize: { width: number; height: number } | undefined;
-					if (this.autoSize) {
-						const prevW = panel.style.getPropertyValue('--_panel-width');
-						const prevH = panel.style.getPropertyValue('--_panel-height');
-						const prevPanelW = panel.style.width;
-						const prevPanelH = panel.style.height;
-
-						panel.style.width = 'auto';
-						panel.style.height = 'auto';
-						panel.style.setProperty('--_panel-width', 'max-content');
-						panel.style.setProperty('--_panel-height', 'max-content');
-						
-						const bodyEl = this.shadowRoot!.querySelector('.body') as HTMLElement;
-						const prevOverflow = bodyEl ? bodyEl.style.overflow : '';
-						if (bodyEl) bodyEl.style.overflow = 'visible';
-
-						naturalSize = { width: this._inner.scrollWidth, height: this._inner.scrollHeight };
-						
-						panel.style.setProperty('--_panel-width', prevW);
-						panel.style.setProperty('--_panel-height', prevH);
-						panel.style.width = prevPanelW;
-						panel.style.height = prevPanelH;
-						
-						if (bodyEl) bodyEl.style.overflow = prevOverflow;
-					}
+					if (this.autoSize || this.autoHeight) naturalSize = this._measureNaturalSize(panel);
 
 					const finalRect = this._computeFinalRect(targetState.rect, naturalSize);
 					panel.style.setProperty('--_panel-width', `${finalRect.width}px`);
@@ -1006,6 +1009,27 @@ export class MoniMorphModal extends MoniElement {
 		this._backdrop.style.opacity = '1';
 		const motion = { progress: 0 };
 		let contentAttached = false;
+		const sampleInterval = 1000 / 30;
+		const initialVisualWidth = destination.source.offsetWidth || targetRect.width;
+		const initialVisualHeight = destination.source.offsetHeight || targetRect.height;
+		const captureTargetSample = () => {
+			const state = this._getTargetState(destination.source);
+			const rect = this._toPanelCoordinateRect(state.rect);
+			return {
+				rect: { left: rect.left, top: rect.top, width: rect.width, height: rect.height },
+				transform: this._readTransformState(destination.source),
+				visualWidth: destination.source.offsetWidth || rect.width,
+				visualHeight: destination.source.offsetHeight || rect.height,
+				backgroundColor: state.backgroundColor,
+				color: state.color,
+				borderRadius: state.borderRadius,
+				boxShadow: state.boxShadow
+			};
+		};
+		let previousSample = captureTargetSample();
+		let nextSample = previousSample;
+		let sampledAt = performance.now();
+		const lerp = (from: number, to: number, amount: number) => from + (to - from) * amount;
 		if (this.debug) {
 			console.log('[moni-morph-modal] arc', { start, control, end, distance, arc, morphDuration });
 		}
@@ -1017,9 +1041,28 @@ export class MoniMorphModal extends MoniElement {
 				ease: 'power2.inOut',
 				onUpdate: () => {
 					const progress = motion.progress;
-					const liveState = this._getTargetState(destination.source);
-					const liveRect = this._toPanelCoordinateRect(liveState.rect);
-					const liveTransform = this._readTransformState(destination.source);
+					const now = performance.now();
+					const forceFinalSample = progress >= 0.999;
+					if (forceFinalSample || now - sampledAt >= sampleInterval) {
+						previousSample = nextSample;
+						nextSample = captureTargetSample();
+						sampledAt = now;
+					}
+					const sampleProgress = forceFinalSample
+						? 1
+						: Math.min(1, (now - sampledAt) / sampleInterval);
+					const liveRect = {
+						left: lerp(previousSample.rect.left, nextSample.rect.left, sampleProgress),
+						top: lerp(previousSample.rect.top, nextSample.rect.top, sampleProgress),
+						width: lerp(previousSample.rect.width, nextSample.rect.width, sampleProgress),
+						height: lerp(previousSample.rect.height, nextSample.rect.height, sampleProgress)
+					};
+					const liveTransform = {
+						rotation: lerp(previousSample.transform.rotation, nextSample.transform.rotation, sampleProgress),
+						skewX: lerp(previousSample.transform.skewX, nextSample.transform.skewX, sampleProgress),
+						scaleX: lerp(previousSample.transform.scaleX, nextSample.transform.scaleX, sampleProgress),
+						scaleY: lerp(previousSample.transform.scaleY, nextSample.transform.scaleY, sampleProgress)
+					};
 					const liveEnd = {
 						x: liveRect.left + liveRect.width / 2,
 						y: liveRect.top + liveRect.height / 2
@@ -1054,10 +1097,8 @@ export class MoniMorphModal extends MoniElement {
 						progress * progress * liveEnd.y;
 					// La contracción modal mantiene su easing, pero cualquier mutación
 					// adicional del target se suma completa para seguirla en tiempo real.
-					const liveVisualWidth = destination.source.offsetWidth || liveRect.width;
-					const liveVisualHeight = destination.source.offsetHeight || liveRect.height;
-					const initialVisualWidth = destination.source.offsetWidth || targetRect.width;
-					const initialVisualHeight = destination.source.offsetHeight || targetRect.height;
+					const liveVisualWidth = lerp(previousSample.visualWidth, nextSample.visualWidth, sampleProgress);
+					const liveVisualHeight = lerp(previousSample.visualHeight, nextSample.visualHeight, sampleProgress);
 					const width =
 						current.width + (initialVisualWidth - current.width) * progress +
 						(liveVisualWidth - initialVisualWidth);
@@ -1075,18 +1116,22 @@ export class MoniMorphModal extends MoniElement {
 						scaleY: 1 + (liveTransform.scaleY - 1) * progress,
 						backgroundColor: gsap.utils.interpolate(
 							panelStartVisual.backgroundColor,
-							liveState.backgroundColor,
+							gsap.utils.interpolate(previousSample.backgroundColor, nextSample.backgroundColor, sampleProgress),
 							progress
 						),
-						color: gsap.utils.interpolate(panelStartVisual.color, liveState.color, progress),
+						color: gsap.utils.interpolate(
+							panelStartVisual.color,
+							gsap.utils.interpolate(previousSample.color, nextSample.color, sampleProgress),
+							progress
+						),
 						borderRadius: gsap.utils.interpolate(
 							panelStartVisual.borderRadius,
-							liveState.borderRadius,
+							gsap.utils.interpolate(previousSample.borderRadius, nextSample.borderRadius, sampleProgress),
 							progress
 						),
 						boxShadow: gsap.utils.interpolate(
 							panelStartVisual.boxShadow,
-							liveState.boxShadow,
+							gsap.utils.interpolate(previousSample.boxShadow, nextSample.boxShadow, sampleProgress),
 							progress
 						)
 					});
@@ -1154,6 +1199,7 @@ export class MoniMorphModal extends MoniElement {
 		// producir un flash de scrim antes de que Lit retire la clase `.open`.
 		const idx = MoniMorphModal._openStack.indexOf(this);
 		if (idx > -1) MoniMorphModal._openStack.splice(idx, 1);
+		this._releaseDocumentScrollLock();
 	}
 
 	private _captureOriginFallbacks(origin: HTMLElement): void {
@@ -1176,10 +1222,30 @@ export class MoniMorphModal extends MoniElement {
 		const candidates = [this._targetEl, ...this._originFallbacks].filter(
 			(candidate, index, all): candidate is HTMLElement => !!candidate && all.indexOf(candidate) === index
 		);
+
+		// Si el trigger original sigue en el DOM pero salio del viewport, no se
+		// debe sustituir por uno de sus ancestros visibles. Ese fallback haria que
+		// el modal colapsara hacia un contenedor que nunca fue su origen visual.
+		// En este caso el cierre seguro es la animacion sin origen (fade + scale).
+		if (this._targetEl?.isConnected && !this._intersectsViewport(this._targetEl)) {
+			this._debugMorph('close', null, 'fade', candidates);
+			return null;
+		}
+
 		const resolved = candidates.find((candidate) => this._isUsableClosingTarget(candidate)) ?? null;
 		const strategy = !resolved ? 'fade' : resolved === this._targetEl ? 'target' : 'ancestor';
 		this._debugMorph('close', resolved, strategy, candidates);
 		return resolved;
+	}
+
+	private _intersectsViewport(el: HTMLElement): boolean {
+		const rect = el.getBoundingClientRect();
+		return rect.width >= 2
+			&& rect.height >= 2
+			&& rect.right > 0
+			&& rect.bottom > 0
+			&& rect.left < window.innerWidth
+			&& rect.top < window.innerHeight;
 	}
 
 	private _debugMorph(
@@ -1211,9 +1277,7 @@ export class MoniMorphModal extends MoniElement {
 
 	private _isUsableClosingTarget(el: HTMLElement | null): el is HTMLElement {
 		if (!el?.isConnected) return false;
-		const rect = el.getBoundingClientRect();
-		if (rect.width < 2 || rect.height < 2) return false;
-		if (rect.right <= 0 || rect.bottom <= 0 || rect.left >= window.innerWidth || rect.top >= window.innerHeight) return false;
+		if (!this._intersectsViewport(el)) return false;
 		let current: HTMLElement | null = el;
 		while (current && current !== document.body) {
 			const style = getComputedStyle(current);
@@ -1919,8 +1983,12 @@ export class MoniMorphModal extends MoniElement {
 		if (this._usesFullscreen()) return new DOMRect(0, 0, vw, vh);
 		const padding = 16;
 
-		let width = this.autoSize && naturalSize ? naturalSize.width : this._parseSize(this.expandedWidth, vw);
-		let height = this.autoSize && naturalSize ? naturalSize.height : this._parseSize(this.expandedHeight, vh);
+		const configuredWidth = this._parseSize(this.expandedWidth, vw, 'width');
+		const configuredHeight = this._parseSize(this.expandedHeight, vh, 'height');
+		let width = this.autoSize && naturalSize ? naturalSize.width : configuredWidth;
+		let height = (this.autoSize || this.autoHeight) && naturalSize
+			? Math.min(naturalSize.height, configuredHeight)
+			: configuredHeight;
 
 		width = Math.min(width, vw - padding * 2);
 		height = Math.min(height, vh - padding * 2);
@@ -2049,15 +2117,58 @@ export class MoniMorphModal extends MoniElement {
 		return new DOMRect(left, top, width, height);
 	}
 
-	private _parseSize(value: string, ref: number): number {
-		const num = parseFloat(value);
+	private _measureNaturalSize(panel: HTMLElement): { width: number; height: number } {
+		const prevW = panel.style.getPropertyValue('--_panel-width');
+		const prevH = panel.style.getPropertyValue('--_panel-height');
+		const prevPanelW = panel.style.width;
+		const prevPanelH = panel.style.height;
+		const bodyEl = this.shadowRoot!.querySelector('.body') as HTMLElement;
+		const prevOverflow = bodyEl?.style.overflow ?? '';
+		const configuredWidth = Math.min(
+			this._parseSize(this.expandedWidth, window.innerWidth, 'width'),
+			window.innerWidth - 32
+		);
+
+		panel.style.width = this.autoSize ? 'auto' : `${configuredWidth}px`;
+		panel.style.height = 'auto';
+		panel.style.setProperty('--_panel-width', this.autoSize ? 'max-content' : `${configuredWidth}px`);
+		panel.style.setProperty('--_panel-height', 'max-content');
+		if (bodyEl) bodyEl.style.overflow = 'visible';
+		const size = { width: this._inner.scrollWidth, height: this._inner.scrollHeight };
+
+		panel.style.setProperty('--_panel-width', prevW);
+		panel.style.setProperty('--_panel-height', prevH);
+		panel.style.width = prevPanelW;
+		panel.style.height = prevPanelH;
+		if (bodyEl) bodyEl.style.overflow = prevOverflow;
+		return size;
+	}
+
+	private _parseSize(value: string, ref: number, axis: 'width' | 'height'): number {
+		const normalized = value.trim();
+		if (/^(calc|min|max|clamp)\(/i.test(normalized) && CSS.supports(axis, normalized)) {
+			const probe = document.createElement('div');
+			Object.assign(probe.style, {
+				position: 'fixed',
+				visibility: 'hidden',
+				pointerEvents: 'none',
+				contain: 'strict',
+				width: axis === 'width' ? normalized : '0',
+				height: axis === 'height' ? normalized : '0'
+			});
+			document.body.appendChild(probe);
+			const measured = probe.getBoundingClientRect()[axis];
+			probe.remove();
+			if (measured > 0) return measured;
+		}
+		const num = parseFloat(normalized);
 		if (Number.isNaN(num)) return 352;
-		if (value.endsWith('px')) return num;
-		if (value.endsWith('rem')) return num * 16;
-		if (value.endsWith('em')) return num * 16;
-		if (value.endsWith('%')) return (num / 100) * ref;
-		if (value.endsWith('vw')) return (num / 100) * window.innerWidth;
-		if (value.endsWith('vh')) return (num / 100) * window.innerHeight;
+		if (normalized.endsWith('px')) return num;
+		if (normalized.endsWith('rem')) return num * 16;
+		if (normalized.endsWith('em')) return num * 16;
+		if (normalized.endsWith('%')) return (num / 100) * ref;
+		if (normalized.endsWith('vw')) return (num / 100) * window.innerWidth;
+		if (normalized.endsWith('vh')) return (num / 100) * window.innerHeight;
 		return num;
 	}
 
@@ -2139,6 +2250,7 @@ export class MoniMorphModal extends MoniElement {
 				flex: 1;
 				overflow-y: var(--moni-morph-body-overflow-y, auto);
 				overflow-x: var(--moni-morph-body-overflow-x, hidden);
+				overscroll-behavior: contain;
 				padding: var(--moni-morph-body-padding, 0 1.5rem);
 				scrollbar-gutter: var(--moni-morph-body-scrollbar-gutter, stable);
 			}

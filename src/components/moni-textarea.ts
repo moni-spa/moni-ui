@@ -5,13 +5,13 @@
  * @contributors Moni Labs & Contributors
  */
 
-import { css, html, nothing } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
-import { ifDefined } from 'lit/directives/if-defined.js';
-import { classMap } from 'lit/directives/class-map.js';
-import { MoniElement, sharedStyles, fieldStyles } from './_base/index.js';
-import './moni-icon.js';
-import './moni-progress.js';
+import { css, html, nothing } from "lit";
+import { customElement, property, query } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
+import { classMap } from "lit/directives/class-map.js";
+import { MoniElement, sharedStyles, fieldStyles } from "./_base/index.js";
+import "./moni-icon.js";
+import "./moni-progress.js";
 
 /**
  * Componente Material Design 3 Textarea (Área de texto).
@@ -59,402 +59,418 @@ import './moni-progress.js';
  * @csspart helper    - El área de texto de ayuda/error.
  * @csspart counter   - El elemento contador de caracteres.
  */
-@customElement('moni-textarea')
+@customElement("moni-textarea")
 export class MoniTextarea extends MoniElement {
-	static formAssociated = true;
-	private _internals: ElementInternals;
+  static formAssociated = true;
+  private _internals: ElementInternals;
 
-	constructor() {
-		super();
-		this._internals = this.attachInternals();
-	}
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+  }
 
-	/**
-	 * El nombre del textarea, enviado con los datos del formulario.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) name = '';
+  /**
+   * El nombre del textarea, enviado con los datos del formulario.
+   * @type {string}
+   */
+  @property({ reflect: true }) name = "";
 
-	/**
-	 * El texto de la etiqueta flotante.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) label = '';
+  /**
+   * El texto de la etiqueta flotante.
+   * @type {string}
+   */
+  @property({ reflect: true }) label = "";
 
-	/**
-	 * Variante visual del área de texto.
-	 * @type {'filled' | 'outlined'}
-	 * @default 'filled'
-	 */
-	@property({ reflect: true }) variant: 'filled' | 'outlined' = 'filled';
+  /**
+   * Variante visual del área de texto.
+   * @type {'filled' | 'outlined'}
+   * @default 'filled'
+   */
+  @property({ reflect: true }) variant: "filled" | "outlined" = "filled";
 
-	/**
-	 * Define las dimensiones del área de texto.
-	 * @type {'small' | 'medium' | 'large' | 'extra'}
-	 * @default 'medium'
-	 */
-	@property({ reflect: true })
-	size: 'small' | 'medium' | 'large' | 'extra' = 'medium';
+  /**
+   * Define las dimensiones del área de texto.
+   * @type {'small' | 'medium' | 'large' | 'extra'}
+   * @default 'medium'
+   */
+  @property({ reflect: true })
+  size: "small" | "medium" | "large" | "extra" = "medium";
 
-	/**
-	 * Forma del radio del borde (border-radius) del campo.
-	 * @type {'round' | 'small-round' | 'square' | 'no-round'}
-	 * @default 'no-round'
-	 */
-	@property({ reflect: true })
-	shape: 'round' | 'small-round' | 'square' | 'no-round' = 'no-round';
+  /**
+   * Forma del radio del borde (border-radius) del campo.
+   * @type {'round' | 'small-round' | 'square' | 'no-round'}
+   * @default 'no-round'
+   */
+  @property({ reflect: true })
+  shape: "round" | "small-round" | "square" | "no-round" = "no-round";
 
-	/**
-	 * Nombre del icono inicial (leading) (Material Symbols).
-	 * @type {string}
-	 */
-	@property({ reflect: true }) icon = '';
+  /**
+   * Nombre del icono inicial (leading) (Material Symbols).
+   * @type {string}
+   */
+  @property({ reflect: true }) icon = "";
 
-	/**
-	 * Nombre del icono final (trailing) (Material Symbols).
-	 * @type {string}
-	 */
-	@property({ reflect: true, attribute: 'trailing-icon' }) trailingIcon = '';
+  /**
+   * Nombre del icono final (trailing) (Material Symbols).
+   * @type {string}
+   */
+  @property({ reflect: true, attribute: "trailing-icon" }) trailingIcon = "";
 
-	/**
-	 * Prefijo de texto corto mostrado antes del valor del input.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) prefix = '';
+  /**
+   * Prefijo de texto corto mostrado antes del valor del input.
+   * @type {string}
+   */
+  @property({ reflect: true }) prefix = "";
 
-	/**
-	 * Sufijo de texto corto mostrado después del valor del input.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) suffix = '';
+  /**
+   * Sufijo de texto corto mostrado después del valor del input.
+   * @type {string}
+   */
+  @property({ reflect: true }) suffix = "";
 
-	/**
-	 * Número por defecto de líneas de texto visibles.
-	 * @type {number}
-	 * @default 3
-	 */
-	@property({ type: Number, reflect: true }) rows = 3;
+  /**
+   * Número por defecto de líneas de texto visibles.
+   * @type {number}
+   * @default 3
+   */
+  @property({ type: Number, reflect: true }) rows = 3;
 
-	/** Hace que el textarea crezca y se reduzca según su contenido. */
-	@property({ type: Boolean, reflect: true }) autosize = false;
+  /** Hace que el textarea crezca y se reduzca según su contenido. */
+  @property({ type: Boolean, reflect: true }) autosize = false;
 
-	/** Número máximo de filas visibles cuando `autosize` está activo. Cero no impone límite. */
-	@property({ type: Number, reflect: true, attribute: 'max-rows' }) maxRows = 0;
+  /** Número máximo de filas visibles cuando `autosize` está activo. Cero no impone límite. */
+  @property({ type: Number, reflect: true, attribute: "max-rows" }) maxRows = 0;
 
-	/**
-	 * Número máximo de caracteres permitidos en el área de texto.
-	 * También habilita la visualización del contador de caracteres a menos que `noCounter` sea true.
-	 * @type {number | null}
-	 */
-	@property({ type: Number, reflect: true }) maxlength: number | null = null;
+  /**
+   * Número máximo de caracteres permitidos en el área de texto.
+   * También habilita la visualización del contador de caracteres a menos que `noCounter` sea true.
+   * @type {number | null}
+   */
+  @property({ type: Number, reflect: true }) maxlength: number | null = null;
 
-	/*
-	 * Restricciones nativas. Antes sólo `maxlength` llegaba al `<textarea>`
-	 * interno, así que un campo obligatorio o de sólo lectura obligaba a
-	 * abandonar el componente y usar un control nativo.
-	 */
+  /*
+   * Restricciones nativas. Antes sólo `maxlength` llegaba al `<textarea>`
+   * interno, así que un campo obligatorio o de sólo lectura obligaba a
+   * abandonar el componente y usar un control nativo.
+   */
 
-	/** Marca el campo como obligatorio y lo integra en la validación del formulario. */
-	@property({ type: Boolean, reflect: true }) required = false;
+  /** Marca el campo como obligatorio y lo integra en la validación del formulario. */
+  @property({ type: Boolean, reflect: true }) required = false;
 
-	/** Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. */
-	@property({ type: Boolean, reflect: true }) readonly = false;
+  /** Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. */
+  @property({ type: Boolean, reflect: true }) readonly = false;
 
-	/** Mínimo de caracteres aceptados. */
-	@property({ type: Number, reflect: true }) minlength: number | null = null;
+  /** Mínimo de caracteres aceptados. */
+  @property({ type: Number, reflect: true }) minlength: number | null = null;
 
-	/** Pista de autocompletado del navegador. */
-	@property({ reflect: true }) autocomplete = '';
+  /** Pista de autocompletado del navegador. */
+  @property({ reflect: true }) autocomplete = "";
 
-	/**
-	 * Oculta la visualización del contador de caracteres cuando se establece `maxlength`.
-	 * @type {boolean}
-	 */
-	@property({ type: Boolean, reflect: true, attribute: 'no-counter' })
-	noCounter = false;
+  /**
+   * Oculta la visualización del contador de caracteres cuando se establece `maxlength`.
+   * @type {boolean}
+   */
+  @property({ type: Boolean, reflect: true, attribute: "no-counter" })
+  noCounter = false;
 
-	/**
-	 * Si es true, muestra un indicador de carga (progreso circular) al final.
-	 * @type {boolean}
-	 */
-	@property({ type: Boolean, reflect: true }) loading = false;
+  /**
+   * Si es true, muestra un indicador de carga (progreso circular) al final.
+   * @type {boolean}
+   */
+  @property({ type: Boolean, reflect: true }) loading = false;
 
-	/**
-	 * Deshabilita el área de texto.
-	 * @type {boolean}
-	 */
-	@property({ type: Boolean, reflect: true }) disabled = false;
+  /**
+   * Deshabilita el área de texto.
+   * @type {boolean}
+   */
+  @property({ type: Boolean, reflect: true }) disabled = false;
 
-	/**
-	 * Texto de ayuda mostrado debajo del campo.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) helper = '';
+  /**
+   * Texto de ayuda mostrado debajo del campo.
+   * @type {string}
+   */
+  @property({ reflect: true }) helper = "";
 
-	/**
-	 * Texto de error mostrado debajo del campo cuando `error` es true.
-	 * Sobrescribe el texto de ayuda.
-	 * @type {string}
-	 */
-	@property({ reflect: true, attribute: 'error-text' }) errorText = '';
+  /**
+   * Texto de error mostrado debajo del campo cuando `error` es true.
+   * Sobrescribe el texto de ayuda.
+   * @type {string}
+   */
+  @property({ reflect: true, attribute: "error-text" }) errorText = "";
 
-	/**
-	 * Si es true, establece el campo en un estado de error.
-	 * @type {boolean}
-	 */
-	@property({ type: Boolean, reflect: true }) error = false;
+  /**
+   * Si es true, establece el campo en un estado de error.
+   * @type {boolean}
+   */
+  @property({ type: Boolean, reflect: true }) error = false;
 
-	/**
-	 * El valor actual del área de texto.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) value = '';
+  /**
+   * El valor actual del área de texto.
+   * @type {string}
+   */
+  @property({ reflect: true }) value = "";
 
-	/**
-	 * Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante.
-	 * @type {string}
-	 */
-	@property({ reflect: true }) placeholder = '';
+  /**
+   * Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante.
+   * @type {string}
+   */
+  @property({ reflect: true }) placeholder = "";
 
-	@query('textarea') private _input!: HTMLTextAreaElement;
-	private _resizeObserver?: ResizeObserver;
+  @query("textarea") private _input!: HTMLTextAreaElement;
+  private _resizeObserver?: ResizeObserver;
 
-	override connectedCallback() {
-		super.connectedCallback();
-		this._resizeObserver = new ResizeObserver(() => this._resizeTextarea());
-	}
+  override connectedCallback() {
+    super.connectedCallback();
+    this._resizeObserver = new ResizeObserver(() => this._resizeTextarea());
+  }
 
-	override disconnectedCallback() {
-		this._resizeObserver?.disconnect();
-		this._resizeObserver = undefined;
-		super.disconnectedCallback();
-	}
+  override disconnectedCallback() {
+    this._resizeObserver?.disconnect();
+    this._resizeObserver = undefined;
+    super.disconnectedCallback();
+  }
 
-	override firstUpdated() {
-		this._resizeObserver?.observe(this._input);
-		this._resizeTextarea();
-	}
+  override firstUpdated() {
+    this._resizeObserver?.observe(this._input);
+    this._resizeTextarea();
+  }
 
-	private _handleInput(event: Event) {
-		const input = event.currentTarget as HTMLTextAreaElement;
-		this.value = input.value;
-		this._internals?.setFormValue?.(this.value);
-		this._resizeTextarea();
-	}
+  private _handleInput(event: Event) {
+    const input = event.currentTarget as HTMLTextAreaElement;
+    this.value = input.value;
+    this._internals?.setFormValue?.(this.value);
+    this._resizeTextarea();
+  }
 
-	private _resizeTextarea() {
-		const input = this._input;
-		if (!input) return;
+  private _resizeTextarea() {
+    const input = this._input;
+    if (!input) return;
 
-		if (!this.autosize) {
-			input.style.removeProperty('block-size');
-			input.style.removeProperty('overflow-y');
-			return;
-		}
+    if (!this.autosize) {
+      input.style.removeProperty("block-size");
+      input.style.removeProperty("overflow-y");
+      return;
+    }
 
-		const styles = getComputedStyle(input);
-		const lineHeight = Number.parseFloat(styles.lineHeight) || 24;
-		const padding = Number.parseFloat(styles.paddingTop) + Number.parseFloat(styles.paddingBottom);
-		const border = Number.parseFloat(styles.borderTopWidth) + Number.parseFloat(styles.borderBottomWidth);
-		const minimum = lineHeight * Math.max(1, this.rows) + padding + border;
-		const maximum = this.maxRows > 0
-			? lineHeight * Math.max(this.rows, this.maxRows) + padding + border
-			: Number.POSITIVE_INFINITY;
+    const styles = getComputedStyle(input);
+    const lineHeight = Number.parseFloat(styles.lineHeight) || 24;
+    const padding =
+      Number.parseFloat(styles.paddingTop) +
+      Number.parseFloat(styles.paddingBottom);
+    const border =
+      Number.parseFloat(styles.borderTopWidth) +
+      Number.parseFloat(styles.borderBottomWidth);
+    const minimum = lineHeight * Math.max(1, this.rows) + padding + border;
+    const maximum =
+      this.maxRows > 0
+        ? lineHeight * Math.max(this.rows, this.maxRows) + padding + border
+        : Number.POSITIVE_INFINITY;
 
-		input.style.blockSize = 'auto';
-		const height = Math.min(maximum, Math.max(minimum, input.scrollHeight + border));
-		input.style.blockSize = `${height}px`;
-		input.style.overflowY = input.scrollHeight + border > maximum ? 'auto' : 'hidden';
-	}
+    input.style.blockSize = "auto";
+    const height = Math.min(
+      maximum,
+      Math.max(minimum, input.scrollHeight + border),
+    );
+    input.style.blockSize = `${height}px`;
+    input.style.overflowY =
+      input.scrollHeight + border > maximum ? "auto" : "hidden";
+  }
 
-	override updated(changed: Map<string, unknown>) {
-		if (this._input) {
-			if (changed.has('value')) {
-				this._input.value = this.value;
-				this._internals?.setFormValue?.(this.value);
-			}
-			if (changed.has('disabled')) this._input.disabled = this.disabled;
-			if (changed.has('maxlength') && this.maxlength != null) {
-				this._input.maxLength = this.maxlength;
-			}
-			if (
-				changed.has('value') ||
-				changed.has('autosize') ||
-				changed.has('rows') ||
-				changed.has('maxRows')
-			) this._resizeTextarea();
-		}
-		this._syncValidity();
-	}
+  override updated(changed: Map<string, unknown>) {
+    if (this._input) {
+      if (changed.has("value")) {
+        this._input.value = this.value;
+        this._internals?.setFormValue?.(this.value);
+      }
+      if (changed.has("disabled")) this._input.disabled = this.disabled;
+      if (changed.has("maxlength") && this.maxlength != null) {
+        this._input.maxLength = this.maxlength;
+      }
+      if (
+        changed.has("value") ||
+        changed.has("autosize") ||
+        changed.has("rows") ||
+        changed.has("maxRows")
+      )
+        this._resizeTextarea();
+    }
+    this._syncValidity();
+  }
 
-	/**
-	 * Copia la validez del `<textarea>` interno al host.
-	 *
-	 * El navegador valida mirando los controles asociados al formulario, y el
-	 * que participa es el host, no el control del Shadow DOM: sin este puente
-	 * `required` se pintaría pero no detendría el envío.
-	 */
-/**
-	 * API de validación equivalente a la de un control nativo.
-	 *
-	 * Los elementos form-associated participan en la validación del formulario,
-	 * pero no reciben estos miembros automáticamente: hay que exponerlos para que
-	 * un `moni-textarea` se pueda interrogar igual que un `<input>`.
-	 */
-	get validity(): ValidityState {
-		return this._internals.validity;
-	}
+  /**
+   * Copia la validez del `<textarea>` interno al host.
+   *
+   * El navegador valida mirando los controles asociados al formulario, y el
+   * que participa es el host, no el control del Shadow DOM: sin este puente
+   * `required` se pintaría pero no detendría el envío.
+   */
+  /**
+   * API de validación equivalente a la de un control nativo.
+   *
+   * Los elementos form-associated participan en la validación del formulario,
+   * pero no reciben estos miembros automáticamente: hay que exponerlos para que
+   * un `moni-textarea` se pueda interrogar igual que un `<input>`.
+   */
+  get validity(): ValidityState {
+    return this._internals.validity;
+  }
 
-	get validationMessage(): string {
-		return this._internals.validationMessage;
-	}
+  get validationMessage(): string {
+    return this._internals.validationMessage;
+  }
 
-	checkValidity(): boolean {
-		return this._internals.checkValidity();
-	}
+  checkValidity(): boolean {
+    return this._internals.checkValidity();
+  }
 
-	reportValidity(): boolean {
-		return this._internals.reportValidity();
-	}
+  reportValidity(): boolean {
+    return this._internals.reportValidity();
+  }
 
-	private _syncValidity() {
-		if (!this._input || !this._internals?.setValidity) return;
-		this._internals.setValidity(
-			this._input.validity,
-			this._input.validationMessage,
-			this._input
-		);
-	}
+  private _syncValidity() {
+    if (!this._input || !this._internals?.setValidity) return;
+    this._internals.setValidity(
+      this._input.validity,
+      this._input.validationMessage,
+      this._input,
+    );
+  }
 
-	static override styles = [sharedStyles, fieldStyles, css`
-		:host([autosize]) textarea { resize: none; }
-	`];
+  static override styles = [
+    sharedStyles,
+    fieldStyles,
+    css`
+      :host([autosize]) textarea {
+        resize: none;
+      }
+    `,
+  ];
 
-	/**
-	 * Renderiza el campo del área de texto con etiqueta, iconos de prefijo/sufijo y contador de caracteres.
-	 *
-	 * **Composición de `fieldClasses`:**
-	 * Sigue la convención de nomenclatura field-styles. `prefix` se añade
-	 * cuando el texto de `icon` o `prefix` está presente (desplaza el inicio en línea de la etiqueta).
-	 * `suffix` se añade cuando `trailingIcon`, el texto `suffix` o `loading` es true.
-	 *
-	 * **Contador de caracteres:**
-	 * `showCounter` es true cuando `maxlength > 0` y `noCounter` no está configurado.
-	 * El contador muestra `${this.value.length} / ${this.maxlength}` y puede volverse rojo
-	 * (vía CSS `invalid`) dependiendo de la validación.
-	 */
-	override render() {
-		const hasLeading = Boolean(this.icon) || Boolean(this.prefix);
-		const hasTrailing =
-			Boolean(this.trailingIcon) ||
-			Boolean(this.suffix) ||
-			this.loading;
-		const isActive = Boolean(this.value) || Boolean(this.placeholder);
-		const showCounter =
-			!this.noCounter && this.maxlength != null && this.maxlength > 0;
-		const fieldClasses = {
-			field: true,
-			label: Boolean(this.label),
-			fill: this.variant === 'filled',
-			border: this.variant === 'outlined',
-			small: this.size === 'small',
-			large: this.size === 'large',
-			extra: this.size === 'extra',
-			prefix: hasLeading,
-			suffix: hasTrailing,
-			invalid: this.error,
-			round: this.shape === 'round',
-			'small-round': this.shape === 'small-round',
-			square: this.shape === 'no-round'
-		};
-		const placeholder = this.placeholder || (this.label ? ' ' : '');
+  /**
+   * Renderiza el campo del área de texto con etiqueta, iconos de prefijo/sufijo y contador de caracteres.
+   *
+   * **Composición de `fieldClasses`:**
+   * Sigue la convención de nomenclatura field-styles. `prefix` se añade
+   * cuando el texto de `icon` o `prefix` está presente (desplaza el inicio en línea de la etiqueta).
+   * `suffix` se añade cuando `trailingIcon`, el texto `suffix` o `loading` es true.
+   *
+   * **Contador de caracteres:**
+   * `showCounter` es true cuando `maxlength > 0` y `noCounter` no está configurado.
+   * El contador muestra `${this.value.length} / ${this.maxlength}` y puede volverse rojo
+   * (vía CSS `invalid`) dependiendo de la validación.
+   */
+  override render() {
+    const hasLeading = Boolean(this.icon) || Boolean(this.prefix);
+    const hasTrailing =
+      Boolean(this.trailingIcon) || Boolean(this.suffix) || this.loading;
+    const isActive = Boolean(this.value) || Boolean(this.placeholder);
+    const showCounter =
+      !this.noCounter && this.maxlength != null && this.maxlength > 0;
+    const fieldClasses = {
+      field: true,
+      label: Boolean(this.label),
+      fill: this.variant === "filled",
+      border: this.variant === "outlined",
+      small: this.size === "small",
+      large: this.size === "large",
+      extra: this.size === "extra",
+      prefix: hasLeading,
+      suffix: hasTrailing,
+      invalid: this.error,
+      round: this.shape === "round",
+      "small-round": this.shape === "small-round",
+      square: this.shape === "no-round",
+    };
+    const placeholder = this.placeholder || (this.label ? " " : "");
 
-		const leading = this.icon
-			? html`<i class="leading-icon" part="leading-icon"
-					><moni-icon name="${this.icon}"></moni-icon
-				></i>`
-			: this.prefix
-				? html`<span class="leading-icon" part="prefix"
-						>${this.prefix}</span
-					>`
-				: nothing;
+    const leading = this.icon
+      ? html`<i class="leading-icon" part="leading-icon"
+          ><moni-icon name="${this.icon}"></moni-icon
+        ></i>`
+      : this.prefix
+        ? html`<span class="leading-icon" part="prefix">${this.prefix}</span>`
+        : nothing;
 
-		const trailing = this.loading
-			? html`<i class="trailing-icon" part="trailing-icon"
-					><moni-progress
-						variant="circular"
-						indeterminate
-						size="small"
-						style="inline-size: 1.25rem; block-size: 1.25rem; color: currentColor;"
-					></moni-progress
-				></i>`
-			: this.trailingIcon
-				? html`<i class="trailing-icon" part="trailing-icon"
-						><moni-icon name="${this.trailingIcon}"></moni-icon
-					></i>`
-				: this.suffix
-					? html`<span class="trailing-icon" part="suffix"
-							>${this.suffix}</span
-						>`
-					: nothing;
+    const trailing = this.loading
+      ? html`<i class="trailing-icon" part="trailing-icon"
+          ><moni-progress
+            variant="circular"
+            indeterminate
+            size="small"
+            style="inline-size: 1.25rem; block-size: 1.25rem; color: currentColor;"
+          ></moni-progress
+        ></i>`
+      : this.trailingIcon
+        ? html`<i class="trailing-icon" part="trailing-icon"
+            ><moni-icon name="${this.trailingIcon}"></moni-icon
+          ></i>`
+        : this.suffix
+          ? html`<span class="trailing-icon" part="suffix"
+              >${this.suffix}</span
+            >`
+          : nothing;
 
-		// Especificación M3: texto de soporte a la izquierda, contador de caracteres a la derecha.
-		const counter = showCounter
-			? html`<output part="counter" class="counter"
-						>${this.value.length} / ${this.maxlength}</output
-					>`
-			: nothing;
-		const helperText = this.error
-			? html`<output part="helper" class="invalid"
-						>${this.errorText || this.helper}</output
-					>`
-			: this.helper
-				? html`<output part="helper">${this.helper}</output>`
-				: nothing;
-		const hasFooter = helperText || counter;
+    // Especificación M3: texto de soporte a la izquierda, contador de caracteres a la derecha.
+    const counter = showCounter
+      ? html`<output part="counter" class="counter"
+          >${this.value.length} / ${this.maxlength}</output
+        >`
+      : nothing;
+    const helperText = this.error
+      ? html`<output part="helper" class="invalid"
+          >${this.errorText || this.helper}</output
+        >`
+      : this.helper
+        ? html`<output part="helper">${this.helper}</output>`
+        : nothing;
+    const hasFooter = helperText || counter;
 
-		return html`<div class=${classMap(fieldClasses)} part="field">
-			${leading}
-			<textarea
-				id="input"
-				part="input"
-				rows=${this.rows}
-				maxlength=${ifDefined(this.maxlength ?? undefined)}
-				minlength=${ifDefined(this.minlength ?? undefined)}
-				placeholder=${placeholder}
-				?disabled=${this.disabled}
-				?required=${this.required}
-				?readonly=${this.readonly}
-				autocomplete=${ifDefined(this.autocomplete || undefined)}
-				.value=${this.value}
-				name=${ifDefined(this.name || undefined)}
-				class=${isActive ? 'active' : ''}
-				@input=${this._handleInput}
-			></textarea>
-			${this.label
-				? html`<label
-						for="input"
-						part="label"
-						class=${classMap({ active: isActive })}
-						>${this.label}</label
-					>`
-				: nothing}
-			${trailing}
-			${hasFooter
-				? html`<div class="footer" part="footer">
-						${helperText}
-						<div class="spacer"></div>
-						${counter}
-					</div>`
-				: nothing}
-		</div>`;
-	}
+    return html`<div class=${classMap(fieldClasses)} part="field">
+      ${leading}
+      <textarea
+        id="input"
+        part="input"
+        rows=${this.rows}
+        maxlength=${ifDefined(this.maxlength ?? undefined)}
+        minlength=${ifDefined(this.minlength ?? undefined)}
+        placeholder=${placeholder}
+        ?disabled=${this.disabled}
+        ?required=${this.required}
+        ?readonly=${this.readonly}
+        autocomplete=${ifDefined(this.autocomplete || undefined)}
+        .value=${this.value}
+        name=${ifDefined(this.name || undefined)}
+        class=${isActive ? "active" : ""}
+        @input=${this._handleInput}
+      ></textarea>
+      ${
+        this.label
+          ? html`<label
+              for="input"
+              part="label"
+              class=${classMap({ active: isActive })}
+              >${this.label}</label
+            >`
+          : nothing
+      }
+      ${trailing}
+      ${
+        hasFooter
+          ? html`<div class="footer" part="footer">
+              ${helperText}
+              <div class="spacer"></div>
+              ${counter}
+            </div>`
+          : nothing
+      }
+    </div>`;
+  }
 }
 
 declare global {
-	interface HTMLElementTagNameMap {
-		'moni-textarea': MoniTextarea;
-	}
+  interface HTMLElementTagNameMap {
+    "moni-textarea": MoniTextarea;
+  }
 }
 
 export default MoniTextarea;

@@ -84,31 +84,31 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 
 | Atributo | Propiedad | Tipo | Default | Descripción |
 |---|---|---|---|---|
-| `name` | `name` | `string` | `''` | El nombre del textarea, enviado con los datos del formulario. |
-| `label` | `label` | `string` | `''` | El texto de la etiqueta flotante. |
-| `variant` | `variant` | `'filled' \| 'outlined'` | `'filled'` | Variante visual del área de texto. |
-| `size` | `size` | `'small' \| 'medium' \| 'large' \| 'extra'` | `'medium'` | Define las dimensiones del área de texto. |
-| `shape` | `shape` | `'round' \| 'small-round' \| 'square' \| 'no-round'` | `'no-round'` | Forma del radio del borde (border-radius) del campo. |
-| `icon` | `icon` | `string` | `''` | Nombre del icono inicial (leading) (Material Symbols). |
-| `trailing-icon` | `trailingIcon` | `string` | `''` | Nombre del icono final (trailing) (Material Symbols). |
-| `prefix` | `prefix` | `string` | `''` | Prefijo de texto corto mostrado antes del valor del input. |
-| `suffix` | `suffix` | `string` | `''` | Sufijo de texto corto mostrado después del valor del input. |
+| `name` | `name` | `string` | `""` | El nombre del textarea, enviado con los datos del formulario. |
+| `label` | `label` | `string` | `""` | El texto de la etiqueta flotante. |
+| `variant` | `variant` | `"filled" \| "outlined"` | `"filled"` | Variante visual del área de texto. |
+| `size` | `size` | `"small" \| "medium" \| "large" \| "extra"` | `"medium"` | Define las dimensiones del área de texto. |
+| `shape` | `shape` | `"round" \| "small-round" \| "square" \| "no-round"` | `"no-round"` | Forma del radio del borde (border-radius) del campo. |
+| `icon` | `icon` | `string` | `""` | Nombre del icono inicial (leading) (Material Symbols). |
+| `trailing-icon` | `trailingIcon` | `string` | `""` | Nombre del icono final (trailing) (Material Symbols). |
+| `prefix` | `prefix` | `string` | `""` | Prefijo de texto corto mostrado antes del valor del input. |
+| `suffix` | `suffix` | `string` | `""` | Sufijo de texto corto mostrado después del valor del input. |
 | `rows` | `rows` | `number` | `3` | Número por defecto de líneas de texto visibles. |
 | `autosize` | `autosize` | `boolean` | `false` | Hace que el textarea crezca y se reduzca según su contenido. |
 | `max-rows` | `maxRows` | `number` | `0` | Número máximo de filas visibles cuando `autosize` está activo. Cero no impone límite. |
-| `maxlength` | `maxlength` | `number \| null` | `null` | Número máximo de caracteres permitidos en el área de texto. También habilita la visualización del contador de caracteres a menos que `noCounter` sea true. |
+| `maxlength` | `maxlength` | `number \| null` | `null` | Número máximo de caracteres permitidos en el área de texto. También habilita la visualización del contador de caracteres a menos que `noCounter` sea true. |
 | `required` | `required` | `boolean` | `false` | Marca el campo como obligatorio y lo integra en la validación del formulario. |
 | `readonly` | `readonly` | `boolean` | `false` | Impide editar el valor sin sacarlo del envío ni atenuarlo como `disabled`. |
 | `minlength` | `minlength` | `number \| null` | `null` | Mínimo de caracteres aceptados. |
-| `autocomplete` | `autocomplete` | `string` | `''` | Pista de autocompletado del navegador. |
+| `autocomplete` | `autocomplete` | `string` | `""` | Pista de autocompletado del navegador. |
 | `no-counter` | `noCounter` | `boolean` | `false` | Oculta la visualización del contador de caracteres cuando se establece `maxlength`. |
 | `loading` | `loading` | `boolean` | `false` | Si es true, muestra un indicador de carga (progreso circular) al final. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el área de texto. |
-| `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
+| `helper` | `helper` | `string` | `""` | Texto de ayuda mostrado debajo del campo. |
+| `error-text` | `errorText` | `string` | `""` | Texto de error mostrado debajo del campo cuando `error` es true. Sobrescribe el texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es true, establece el campo en un estado de error. |
-| `value` | `value` | `string` | `''` | El valor actual del área de texto. |
-| `placeholder` | `placeholder` | `string` | `''` | Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante. |
+| `value` | `value` | `string` | `""` | El valor actual del área de texto. |
+| `placeholder` | `placeholder` | `string` | `""` | Texto de marcador de posición (placeholder) mostrado cuando el textarea está vacío y la etiqueta es flotante. |
 
 ## Slots
 

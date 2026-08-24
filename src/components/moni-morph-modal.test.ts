@@ -92,6 +92,9 @@ describe('moni-morph-modal', () => {
 		window.matchMedia = originalMatchMedia;
 		el.remove();
 		target.remove();
+		document.documentElement.style.overflow = '';
+		document.body.style.overflow = '';
+		document.body.style.overscrollBehavior = '';
 	});
 
 	it('registra el elemento personalizado', () => {
@@ -143,6 +146,18 @@ describe('moni-morph-modal', () => {
 		vi.unstubAllGlobals();
 	});
 
+	it('auto-height usa la altura natural sin superar expanded-height', () => {
+		el.autoHeight = true;
+		el.expandedHeight = '600px';
+		const compute = (naturalHeight: number) =>
+			(el as unknown as {
+				_computeFinalRect: (target: DOMRect, natural: { width: number; height: number }) => DOMRect;
+			})._computeFinalRect(new DOMRect(24, 100, 56, 56), { width: 400, height: naturalHeight });
+
+		expect(compute(360).height).toBe(360);
+		expect(compute(900).height).toBe(600);
+	});
+
 	it('proyecta el contenido del slot por defecto', async () => {
 		const content = document.createElement('p');
 		content.textContent = 'Hello';
@@ -191,6 +206,45 @@ describe('moni-morph-modal', () => {
 		expect(el.open).toBe(false);
 	});
 
+	it('bloquea el scroll del documento con backdrop y lo restaura al cerrar', async () => {
+		document.documentElement.style.overflow = 'auto';
+		document.body.style.overflow = 'scroll';
+		el.hasBackdrop = true;
+
+		el.show();
+		await waitForRaf();
+		expect(document.documentElement.style.overflow).toBe('hidden');
+		expect(document.body.style.overflow).toBe('hidden');
+
+		el.hide();
+		await waitForRaf();
+		expect(document.documentElement.style.overflow).toBe('auto');
+		expect(document.body.style.overflow).toBe('scroll');
+	});
+
+	it('mantiene bloqueado el scroll hasta cerrar el último morph modal', async () => {
+		const secondTarget = document.createElement('button');
+		secondTarget.id = 'second-target';
+		secondTarget.getBoundingClientRect = () => new DOMRect(100, 100, 56, 56);
+		document.body.appendChild(secondTarget);
+		const second = document.createElement('moni-morph-modal') as MoniMorphModal;
+		second.target = '#second-target';
+		document.body.appendChild(second);
+
+		el.show();
+		second.show();
+		await waitForRaf();
+		el.hide();
+		await waitForRaf();
+		expect(document.body.style.overflow).toBe('hidden');
+
+		second.hide();
+		await waitForRaf();
+		expect(document.body.style.overflow).toBe('');
+		second.remove();
+		secondTarget.remove();
+	});
+
 	it('desenfoca el contenido mientras desaparece al cerrar', async () => {
 		el.show();
 		await waitForRaf();
@@ -237,6 +291,29 @@ describe('moni-morph-modal', () => {
 			expect.objectContaining({ autoAlpha: 0, scale: 0.92 })
 		);
 		expect(el.open).toBe(false);
+	});
+
+	it('usa el cierre sin origen cuando el target salio del viewport', async () => {
+		const visibleAncestor = document.createElement('div');
+		visibleAncestor.getBoundingClientRect = () => new DOMRect(0, 0, 320, 480);
+		document.body.appendChild(visibleAncestor);
+		visibleAncestor.appendChild(target);
+
+		el.show();
+		await waitForRaf();
+		target.getBoundingClientRect = () =>
+			new DOMRect(24, window.innerHeight + 100, 56, 56);
+		vi.mocked(gsap.to).mockClear();
+
+		el.hide();
+		await waitForRaf();
+
+		expect(gsap.to).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ autoAlpha: 0, scale: 0.92 })
+		);
+		expect(el.open).toBe(false);
+		visibleAncestor.remove();
 	});
 
 	it('captura la superficie interna real de un FAB para el morph', async () => {

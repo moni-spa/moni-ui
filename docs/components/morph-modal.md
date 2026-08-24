@@ -50,8 +50,8 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 
 | Atributo | Propiedad | Tipo | Default | Descripción |
 |---|---|---|---|---|
-| `target` | `target` | `string` | `''` | Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button'). Si se omite, el modal aún puede activarse programáticamente estableciendo `open = true`. |
-| `open` | `open` | `boolean` | `false` | Controla el estado abierto/cerrado del modal. Puede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`. |
+| `target` | `target` | `string` | `''` | Selector del elemento disparador desde el cual transformarse (ej. '#fab' o '.my-button'). Si se omite, el modal aún puede activarse programáticamente estableciendo `open = true`. |
+| `open` | `open` | `boolean` | `false` | Controla el estado abierto/cerrado del modal. Puede establecerse directamente, o se gestiona internamente cuando se hace clic en el elemento `target`. |
 | `modal` | `modal` | `boolean` | `true` | Si es true, renderiza un fondo y atrapa el foco, actuando como un verdadero diálogo modal. |
 | `placement` | `placement` | `Placement` | `'center'` | Posición preferida del modal en relación con la ventana gráfica. |
 | `expanded-width` | `expandedWidth` | `string` | `'22rem'` | El ancho del modal cuando está completamente expandido. |
@@ -65,6 +65,7 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 | `hide-target` | `hideTarget` | `boolean` | `false` | Si es true, oculta el elemento disparador (target) mientras el modal está abierto. |
 | `cover-target` | `coverTarget` | `boolean` | `false` | Si es true, fuerza al modal a cubrir visualmente la ubicación original del target antes de expandirse. |
 | `auto-size` | `autoSize` | `boolean` | `false` | Si es true, el modal calcula automáticamente su tamaño final basándose en el contenido interno (ignora expandedWidth y expandedHeight). |
+| `auto-height` | `autoHeight` | `boolean` | `false` | Ajusta sólo la altura al contenido, sin superar expanded-height. |
 | `fullscreen` | `fullscreen` | `boolean` | `false` | Fuerza al modal expandido a ocupar todo el viewport. |
 | `responsive-fullscreen` | `responsiveFullscreen` | `boolean` | `false` | Activa fullscreen únicamente cuando el viewport no supera el breakpoint configurado. |
 | `fullscreen-breakpoint` | `fullscreenBreakpoint` | `number` | `600` | Ancho máximo del viewport, en píxeles, para aplicar responsive-fullscreen. |
@@ -184,3 +185,11 @@ Si es true, el modal calcula automáticamente su tamaño final basándose en el 
 ![moni-morph-modal — auto-size=false](../assets/moni-morph-modal/autoSize--false.png)
 
 ![moni-morph-modal — auto-size=true](../assets/moni-morph-modal/autoSize--true.png)
+
+### `auto-height`
+
+Ajusta sólo la altura al contenido, sin superar expanded-height.
+
+![moni-morph-modal — auto-height=false](../assets/moni-morph-modal/autoHeight--false.png)
+
+![moni-morph-modal — auto-height=true](../assets/moni-morph-modal/autoHeight--true.png)

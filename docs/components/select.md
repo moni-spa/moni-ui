@@ -90,28 +90,28 @@ Las utilities aplicadas directamente al tag afectan su caja anfitriona. No uses 
 
 | Atributo | Propiedad | Tipo | Default | Descripción |
 |---|---|---|---|---|
-| `name` | `name` | `string` | `''` | Nombre del campo select, usado para el envío del formulario. |
-| `label` | `label` | `string` | `''` | Texto de la etiqueta flotante. |
-| `variant` | `variant` | `'filled' \| 'outlined'` | `'filled'` | Variante visual del campo select. |
-| `size` | `size` | `'small' \| 'medium' \| 'large' \| 'extra'` | `'medium'` | Define las dimensiones del campo select. |
-| `shape` | `shape` | `'round' \| 'small-round' \| 'square' \| 'no-round'` | `'no-round'` | Forma (radio de borde) del campo. |
+| `name` | `name` | `string` | `""` | Nombre del campo select, usado para el envío del formulario. |
+| `label` | `label` | `string` | `""` | Texto de la etiqueta flotante. |
+| `variant` | `variant` | `"filled" \| "outlined"` | `"filled"` | Variante visual del campo select. |
+| `size` | `size` | `"small" \| "medium" \| "large" \| "extra"` | `"medium"` | Define las dimensiones del campo select. |
+| `shape` | `shape` | `"round" \| "small-round" \| "square" \| "no-round"` | `"no-round"` | Forma (radio de borde) del campo. |
 | `disabled` | `disabled` | `boolean` | `false` | Deshabilita el campo select. |
-| `required` | `required` | `boolean` | `false` | Obliga a elegir una opción antes de enviar el formulario.  El `<input>` visible es de sólo lectura, así que la validación nativa no se aplica sobre él: la restricción se declara en el host con `ElementInternals.setValidity`, que es lo que mira el formulario. |
+| `required` | `required` | `boolean` | `false` | Obliga a elegir una opción antes de enviar el formulario.  El `<input>` visible es de sólo lectura, así que la validación nativa no se aplica sobre él: la restricción se declara en el host con `ElementInternals.setValidity`, que es lo que mira el formulario. |
 | `loading` | `loading` | `boolean` | `false` | Si es verdadero, muestra un indicador de carga (progreso lineal). |
-| `helper` | `helper` | `string` | `''` | Texto de ayuda mostrado debajo del campo. |
-| `error-text` | `errorText` | `string` | `''` | Texto de error mostrado debajo del campo cuando `error` es true. Reemplaza al texto de ayuda. |
+| `helper` | `helper` | `string` | `""` | Texto de ayuda mostrado debajo del campo. |
+| `error-text` | `errorText` | `string` | `""` | Texto de error mostrado debajo del campo cuando `error` es true. Reemplaza al texto de ayuda. |
 | `error` | `error` | `boolean` | `false` | Si es verdadero, establece el campo en un estado de error. |
-| `value` | `value` | `string` | `''` | El valor actual del select. |
-| `icon` | `icon` | `string` | `''` | Nombre del icono principal (leading icon, Material Symbols). |
-| `trailing-icon` | `trailingIcon` | `string` | `'arrow_drop_down'` | Nombre del icono final (trailing icon, Material Symbols) que indica el estado del menú desplegable. |
+| `value` | `value` | `string` | `""` | El valor actual del select. |
+| `icon` | `icon` | `string` | `""` | Nombre del icono principal (leading icon, Material Symbols). |
+| `trailing-icon` | `trailingIcon` | `string` | `"arrow_drop_down"` | Nombre del icono final (trailing icon, Material Symbols) que indica el estado del menú desplegable. |
 | `searchable` | `searchable` | `boolean` | `false` | Habilita un campo de búsqueda en la parte superior del menú desplegable para filtrar opciones. |
 | `clearable` | `clearable` | `boolean` | `false` | Muestra un botón de limpieza cuando se selecciona un valor para restablecer fácilmente el campo. |
 | `sheet` | `sheet` | `boolean` | `false` | Renderiza las opciones como una hoja inferior (bottom sheet, ideal para dispositivos móviles) en lugar de un menú desplegable. |
-| `placeholder` | `placeholder` | `string` | `''` | Texto de marcador de posición (placeholder) mostrado cuando no hay ningún valor seleccionado. |
-| `positioning` | `positioning` | `'absolute' \| 'fixed' \| 'body'` | `'absolute'` | Estrategia de posicionamiento para el menú desplegable.  - `'absolute'`: permanece en el contexto de posicionamiento del select. - `'fixed'`: usa coordenadas del viewport, pero conserva su contexto de apilamiento. - `'body'`: usa la capa superior nativa (Popover API) para escapar de `overflow`,   diálogos, bottom sheets y contextos de apilamiento. |
-| `placement` | `placement` | `'top' \| 'bottom' \| 'left' \| 'right' \| 'auto'` | `'auto'` | Ubicación preferida del menú desplegable con respecto al disparador (trigger). |
-| `dropdown-width` | `dropdownWidth` | `string` | `'trigger'` | Restricción de ancho del menú desplegable. - `'trigger'`: Coincide con el ancho del campo de entrada. - `'auto'`: Coincide con el ancho del contenido del menú desplegable. - O cualquier valor CSS de ancho válido (ej. '200px'). |
-| `dropdown-max-height` | `dropdownMaxHeight` | `string` | `''` | Límite manual opcional para la altura del menú.  Acepta cualquier longitud CSS válida, por ejemplo `240px`, `40vh` o `calc(100vh - 8rem)`. El valor nunca supera el límite automático calculado según el viewport, la posición del campo y el tope predeterminado de 75vh. Una cadena vacía conserva el cálculo automático. |
+| `placeholder` | `placeholder` | `string` | `""` | Texto de marcador de posición (placeholder) mostrado cuando no hay ningún valor seleccionado. |
+| `positioning` | `positioning` | `"absolute" \| "fixed" \| "body"` | `"absolute"` | Estrategia de posicionamiento para el menú desplegable.  - `'absolute'`: permanece en el contexto de posicionamiento del select. - `'fixed'`: usa coordenadas del viewport, pero conserva su contexto de apilamiento. - `'body'`: usa la capa superior nativa (Popover API) para escapar de `overflow`,   diálogos, bottom sheets y contextos de apilamiento. |
+| `placement` | `placement` | `"top" \| "bottom" \| "left" \| "right" \| "auto"` | `"auto"` | Ubicación preferida del menú desplegable con respecto al disparador (trigger). |
+| `dropdown-width` | `dropdownWidth` | `string` | `"trigger"` | Restricción de ancho del menú desplegable. - `'trigger'`: Coincide con el ancho del campo de entrada. - `'auto'`: Coincide con el ancho del contenido del menú desplegable. - O cualquier valor CSS de ancho válido (ej. '200px'). |
+| `dropdown-max-height` | `dropdownMaxHeight` | `string` | `""` | Límite manual opcional para la altura del menú.  Acepta cualquier longitud CSS válida, por ejemplo `240px`, `40vh` o `calc(100vh - 8rem)`. El valor nunca supera el límite automático calculado según el viewport, la posición del campo y el tope predeterminado de 75vh. Una cadena vacía conserva el cálculo automático. |
 
 ## Slots
 
