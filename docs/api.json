@@ -1,6 +1,6 @@
 {
   "package": "@moni-labs/moni-ui",
-  "generatedAt": "2026-08-24T08:06:38.512Z",
+  "generatedAt": "2026-08-30T23:42:19.239Z",
   "componentCount": 49,
   "components": [
     {
@@ -327,7 +327,18 @@
           "reflect": true
         }
       ],
-      "methods": [],
+      "methods": [
+        {
+          "name": "show",
+          "signature": "show()",
+          "description": "Abre el bottom sheet."
+        },
+        {
+          "name": "close",
+          "signature": "close()",
+          "description": "Cierra el bottom sheet ejecutando la animación fluida hacia abajo."
+        }
+      ],
       "events": [],
       "slots": [
         {

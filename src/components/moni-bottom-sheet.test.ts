@@ -432,4 +432,335 @@ describe('moni-bottom-sheet', () => {
 		expect(closeSpy).not.toHaveBeenCalled();
 		expect(el.open).toBe(true);
 	});
+
+	it('detecta arrastre fuera de la pantalla y marca como cerrado', async () => {
+		el.handle = true;
+		el.open = true;
+		await el.updateComplete;
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const handle = el.shadowRoot?.querySelector('.handle') as HTMLElement;
+
+		handle.setPointerCapture = vi.fn();
+		handle.releasePointerCapture = vi.fn();
+
+		vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+			height: 300,
+			width: 375,
+			x: 0,
+			y: 300,
+			top: 300,
+			bottom: 600,
+			left: 0,
+			right: 375,
+			toJSON: () => {}
+		});
+
+		const closeSpy = vi.fn();
+		el.addEventListener('close', closeSpy);
+
+		handle.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 400,
+				pointerId: 1
+			})
+		);
+
+		// Arrastrar hacia el borde inferior/fuera de pantalla
+		dialog.dispatchEvent(
+			new PointerEvent('pointermove', {
+				bubbles: true,
+				clientX: 100,
+				clientY: window.innerHeight || 800,
+				pointerId: 1
+			})
+		);
+
+		// Soltar fuera de la pantalla
+		handle.dispatchEvent(
+			new PointerEvent('pointerup', {
+				bubbles: true,
+				clientX: 100,
+				clientY: (window.innerHeight || 800) + 50,
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(new Event('transitionend'));
+		await el.updateComplete;
+
+		expect(closeSpy).toHaveBeenCalled();
+		expect(el.open).toBe(false);
+	});
+
+	it('cierra y marca como open=false cuando ocurre pointercancel tras arrastrar hacia abajo', async () => {
+		el.handle = true;
+		el.open = true;
+		await el.updateComplete;
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const handle = el.shadowRoot?.querySelector('.handle') as HTMLElement;
+
+		handle.setPointerCapture = vi.fn();
+		handle.releasePointerCapture = vi.fn();
+
+		vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+			height: 300,
+			width: 375,
+			x: 0,
+			y: 300,
+			top: 300,
+			bottom: 600,
+			left: 0,
+			right: 375,
+			toJSON: () => {}
+		});
+
+		const closeSpy = vi.fn();
+		el.addEventListener('close', closeSpy);
+
+		handle.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 400,
+				pointerId: 1
+			})
+		);
+
+		// Arrastre hacia abajo significativo
+		dialog.dispatchEvent(
+			new PointerEvent('pointermove', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 550, // 150px
+				pointerId: 1
+			})
+		);
+
+		// El navegador cancela el puntero (por ejemplo, salida de viewport en móvil/pantalla táctil)
+		dialog.dispatchEvent(
+			new PointerEvent('pointercancel', {
+				bubbles: true,
+				clientX: 0,
+				clientY: 0,
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(new Event('transitionend'));
+		await el.updateComplete;
+
+		expect(closeSpy).toHaveBeenCalled();
+		expect(el.open).toBe(false);
+	});
+
+	it('cierra y marca como open=false cuando ocurre lostpointercapture tras arrastrar hacia abajo', async () => {
+		el.handle = true;
+		el.open = true;
+		await el.updateComplete;
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const handle = el.shadowRoot?.querySelector('.handle') as HTMLElement;
+
+		handle.setPointerCapture = vi.fn();
+		handle.releasePointerCapture = vi.fn();
+
+		vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+			height: 300,
+			width: 375,
+			x: 0,
+			y: 300,
+			top: 300,
+			bottom: 600,
+			left: 0,
+			right: 375,
+			toJSON: () => {}
+		});
+
+		const closeSpy = vi.fn();
+		el.addEventListener('close', closeSpy);
+
+		handle.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 400,
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(
+			new PointerEvent('pointermove', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 520, // 120px
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(
+			new PointerEvent('lostpointercapture', {
+				bubbles: true,
+				clientX: 0,
+				clientY: 0,
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(new Event('transitionend'));
+		await el.updateComplete;
+
+		expect(closeSpy).toHaveBeenCalled();
+		expect(el.open).toBe(false);
+	});
+
+	it('cierra y marca como open=false cuando se arrastra un bottom sheet expandido hacia abajo', async () => {
+		el.handle = true;
+		el.open = true;
+		await el.updateComplete;
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const handle = el.shadowRoot?.querySelector('.handle') as HTMLElement;
+		dialog.classList.add('expanded');
+
+		handle.setPointerCapture = vi.fn();
+		handle.releasePointerCapture = vi.fn();
+
+		vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+			height: 600,
+			width: 375,
+			x: 0,
+			y: 100,
+			top: 100,
+			bottom: 700,
+			left: 0,
+			right: 375,
+			toJSON: () => {}
+		});
+
+		const closeSpy = vi.fn();
+		el.addEventListener('close', closeSpy);
+
+		handle.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 100,
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(
+			new PointerEvent('pointermove', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 550, // Delta de 450px hacia abajo (arrastrado fuera / muy abajo)
+				pointerId: 1
+			})
+		);
+
+		handle.dispatchEvent(
+			new PointerEvent('pointerup', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 550,
+				pointerId: 1
+			})
+		);
+
+		dialog.dispatchEvent(new Event('transitionend'));
+		await el.updateComplete;
+
+		expect(closeSpy).toHaveBeenCalled();
+		expect(el.open).toBe(false);
+	});
+
+	it('no cierra el bottom sheet si el usuario arrastra hacia abajo pero lo sube de nuevo antes de soltar', async () => {
+		el.handle = true;
+		el.open = true;
+		await el.updateComplete;
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const handle = el.shadowRoot?.querySelector('.handle') as HTMLElement;
+
+		handle.setPointerCapture = vi.fn();
+		handle.releasePointerCapture = vi.fn();
+
+		vi.spyOn(dialog, 'getBoundingClientRect').mockReturnValue({
+			height: 300,
+			width: 375,
+			x: 0,
+			y: 300,
+			top: 300,
+			bottom: 600,
+			left: 0,
+			right: 375,
+			toJSON: () => {}
+		});
+
+		const closeSpy = vi.fn();
+		el.addEventListener('close', closeSpy);
+
+		// Inicia arrastre en Y = 400
+		handle.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 400,
+				pointerId: 1
+			})
+		);
+
+		// Arrastra hacia abajo (Y = 600, delta = 200px)
+		dialog.dispatchEvent(
+			new PointerEvent('pointermove', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 600,
+				pointerId: 1
+			})
+		);
+
+		// Cambia de opinión y lo sube de nuevo cerca del origen (Y = 410, delta = 10px)
+		dialog.dispatchEvent(
+			new PointerEvent('pointermove', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 410,
+				pointerId: 1
+			})
+		);
+
+		// Suelta en Y = 410
+		handle.dispatchEvent(
+			new PointerEvent('pointerup', {
+				bubbles: true,
+				clientX: 100,
+				clientY: 410,
+				pointerId: 1
+			})
+		);
+
+		await el.updateComplete;
+
+		expect(closeSpy).not.toHaveBeenCalled();
+		expect(el.open).toBe(true);
+	});
+
+	it('permite abrir y cerrar mediante los métodos show() y close()', async () => {
+		expect(el.open).toBe(false);
+		el.show();
+		await el.updateComplete;
+		expect(el.open).toBe(true);
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const closePromise = el.close();
+		dialog.dispatchEvent(new Event('transitionend'));
+		await closePromise;
+		await el.updateComplete;
+		expect(el.open).toBe(false);
+	});
 });

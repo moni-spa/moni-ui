@@ -373,6 +373,16 @@
               },
               "default": "''",
               "description": "Restricción opcional de inline-size (ancho) máximo para la hoja.\n\nCuando se establece (ej. `'640px'`), la hoja no excederá este ancho incluso en\npantallas anchas. Útil para puntos de interrupción de tableta/escritorio donde se prefiere\nun modal centrado en lugar de una hoja de ancho completo."
+            },
+            {
+              "kind": "method",
+              "name": "show",
+              "description": "Abre el bottom sheet."
+            },
+            {
+              "kind": "method",
+              "name": "close",
+              "description": "Cierra el bottom sheet ejecutando la animación fluida hacia abajo."
             }
           ],
           "events": [],

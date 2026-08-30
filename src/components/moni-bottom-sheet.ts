@@ -164,11 +164,25 @@ export class MoniBottomSheet extends MoniElement {
 	@query('dialog') private _dialog!: HTMLDialogElement;
 	private _isDragging = false;
 	private _startY = 0;
-	private _currentTranslationY = 0;
+	private _lastDeltaY = 0;
 	private _sheetHeight = 0;
 	private _defaultHeight = 0;
 	private _justDragged = false;
 	private _skipRequestClose = false;
+
+	/**
+	 * Abre el bottom sheet.
+	 */
+	show() {
+		this.open = true;
+	}
+
+	/**
+	 * Cierra el bottom sheet ejecutando la animación fluida hacia abajo.
+	 */
+	close() {
+		return this._animateAndClose();
+	}
 
 	override willUpdate(changed: Map<string, unknown>) {
 		if (changed.has('open') && this.open !== changed.get('open')) {
@@ -250,16 +264,22 @@ export class MoniBottomSheet extends MoniElement {
 		this._isDragging = true;
 		this._startY = e.clientY; // Almacenamos la coordenada inicial Y para calcular el delta luego
 		this._sheetHeight = this._dialog.getBoundingClientRect().height; // Capturamos la altura actual
-		this._currentTranslationY = 0;
+		this._lastDeltaY = 0;
 
 		const isExpanded = this._dialog.classList.contains('expanded');
 		// Si no estaba expandido previamente, guardamos su altura por defecto para usarla como punto de retorno.
 		if (!isExpanded) {
 			this._defaultHeight = this._sheetHeight;
+		} else if (!this._defaultHeight) {
+			this._defaultHeight = Math.min(this._sheetHeight * 0.6, 384);
 		}
 
 		// setPointerCapture enruta todos los eventos subsecuentes a este target
-		target.setPointerCapture(e.pointerId);
+		try {
+			target.setPointerCapture(e.pointerId);
+		} catch {
+			// Ignorar si el navegador ya maneja el puntero de forma nativa
+		}
 		this._dialog.classList.add('dragging'); // Desactiva las transiciones CSS para un seguimiento suave 1:1
 	}
 
@@ -273,6 +293,7 @@ export class MoniBottomSheet extends MoniElement {
 
 		// Diferencia en píxeles desde donde se inició el click
 		const deltaY = e.clientY - this._startY;
+		this._lastDeltaY = deltaY;
 		const isExpanded = this._dialog.classList.contains('expanded');
 		const maxHeight = this._getMaxHeightPx();
 
@@ -291,7 +312,6 @@ export class MoniBottomSheet extends MoniElement {
 		} else {
 			if (deltaY > 0) {
 				// Arrastrando hacia abajo desde su estado inicial: lo empujamos visualmente hacia abajo (translate)
-				this._currentTranslationY = deltaY;
 				this._dialog.style.transform = `translateY(${deltaY}px)`;
 				this._dialog.style.height = '';
 			} else {
@@ -306,17 +326,26 @@ export class MoniBottomSheet extends MoniElement {
 	/**
 	 * Finaliza la interacción de arrastre, evaluando si el bottom-sheet debe
 	 * expandirse, regresar a su estado original o cerrarse completamente según la
-	 * inercia o la distancia arrastrada.
+	 * inercia, la distancia arrastrada o si se soltó fuera/hacia la parte inferior de la pantalla.
 	 */
 	private _onPointerUp(e: PointerEvent) {
 		if (!this._isDragging) return;
 
 		const target = e.target as HTMLElement;
-		target.releasePointerCapture(e.pointerId); // Liberamos el control del puntero
+		try {
+			if (target && target.hasPointerCapture?.(e.pointerId)) {
+				target.releasePointerCapture(e.pointerId);
+			}
+		} catch {
+			// Ignorar si la captura ya fue liberada o perdida por el navegador
+		}
 		this._isDragging = false;
 		this._dialog.classList.remove('dragging'); // Reactivamos las transiciones CSS
 
-		const deltaY = e.clientY - this._startY;
+		// Evaluamos la posición exacta al momento de soltar
+		const hasValidY = typeof e.clientY === 'number' && e.clientY > 0;
+		const deltaY = hasValidY ? (e.clientY - this._startY) : this._lastDeltaY;
+
 		// Si se movió más de 5px, bloqueamos clics accidentales para evitar disparar eventos subyacentes
 		if (Math.abs(deltaY) > 5) {
 			this._justDragged = true;
@@ -324,14 +353,24 @@ export class MoniBottomSheet extends MoniElement {
 				this._justDragged = false;
 			}, 50);
 		}
+
 		const isExpanded = this._dialog.classList.contains('expanded');
 		const maxHeight = this._getMaxHeightPx();
+		const defaultHeight = this._defaultHeight || (this._sheetHeight * 0.6) || 300;
+		// Solo se considera off-screen si al SOLTAR el puntero se encuentra en o más allá del límite inferior
+		const isOffScreenBottom = hasValidY && typeof window !== 'undefined' && e.clientY >= (window.innerHeight - 30);
 
 		if (isExpanded) {
 			// Evaluamos la altura final tras soltar el ratón/dedo
 			const finalHeight = this._sheetHeight - deltaY;
-			if (finalHeight < this._defaultHeight - 80) {
-				// Si se arrastró significativamente por debajo de la altura por defecto, lo cerramos
+			const shouldClose =
+				isOffScreenBottom ||
+				deltaY > this._sheetHeight * 0.4 ||
+				finalHeight < (defaultHeight - 80) ||
+				finalHeight < 100;
+
+			if (shouldClose) {
+				// Si se soltó significativamente hacia abajo o fuera de pantalla, lo cerramos
 				this._animateAndClose().then((closed) => {
 					if (!closed) {
 						// Si se canceló el evento, regresamos a su lugar
@@ -339,18 +378,18 @@ export class MoniBottomSheet extends MoniElement {
 						this._dialog.style.height = '';
 					}
 				});
-			} else if (finalHeight < (maxHeight + this._defaultHeight) / 2) {
+			} else if (finalHeight < (maxHeight + defaultHeight) / 2) {
 				// Si se soltó a medio camino, lo colapsamos a su altura normal
 				this._dialog.classList.remove('expanded');
 				this._dialog.style.transform = '';
 				this._dialog.style.height = '';
 			} else {
-				// Si no se arrastró lo suficiente hacia abajo, retorna a estado expandido (snap back)
+				// Si se subió de nuevo hacia arriba o no se arrastró suficiente, retorna a estado expandido (snap back)
 				this._dialog.style.transform = '';
 				this._dialog.style.height = '';
 			}
 		} else {
-			if (deltaY < 0) {
+			if (deltaY < 0 && !isOffScreenBottom) {
 				// Evaluamos el arrastre hacia arriba desde el estado colapsado
 				const finalHeight = this._sheetHeight - deltaY;
 				if (finalHeight > this._sheetHeight + 80) {
@@ -360,35 +399,47 @@ export class MoniBottomSheet extends MoniElement {
 				this._dialog.style.transform = '';
 				this._dialog.style.height = '';
 			} else {
-				// Evaluamos el arrastre hacia abajo para cerrar el componente
-				if (this._currentTranslationY > 80) {
+				// Evaluamos si al soltar superó el umbral de descarte o se soltó fuera de la pantalla
+				const threshold = Math.min(80, this._sheetHeight * 0.25);
+				const shouldClose =
+					isOffScreenBottom ||
+					deltaY > threshold;
+
+				if (shouldClose) {
 					this._animateAndClose().then((closed) => {
 						if (!closed) {
 							this._dialog.style.transform = '';
 						}
 					});
 				} else {
-					// Regresa a su estado colapsado (snap back al inicio)
+					// Si el usuario bajó pero subió de nuevo antes de soltar (o no superó el umbral), regresa a abierto
 					this._dialog.style.transform = '';
 				}
 			}
 		}
+
+		this._lastDeltaY = 0;
 	}
 
 	/**
-	 * Aborta limpiamente la interacción de arrastre (Pointer Cancel).
-	 * Se dispara cuando el SO interrumpe el touch (ej: entrada de una llamada)
-	 * o si el navegador toma el control para un scroll nativo imprevisto.
+	 * Maneja la cancelación del puntero o interrupción del SO.
+	 * Si el usuario ya lo había arrastrado hacia abajo o hacia fuera de la pantalla,
+	 * evalúa el cierre en lugar de simplemente cancelar y dejar la hoja colgada.
 	 */
 	private _onPointerCancel(e: PointerEvent) {
-		if (!this._isDragging) return;
+		if (this._isDragging) {
+			this._onPointerUp(e);
+		}
+	}
 
-		const target = e.target as HTMLElement;
-		target.releasePointerCapture(e.pointerId);
-		this._isDragging = false;
-		this._dialog.classList.remove('dragging');
-		this._dialog.style.transform = '';
-		this._dialog.style.height = '';
+	/**
+	 * Se ejecuta cuando se pierde la captura de puntero (por ejemplo al arrastrar fuera
+	 * del viewport del navegador o perder el foco de la ventana).
+	 */
+	private _onLostPointerCapture(e: PointerEvent) {
+		if (this._isDragging) {
+			this._onPointerUp(e);
+		}
 	}
 
 	/**
@@ -440,8 +491,12 @@ export class MoniBottomSheet extends MoniElement {
 					setTimeout(() => emitMoniEvent(this, 'moni-opened'), 300);
 				}
 			} else {
+				this._isDragging = false;
+				this._lastDeltaY = 0;
 				if (this._dialog) {
-					this._dialog.classList.remove('expanded');
+					this._dialog.classList.remove('expanded', 'dragging');
+					this._dialog.style.transform = '';
+					this._dialog.style.height = '';
 				}
 				if (this.positioning === 'body' && this._originalParent && this.parentNode === document.body) {
 					this._originalParent.insertBefore(this, this._originalSibling);
@@ -628,6 +683,7 @@ export class MoniBottomSheet extends MoniElement {
 			@pointermove=${this._onPointerMove}
 			@pointerup=${this._onPointerUp}
 			@pointercancel=${this._onPointerCancel}
+			@lostpointercapture=${this._onLostPointerCapture}
 		>
 			${this.handle ? html`<div class="handle" aria-hidden="true"></div>` : nothing}
 			<header part="header">

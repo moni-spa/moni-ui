@@ -102,7 +102,8 @@ No declara eventos propios.
 
 ## Métodos públicos
 
-No expone métodos públicos adicionales.
+- `show()` — Abre el bottom sheet.
+- `close()` — Cierra el bottom sheet ejecutando la animación fluida hacia abajo.
 
 ## CSS Parts
 
