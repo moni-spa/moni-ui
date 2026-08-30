@@ -169,11 +169,20 @@ export class MoniBottomSheet extends MoniElement {
 	private _defaultHeight = 0;
 	private _justDragged = false;
 	private _skipRequestClose = false;
+	private _isClosing = false;
 
 	/**
 	 * Abre el bottom sheet.
 	 */
 	show() {
+		this._isClosing = false;
+		this._isDragging = false;
+		this._lastDeltaY = 0;
+		if (this._dialog) {
+			this._dialog.classList.remove('dragging', 'expanded');
+			this._dialog.style.transform = '';
+			this._dialog.style.height = '';
+		}
 		this.open = true;
 	}
 
@@ -202,12 +211,18 @@ export class MoniBottomSheet extends MoniElement {
 	}
 
 	private async _animateAndClose() {
+		if (this._isClosing) return false;
+		if (!this.open) return false;
+		this._isClosing = true;
+
 		this._skipRequestClose = true;
 		const allowed = emitMoniEvent(this, 'moni-request-close', { cancelable: true });
 		this._skipRequestClose = false;
-		if (!allowed) return false;
+		if (!allowed) {
+			this._isClosing = false;
+			return false;
+		}
 
-		this.dispatchEvent(new Event('close', { bubbles: true, composed: true }));
 		emitMoniEvent(this, 'moni-close');
 
 		this._dialog.classList.remove('expanded');
@@ -223,10 +238,18 @@ export class MoniBottomSheet extends MoniElement {
 			setTimeout(onEnd, 300);
 		});
 
-		this._dialog.style.transform = '';
+		this._isClosing = false;
+		this._isDragging = false;
+		this._lastDeltaY = 0;
+		if (this._dialog) {
+			this._dialog.classList.remove('dragging', 'expanded');
+			this._dialog.style.transform = '';
+			this._dialog.style.height = '';
+		}
 		this._skipRequestClose = true;
 		this.open = false;
 		this._skipRequestClose = false;
+		this.dispatchEvent(new Event('close', { bubbles: true, composed: true }));
 		emitMoniEvent(this, 'moni-closed');
 		return true;
 	}
@@ -478,6 +501,14 @@ export class MoniBottomSheet extends MoniElement {
 		}
 		if (changed.has('open')) {
 			if (this.open) {
+				this._isClosing = false;
+				this._isDragging = false;
+				this._lastDeltaY = 0;
+				if (this._dialog) {
+					this._dialog.classList.remove('dragging', 'expanded');
+					this._dialog.style.transform = '';
+					this._dialog.style.height = '';
+				}
 				if (changed.get('open') !== undefined) {
 					emitMoniEvent(this, 'moni-open');
 				}
@@ -491,6 +522,7 @@ export class MoniBottomSheet extends MoniElement {
 					setTimeout(() => emitMoniEvent(this, 'moni-opened'), 300);
 				}
 			} else {
+				this._isClosing = false;
 				this._isDragging = false;
 				this._lastDeltaY = 0;
 				if (this._dialog) {
