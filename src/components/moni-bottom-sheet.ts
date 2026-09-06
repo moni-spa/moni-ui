@@ -536,6 +536,60 @@ export class MoniBottomSheet extends MoniElement {
 					this._originalSibling = null;
 				}
 			}
+
+			// Sincroniza el estado declarativo (open/modal) con la API
+			// imperativa del <dialog> nativo. Sin esto el ?open del template
+			// solo abre el diálogo como no-modal: sin top layer, sin
+			// ::backdrop y sin bloqueo del fondo. Mismo patrón que
+			// moni-dialog y moni-side-sheet, con guards typeof para
+			// entornos sin HTMLDialogElement (jsdom).
+			//
+			// NOTA: no se lee dialog.open como guarda porque render() ya
+			// aplicó ?open antes de updated() y siempre reflejaría el nuevo
+			// estado. Se decide por la transición (changed): close() sobre
+			// un diálogo ya cerrado es no-op por spec, igual que showModal()
+			// sobre uno ya modal lanza InvalidStateError (tolerado).
+			if (this._dialog) {
+				const nativo = this._dialog as HTMLDialogElement & {
+					showModal?: () => void;
+					show?: () => void;
+					close?: () => void;
+				};
+				if (this.open) {
+					if (this.modal && typeof nativo.showModal === 'function') {
+						let yaEsModal = false;
+						try {
+							yaEsModal = this._dialog.matches(':modal');
+						} catch {
+							yaEsModal = false;
+						}
+						if (!yaEsModal) {
+							try {
+								nativo.showModal();
+							} catch {
+								// Otro actor ya lo abrió.
+							}
+						}
+					} else if (!this.modal && typeof nativo.show === 'function') {
+						try {
+							nativo.show();
+						} catch {
+							// Otro actor ya lo abrió.
+						}
+					} else if (
+						(this.modal && typeof nativo.showModal !== 'function') ||
+						(!this.modal && typeof nativo.show !== 'function')
+					) {
+						this._dialog.open = true;
+					}
+				} else if (typeof nativo.close === 'function') {
+					try {
+						nativo.close();
+					} catch {
+						// Ya estaba cerrado.
+					}
+				}
+			}
 		}
 	}
 
@@ -589,6 +643,10 @@ export class MoniBottomSheet extends MoniElement {
 				visibility: visible;
 				opacity: 1;
 				transform: translateY(0);
+			}
+
+			dialog::backdrop {
+				background-color: rgb(0 0 0 / 0.5);
 			}
 
 			dialog.fixed {

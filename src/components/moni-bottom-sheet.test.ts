@@ -763,4 +763,66 @@ describe('moni-bottom-sheet', () => {
 		await el.updateComplete;
 		expect(el.open).toBe(false);
 	});
+
+	it('abre el diálogo nativo como modal con showModal cuando modal=true', async () => {
+		await el.updateComplete;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const showModalSpy = vi.fn();
+		const showSpy = vi.fn();
+		(dialog as any).showModal = showModalSpy;
+		(dialog as any).show = showSpy;
+
+		expect(el.modal).toBe(true);
+		el.open = true;
+		await el.updateComplete;
+
+		expect(showModalSpy).toHaveBeenCalled();
+		expect(showSpy).not.toHaveBeenCalled();
+	});
+
+	it('abre el diálogo nativo con show() en vez de showModal cuando modal=false', async () => {
+		el.modal = false;
+		await el.updateComplete;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const showModalSpy = vi.fn();
+		const showSpy = vi.fn();
+		(dialog as any).showModal = showModalSpy;
+		(dialog as any).show = showSpy;
+
+		el.open = true;
+		await el.updateComplete;
+
+		expect(showSpy).toHaveBeenCalled();
+		expect(showModalSpy).not.toHaveBeenCalled();
+	});
+
+	it('cierra el diálogo nativo con close() al poner open=false', async () => {
+		await el.updateComplete;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		(dialog as any).showModal = vi.fn(() => {
+			(dialog as any).open = true;
+		});
+		const closeSpy = vi.fn();
+		(dialog as any).close = closeSpy;
+
+		el.open = true;
+		await el.updateComplete;
+		el.open = false;
+		await el.updateComplete;
+
+		expect(closeSpy).toHaveBeenCalled();
+	});
+
+	it('aplica fallback al atributo open cuando el entorno no implementa showModal', async () => {
+		await el.updateComplete;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		(dialog as any).showModal = undefined;
+		(dialog as any).show = undefined;
+
+		el.open = true;
+		await el.updateComplete;
+
+		expect(dialog.hasAttribute('open')).toBe(true);
+		expect((dialog as any).open).toBe(true);
+	});
 });
