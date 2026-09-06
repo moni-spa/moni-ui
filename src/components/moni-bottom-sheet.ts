@@ -208,6 +208,16 @@ export class MoniBottomSheet extends MoniElement {
 				}
 			}
 		}
+		if (changed.has('open') && !this.open && this._dialog && typeof this._dialog.close === 'function') {
+			// Cierra el <dialog> nativo ANTES de que render() retire ?open:
+			// close() sin el atributo open es no-op por spec y el top layer
+			// quedaría varado (diálogo fantasma que se traga los taps).
+			try {
+				this._dialog.close();
+			} catch {
+				// Ya estaba cerrado.
+			}
+		}
 	}
 
 	private async _animateAndClose() {
@@ -442,6 +452,18 @@ export class MoniBottomSheet extends MoniElement {
 		}
 
 		this._lastDeltaY = 0;
+	}
+
+	/**
+	 * Maneja la cancelación nativa del <dialog> (tecla Escape).
+	 * Sin esto el browser cerraría el diálogo por su cuenta y la
+	 * propiedad `open` quedaría desincronizada (sheet invisible con
+	 * open=true). Se previene el cierre nativo y se conduce el flujo
+	 * propio con animación y eventos. Mismo patrón que moni-side-sheet.
+	 */
+	private _onCancel(e: Event) {
+		e.preventDefault();
+		void this.close();
 	}
 
 	/**
@@ -769,6 +791,7 @@ export class MoniBottomSheet extends MoniElement {
 			?open=${this.open}
 			class=${dialogClasses}
 			@click=${this._onDialogClick}
+			@cancel=${this._onCancel}
 			@pointerdown=${this._onPointerDown}
 			@pointermove=${this._onPointerMove}
 			@pointerup=${this._onPointerUp}

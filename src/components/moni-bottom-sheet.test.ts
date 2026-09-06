@@ -825,4 +825,44 @@ describe('moni-bottom-sheet', () => {
 		expect(dialog.hasAttribute('open')).toBe(true);
 		expect((dialog as any).open).toBe(true);
 	});
+
+	it('cierra el diálogo nativo antes de retirar ?open (close() sin open es no-op)', async () => {
+		await el.updateComplete;
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		(dialog as any).showModal = vi.fn();
+		let attrDuringClose: boolean | null = null;
+		(dialog as any).close = vi.fn(() => {
+			// Solo la primera llamada (willUpdate, pre-render) ve ?open.
+			// El backstop de updated() también cierra, pero ya sin atributo.
+			if (attrDuringClose === null) attrDuringClose = dialog.hasAttribute('open');
+		});
+
+		el.open = true;
+		await el.updateComplete;
+		el.open = false;
+		await el.updateComplete;
+
+		expect((dialog as any).close).toHaveBeenCalled();
+		expect(attrDuringClose).toBe(true);
+		expect(dialog.hasAttribute('open')).toBe(false);
+	});
+
+	it('previene el cierre nativo con Escape y conduce el flujo propio con eventos', async () => {
+		el.open = true;
+		await el.updateComplete;
+
+		const closeSpy = vi.fn();
+		el.addEventListener('close', closeSpy);
+
+		const dialog = el.shadowRoot?.querySelector('dialog') as HTMLDialogElement;
+		const canceled = !dialog.dispatchEvent(
+			new Event('cancel', { bubbles: true, cancelable: true })
+		);
+		dialog.dispatchEvent(new Event('transitionend'));
+		await el.updateComplete;
+
+		expect(canceled).toBe(true);
+		expect(el.open).toBe(false);
+		expect(closeSpy).toHaveBeenCalled();
+	});
 });
